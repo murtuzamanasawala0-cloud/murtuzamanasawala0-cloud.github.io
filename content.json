@@ -3,7 +3,11 @@
  "cfg": {
   "giftPw": "SERENDIPITY"
  },
- "games": {},
+ "games": {
+  "datematch": {
+   "pairs": "22 April | You walked into the internship\n29 May | \"Will you be my girlfriend?\"\n10 June | The cake tin and the note\n4 August | Brand New Day with umme and KFC later\n16 September | \"I love you\" on a call"
+  }
+ },
  "days": [
   {
    "t": "Surpriseeeeeeeee!!!",
@@ -15,7 +19,7 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "memory"
+   "g": "datematch"
   },
   {
    "t": "",
