@@ -385,6 +385,8 @@ textarea.edgame{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-h
 .edgametag{font-family:'Playfair Display',serif;font-size:13px;color:#f9a8c8;margin-top:6px}
 
 .bqcard svg{width:min(220px,64vw);height:auto;max-height:160px}
+#sndBtn.off svg{opacity:.45}
+#sndBtn svg{width:20px;height:20px}
 
 </style>
 </head>
@@ -407,6 +409,7 @@ textarea.edgame{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-h
       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
       <span class="dot" id="calDot">0</span>
     </button>
+    <button class="iconbtn" id="sndBtn" aria-label="Sound"></button>
   </header>
   <main id="stage"><div class="wrap" id="view"></div></main>
 </div>
@@ -840,7 +843,7 @@ function openDay(d){
     <p class="lead">${d===curDay()?'Today\'s envelope is sealed. One small game and it\'s yours.':'This one\'s unlocked. Play it whenever you like.'}</p>
     <div><button class="btn pulse" id="playBtn">Play to unlock ✦</button></div>
   </div>`);
- $('#env',w).onclick=()=>$('#playBtn',w).click();
+ $('#env',w).onclick=()=>{AUDIO.fx('open');$('#playBtn',w).click()};
  $('#playBtn',w).onclick=()=>gameView(d);
 }
 function gameView(d,idx){
@@ -853,6 +856,7 @@ function gameView(d,idx){
     <span>${idx+1} of ${list.length}</span></div>`:''}
   <div id="gbox"></div><p class="ghint">${G.hint||''}</p>
   <div class="row" style="margin-top:14px"><button class="btn ghost" id="backBtn">Back</button><span id="devskip"></span></div>`);
+ AUDIO.setMode('game');watchGame($('#gbox',w));
  $('#backBtn',w).onclick=()=>openDay(d);
  if(dev)$('#devskip',w).innerHTML='<button class="btn ghost" onclick="window.__win()">dev: win</button>';
  const won=()=>{
@@ -866,7 +870,7 @@ function gameView(d,idx){
  catch(e){cleanup=null;$('#gbox',w).innerHTML='<div class="card center"><p class="lead">This one would not start. Tap Back and try another.</p></div>'}
 }
 function celebrate(d){
- S.done[d]=true;save();updateDot();growGarden();
+ S.done[d]=true;save();updateDot();growGarden();AUDIO.fx('win');
  const big=DAYS[d-1].big;
  burst(W/2,H*.42,big?150:90,big?1.15:1);
  if(big)setTimeout(()=>rain(90),350);
@@ -886,11 +890,12 @@ function messageView(d,fresh){
     <button class="btn ghost" id="calOpen">See all 30 days</button>
     ${gamesFor(D)[0]!=='none'?'<button class="btn ghost" id="replay">Play again</button>':''}
   </div>`);
+ AUDIO.setMode('read');
  const r=$('#replay',w);if(r)r.onclick=()=>gameView(d);
  $('#calOpen',w).onclick=openSheet;
 }
 function birthdayView(){
- mode='bday';shown=30;document.body.dataset.week='b';
+ mode='bday';shown=30;document.body.dataset.week='b';AUDIO.setMode('read');AUDIO.birthdaySong();
  starfield(true);
  const past845=now()>=MOMENT;
  const w=show(`<div class="bday">
@@ -930,7 +935,7 @@ function wireGift(w){
  go.onclick=tryIt;inp.addEventListener('keydown',e=>{if(e.key==='Enter')tryIt()});
 }
 function momentView(){
- mode='moment';document.body.dataset.week='b';starfield(true);
+ mode='moment';document.body.dataset.week='b';starfield(true);AUDIO.setMode('moment');
  show(`<div class="moment" style="padding-top:8vh">
   <p class="line" style="animation-delay:.3s;font-family:'Playfair Display',serif;font-size:19px;color:#ffe9f4">20 years ago, at this exact moment,</p>
   <p class="line" style="animation-delay:2.4s;font-family:'Playfair Display',serif;font-size:26px;color:#fff;margin-top:12px">you happened to the world.</p>
@@ -1095,8 +1100,7 @@ const GARDEN=(()=>{
   ctx.fillStyle=sg;ctx.fillRect(0,soil-10,W,H-soil+10);
 
   STEMS.forEach(s=>{
-   const earned=!!(S.done&&S.done[s.d])||!!(S.flowers&&S.flowers[s.d]);
-   let g=Math.max(0,Math.min(1,(p-s.i*.018)*1.06+(earned?.06:0)));
+   let g=Math.max(0,Math.min(1,(p-s.i*.018)*1.06));
    if(g<=.02)return;
    const x=s.x*W;
    const grow=seg(g,.02,.40);                  // stem rising
@@ -1166,12 +1170,185 @@ const GARDEN=(()=>{
 })();
 
 function gardenProgress(){
+ /* the calendar decides, nothing else — playing ahead in dev must not fast-forward it */
  if(now()>=BDAY)return 1;
- const cd=Math.max(0,Math.min(30,curDay()));
- let done=0;for(const k in (S.done||{}))if(S.done[k])done++;
- return Math.min(1,Math.max(cd-1,done)/29);
+ const cd=Math.max(1,Math.min(30,curDay()));
+ return Math.min(1,(cd-1)/29);
 }
 function growGarden(instant){GARDEN.set(gardenProgress(),instant)}
+
+/* ================= sound =================
+   Background music is a file you drop in the repo (music.mp3 / game.mp3).
+   If the file isn't there, there's simply no music — nothing synthetic.
+   The little effects and the birthday tune are generated, so they always work. */
+
+const AUDIO=(()=>{
+ let ctx=null,master=null,fxG=null,verb=null,wet=null;
+ let on=true;try{on=localStorage.getItem('zb30snd')!=='0'}catch(e){}
+ let mode='none',cur=null,fadeT=null;
+ const tracks={};                       // mode -> HTMLAudioElement
+ const SRC={read:'music.mp3',game:'game.mp3'};
+ const VOL={read:.42,game:.24};
+
+ function makeVerb(){
+  const len=Math.floor(ctx.sampleRate*2.4),b=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);
+   for(let i=0;i<len;i++){const t=i/len;d[i]=(Math.random()*2-1)*Math.pow(1-t,2.6)*.6}}
+  const c=ctx.createConvolver();c.buffer=b;return c;
+ }
+ function boot(){
+  if(ctx)return true;
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;
+  try{ctx=new AC()}catch(e){return false}
+  master=ctx.createGain();master.gain.value=on?1:0;master.connect(ctx.destination);
+  fxG=ctx.createGain();fxG.gain.value=.34;fxG.connect(master);
+  verb=makeVerb();wet=ctx.createGain();wet.gain.value=.5;
+  fxG.connect(verb);verb.connect(wet);wet.connect(master);
+  return true;
+ }
+ const now=()=>ctx?ctx.currentTime:0;
+
+ /* ---- a piano-ish note, used for the effects and the birthday tune ---- */
+ function note(freq,at,dur,vel){
+  if(!ctx)return;
+  const g=ctx.createGain(),o1=ctx.createOscillator(),o2=ctx.createOscillator();
+  o1.type='triangle';o2.type='sine';
+  o1.frequency.value=freq;o2.frequency.value=freq*2.004;
+  const o2g=ctx.createGain();o2g.gain.value=.3;
+  g.gain.setValueAtTime(0.0001,at);
+  g.gain.exponentialRampToValueAtTime(Math.max(.0005,vel),at+.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,at+dur);
+  o1.connect(g);o2.connect(o2g);o2g.connect(g);g.connect(fxG);
+  o1.start(at);o2.start(at);o1.stop(at+dur+.05);o2.stop(at+dur+.05);
+ }
+
+ /* ---- the background track ---- */
+ function track(m){
+  if(tracks[m]!==undefined)return tracks[m];
+  const src=SRC[m];if(!src){tracks[m]=null;return null}
+  const a=new Audio();
+  a.loop=true;a.preload='auto';a.volume=0;
+  /* no file in the repo yet = no music, quietly. not an error worth shouting about */
+  a.addEventListener('error',e=>{e.stopPropagation();tracks[m]=null;if(cur===a)cur=null},true);
+  a.src=src;
+  tracks[m]=a;return a;
+ }
+ function ramp(a,to,secs){
+  if(!a)return;
+  if(fadeT&&fadeT.el===a)clearInterval(fadeT.iv);
+  const from=a.volume,steps=Math.max(1,Math.round(secs*20));let i=0;
+  const iv=setInterval(()=>{
+   i++;const v=from+(to-from)*(i/steps);
+   try{a.volume=Math.max(0,Math.min(1,v))}catch(e){}
+   if(i>=steps){clearInterval(iv);if(to===0){try{a.pause()}catch(e){}}}
+  },50);
+  fadeT={el:a,iv};
+ }
+ function setMode(m){
+  boot();
+  if(m===mode)return;
+  const prev=cur;
+  mode=m;
+  if(prev)ramp(prev,0,.9);
+  if(m==='none'){cur=null;return}
+  const a=track(m==='moment'?'read':m);
+  cur=a;
+  if(!a)return;
+  try{a.play().then(()=>ramp(a,VOL[m==='moment'?'read':m]||.35,1.4)).catch(()=>{})}catch(e){}
+ }
+
+ /* ---- effects ---- */
+ let lastFx=0;
+ function fx(kind){
+  if(!ctx||!on)return;
+  const t=now();
+  if(kind==='tap'||kind==='good'||kind==='bad'){if(t-lastFx<.05)return;lastFx=t}
+  if(kind==='tap')note(880,t,.09,.08);
+  else if(kind==='good'){note(659.25,t,.18,.13);note(987.77,t+.075,.28,.1)}
+  else if(kind==='bad'){
+   const g=ctx.createGain(),o=ctx.createOscillator();
+   o.type='sine';o.frequency.setValueAtTime(190,t);o.frequency.exponentialRampToValueAtTime(90,t+.22);
+   g.gain.setValueAtTime(.16,t);g.gain.exponentialRampToValueAtTime(.0001,t+.24);
+   o.connect(g);g.connect(fxG);o.start(t);o.stop(t+.3);
+  }
+  else if(kind==='win')[523.25,659.25,783.99,1046.5].forEach((f,i)=>note(f,t+i*.085,.5,.13));
+  else if(kind==='open')[392,523.25,659.25].forEach((f,i)=>note(f,t+i*.07,.6,.1));
+ }
+
+ /* ---- Happy Birthday, on the piano, once ---- */
+ const C4=261.63,D4=293.66,E4=329.63,F4=349.23,G4=392.00,A4=440.00,B4=493.88,
+       C5=523.25,D5=587.33,E5=659.25,F5=698.46,G5=783.99;
+ const TUNE=[[G4,.75],[G4,.25],[A4,1],[G4,1],[C5,1],[B4,2],
+             [G4,.75],[G4,.25],[A4,1],[G4,1],[D5,1],[C5,2],
+             [G4,.75],[G4,.25],[G5,1],[E5,1],[C5,1],[B4,1],[A4,2],
+             [F5,.75],[F5,.25],[E5,1],[C5,1],[D5,1],[C5,3]];
+ let sungAt=-1e6,pendingSong=false;   /* -1e6, not 0 — the audio clock starts at 0 */
+ function birthdaySong(){
+  if(!boot()||!on)return;
+  /* phones won't make a sound before she has touched something — hold it */
+  if(ctx.state==='suspended'){pendingSong=true;return}
+  const t=now();
+  if(t-sungAt<40)return;                 // don't sing it twice if the view redraws
+  sungAt=t;
+  if(cur)ramp(cur,0,1.2);                // let it have the room
+  const beat=.46;let at=t+.6;
+  TUNE.forEach(([f,b])=>{
+   note(f,at,b*beat*1.9,.2);
+   if(b>=2)note(f/2,at,b*beat*2.2,.07);  // a soft octave under the long notes
+   at+=b*beat;
+  });
+  const end=at+1.4;
+  setTimeout(()=>{if(mode!=='none'&&cur){try{cur.play()}catch(e){}ramp(cur,VOL.read,2.5)}},
+   Math.max(0,(end-now())*1000));
+ }
+
+ function setOn(v){
+  on=v;try{localStorage.setItem('zb30snd',v?'1':'0')}catch(e){}
+  boot();
+  if(master)master.gain.linearRampToValueAtTime(v?1:0,now()+.25);
+  if(cur){if(v){try{cur.play()}catch(e){}ramp(cur,VOL[mode]||.35,.6)}else ramp(cur,0,.4)}
+  paintBtn();
+ }
+ function paintBtn(){
+  const b=document.querySelector('#sndBtn');if(!b)return;
+  b.classList.toggle('off',!on);
+  b.setAttribute('aria-label',on?'Turn sound off':'Turn sound on');
+  b.innerHTML=on
+   ?'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>'
+   :'<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9.5l4 5M21 9.5l-4 5"/></svg>';
+ }
+ function wake(){
+  if(!boot())return;
+  if(ctx.state==='suspended'){
+   const r=ctx.resume();
+   if(r&&r.then)r.then(()=>{if(pendingSong){pendingSong=false;birthdaySong()}});
+  }
+  if(pendingSong&&ctx.state==='running'){pendingSong=false;birthdaySong()}
+  if(on&&cur&&cur.paused){try{cur.play()}catch(e){}}
+ }
+ addEventListener('pointerdown',wake,{passive:true});
+ addEventListener('keydown',wake,{passive:true});
+
+ return{setMode,fx,setOn,paintBtn,birthdaySong,isOn:()=>on,wake};
+})();
+
+/* ---- what the games are doing, without touching all 33 of them ---- */
+let GOBS=null;
+function watchGame(box){
+ if(GOBS){GOBS.disconnect();GOBS=null}
+ if(!box||!window.MutationObserver)return;
+ GOBS=new MutationObserver(ms=>{
+  for(const m of ms){
+   if(m.type==='attributes'&&m.attributeName==='class'){
+    const c=m.target.classList;
+    if(c.contains('good')||c.contains('hit')||c.contains('winline'))AUDIO.fx('good');
+    else if(c.contains('shake')||c.contains('bad'))AUDIO.fx('bad');
+   }
+  }
+ });
+ GOBS.observe(box,{subtree:true,attributes:true,attributeFilter:['class']});
+ box.addEventListener('pointerdown',()=>AUDIO.fx('tap'),{passive:true});
+}
 
 function flowersHeld(){return Object.keys(FLOWERS).map(Number).filter(d=>S.done[d]||S.flowers&&S.flowers[d])}
 function giveFlower(d){
@@ -1474,6 +1651,8 @@ $('#dEdit').onclick=()=>openEditor(shown||curDay()||1);
 $('#dMore').onclick=()=>{const on=devPanel.classList.toggle('show');$('#devbar').style.opacity=on?'0':'1';$('#devbar').style.pointerEvents=on?'none':'auto'};
 $('#dExit').onclick=()=>toggleDev(false);
 growGarden(true);
+AUDIO.paintBtn();
+$('#sndBtn').onclick=()=>{AUDIO.setOn(!AUDIO.isOn());AUDIO.wake()};
 $('#edG').addEventListener('change',()=>describeGame($('#edG').value));
 $('#edAdd').onclick=()=>{const k=$('#edG').value;
  if(k==='none'){edGames=['none']}else{edGames=edGames.filter(x=>x!=='none');
