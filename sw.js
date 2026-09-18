@@ -1,6 +1,6 @@
-const CACHE='zb30-v1';
-const CORE=['./','./index.html','./birthday.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE).catch(()=>{})))});
+const CACHE='zb30-v2';
+const CORE=['./','./index.html','./birthday.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./music.mp3','./game.mp3'];
+self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>Promise.allSettled(CORE.map(u=>c.add(u))).catch(()=>{})))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{
  const r=e.request;
