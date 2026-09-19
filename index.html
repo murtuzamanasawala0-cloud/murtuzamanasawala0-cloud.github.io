@@ -820,7 +820,7 @@ const fmt=d=>`${d.getDate()} ${MONTHS[d.getMonth()]}`;
 let offset=0;
 const now=()=>new Date(Date.now()+offset);
 const midnight=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
-const ROLL=20*60+45;                                // a new day arrives at 8:45 pm
+const ROLL=5*60;    // a new day arrives at 5 am, so the date on screen is her date
 const LIVE=new Date(START.getFullYear(),START.getMonth(),START.getDate(),0,0,0);
 function rollAnchor(n){                             // the date whose 8:45 pm has just passed
  const a=new Date(n.getFullYear(),n.getMonth(),n.getDate());
@@ -898,11 +898,13 @@ function dayHead(d){
  <div class="datestr">${fmt(dt)} · ${D.exam?'exam day':weekOf(d)==='b'?'the day':'day '+d}</div>`;
 }
 function animFirst(d){const D=DAYS[d-1];return !!(D&&D.af)&&!!animFor(d)}
+let relive=0;   /* the day she has chosen to live through again */
+function reliveDay(d){relive=d;openDay(d)}
 function openDay(d){
  shown=d;mode='day';setWeek(d);if(dev)setTimeout(devLabel,0);
  const D=DAYS[d-1];
  if(d===30){birthdayView();return}
- if(isDone(d)){messageView(d,false);return}
+ if(isDone(d)&&relive!==d){messageView(d,false);return}
  const w=show(`${dayHead(d)}
   <div class="envelope" id="env"><div class="body"></div><div class="flapb"></div><div class="num">day ${d}</div><div class="flap"></div><div class="seal">Z</div></div>
   <div class="center stack">
@@ -910,10 +912,12 @@ function openDay(d){
     <div><button class="btn pulse" id="playBtn">Play to unlock ✦</button></div>
   </div>`);
  $('#env',w).onclick=()=>{AUDIO.fx('open');$('#playBtn',w).click()};
- $('#playBtn',w).onclick=()=>{if(animFirst(d)&&!isDone(d))animView(d,()=>teaseView(d));else gameView(d)};
+ $('#playBtn',w).onclick=()=>{if(animFirst(d)&&(!isDone(d)||relive===d))
+   animView(d,()=>teaseView(d),isDone(d));else gameView(d)};
 }
 function gameView(d,idx){
  idx=idx||0;mode='game';
+ const again=isDone(d);        /* she has been through this evening before */
  const D=DAYS[d-1],list=gamesFor(D);
  if(idx>=list.length)idx=list.length-1;
  const key=list[idx],G=GAMES[key]||GAMES.none,many=list.length>1;
@@ -930,8 +934,10 @@ function gameView(d,idx){
   if(idx+1<list.length){try{sparkle(innerWidth/2,innerHeight*.42,16)}catch(e){}
    setTimeout(()=>gameView(d,idx+1),700);return}
   mode='won';celebrate(d);
-  setTimeout(()=>{if(animFor(d)&&!animFirst(d))animView(d,()=>messageView(d,true));
-                  else messageView(d,true)},900);
+  const fresh=!again;           /* no 'come back tomorrow' on an old day */
+  setTimeout(()=>{relive=0;
+   if(animFor(d)&&!animFirst(d))animView(d,()=>messageView(d,fresh),again);
+   else messageView(d,fresh)},900);
  };
  window.__win=won;
  try{cleanup=G.start($('#gbox',w),won,$('#gstat',w),d)||null}
@@ -964,22 +970,55 @@ function messageView(d,fresh){
     <div class="msg">${dMsg(D)}</div>
   </div>
   ${FLOWERS[d]?giveFlower(d):''}
+  ${baitCard(d)}
   ${afterCard(d)}
   ${replyBox(d)}
-  ${fresh&&!last?`<div class="card center" style="margin-top:14px"><p class="tease">Come back tomorrow at 8:45 pm 🌸<br><b style="color:var(--accent)">Day ${d+1}</b> — ${dTease(D)}</p></div>`:''}
+  ${fresh&&!last?`<div class="card center" style="margin-top:14px"><p class="tease">Come back tomorrow 🌸<br><b style="color:var(--accent)">Day ${d+1}</b> — ${dTease(D)}</p></div>`:''}
   <div class="row" style="margin-top:16px">
     <button class="btn ghost" id="calOpen">See all 30 days</button>
     ${gamesFor(D)[0]!=='none'?'<button class="btn ghost" id="replay">Play again</button>':''}
     ${animFor(d)?'<button class="btn ghost" id="rewatch">Watch again ✦</button>':''}
+    ${isDone(d)?'<button class="btn ghost" id="reliveBtn">Live this day again ✦</button>':''}
   </div>`);
  AUDIO.setMode('read');
  const r=$('#replay',w);if(r)r.onclick=()=>gameView(d);
  const rw=$('#rewatch',w);if(rw)rw.onclick=()=>animView(d,()=>messageView(d,false),true);
  wireReply(w,d);
+ wireBait(w,d);
+ const rl=$('#reliveBtn',w);if(rl)rl.onclick=()=>reliveDay(d);
  const ag=$('#afterGo',w);
  if(ag)ag.onclick=()=>{const k=DAYS[d-1].a2;
   animView(d,()=>messageView(d,false),true,k)};
  $('#calOpen',w).onclick=openSheet;
+}
+const BAIT_DEFAULT=['bav jaldi che \ud83d\ude04',
+ 'wait for tomorrow',
+ 'no. tomorrow.',
+ 'you can keep tapping. it will still be tomorrow.',
+ 'okay fine \u2014 tomorrow, but earlier. \ud83c\udf38'];
+function baitLines(d){
+ const D=DAYS[d-1],raw=(D&&D.bt)||'';
+ const out=raw.split('\n').map(s=>s.trim()).filter(Boolean);
+ return out.length?out:BAIT_DEFAULT;
+}
+function baitCard(d){
+ if(d>=30||d!==curDay())return '';
+ return `<div class="card center stack" id="baitCard" style="margin-top:14px">
+   <div><button class="btn ghost" id="baitGo">Open day ${d+1} \u2192</button></div>
+   <p class="tease" id="baitSay" hidden style="margin-top:2px"></p>
+ </div>`;
+}
+function wireBait(w,d){
+ const b=$('#baitGo',w),say=$('#baitSay',w),card=$('#baitCard',w);
+ if(!b||!say||!card)return;
+ const lines=baitLines(d);let i=0;
+ b.onclick=()=>{
+  say.hidden=false;
+  say.textContent=lines[Math.min(i,lines.length-1)];
+  card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');
+  AUDIO.fx('bad');
+  i++;
+ };
 }
 function afterCard(d){
  const D=DAYS[d-1],k=D&&D.a2;
@@ -1659,6 +1698,7 @@ function applyContent(c){
   if(typeof d.a2==='string')D.a2=d.a2;
   if(typeof d.az==='string')D.az=d.az;
   if(typeof d.ab==='string')D.ab=d.ab;
+  if(typeof d.bt==='string')D.bt=d.bt;
   if(typeof d.g==='string'){
    const keep=d.g.split(',').map(x=>x.trim()).filter(k=>GAME_KEYS.includes(k));
    if(keep.length)D.g=keep.join(',')}});
@@ -1705,7 +1745,7 @@ async function loadRemote(){
  return false;
 }
 function buildContent(){return{v:1,cfg:{giftPw:CFG.giftPw},games:GTXT,anims:ATXT,
- days:DAYS.map(d=>({t:d.t,m:d.m,n:d.n,g:d.g,a:d.a||'',af:!!d.af,tz:d.tz||'',a2:d.a2||'',az:d.az||'',ab:d.ab||''})),
+ days:DAYS.map(d=>({t:d.t,m:d.m,n:d.n,g:d.g,a:d.a||'',af:!!d.af,tz:d.tz||'',a2:d.a2||'',az:d.az||'',ab:d.ab||'',bt:d.bt||''})),
  flowers:Object.fromEntries(Object.keys(FLOWERS).map(k=>[k,{k:FLOWERS[k].k,line:FLOWERS[k].line}]))}}
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function htmlToText(h){
