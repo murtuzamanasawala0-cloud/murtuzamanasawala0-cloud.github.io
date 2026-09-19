@@ -300,9 +300,18 @@ body[data-week="b"] .sheetbox{background:#33203c}
 .wround i{width:20px;height:4px;border-radius:2px;background:var(--line);display:block}
 .wround i.done{background:var(--green)}
 .wround i.on{background:var(--accent)}
-/* the nudge, which only turns up once she has actually struggled a bit */
-.whint{font-size:13.5px;color:var(--ink2);text-align:center;margin:-2px 0 10px;
- line-height:1.5;font-style:italic;animation:vin .4s}
+/* the nudge, which he does not hand over until she has asked several times */
+.whintrow{display:flex;flex-direction:column;align-items:center;gap:7px;margin:-2px 0 10px}
+.hintbtn{border:1px dashed var(--line);background:transparent;color:var(--ink2);
+ border-radius:999px;padding:7px 15px;font:500 13px/1 'Lora',Georgia,serif;
+ letter-spacing:.02em;transition:transform .12s ease,color .2s ease,border-color .2s ease}
+.hintbtn.grump{color:var(--accent);border-color:var(--accent);border-style:solid}
+.hintbtn.gave{color:var(--green,#6f9f7c);border-color:var(--green,#6f9f7c);border-style:solid}
+.hintbtn.nudge{animation:hnudge .28s ease}
+@keyframes hnudge{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}
+ 60%{transform:translateX(5px)}}
+.whint{font-size:13.5px;color:var(--ink2);text-align:center;
+ line-height:1.5;font-style:italic;animation:vin .4s;max-width:300px}
 .wc.g{background:var(--green);border-color:var(--green);color:#fff}
 .wc.y{background:#e8bd72;border-color:#e8bd72;color:#fff}
 .wc.b{background:#e3d3dd;border-color:#e3d3dd;color:#fff}
@@ -496,6 +505,31 @@ body:has(#pvbar:not([hidden])) #stage{padding-top:38px}
  color:rgba(255,255,255,.8);text-shadow:0 1px 10px rgba(0,0,0,.5)}
 .animskip.mvexit{right:auto;left:12px}
 
+/* ================= the interruptions ================= */
+/* deliberately ugly: it has to look like something that does not belong */
+.prankad{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);
+ width:min(78%,290px);background:#fffbe8;border:2px solid #d9b441;border-radius:10px;
+ padding:16px 14px 14px;text-align:center;z-index:6;
+ box-shadow:0 12px 34px rgba(30,16,36,.34);animation:pkin .28s ease}
+@keyframes pkin{from{opacity:0;transform:translate(-50%,-44%) scale(.94)}}
+.prankad b{display:block;font:700 15px/1.25 ui-sans-serif,system-ui,sans-serif;
+ color:#8a5a12;letter-spacing:.01em}
+.prankad span{display:block;margin-top:5px;font:400 12.5px/1.4 ui-sans-serif,system-ui,sans-serif;
+ color:#9a7433}
+.prankad i{display:inline-block;margin-top:11px;font-style:normal;
+ font:700 12px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.09em;
+ background:#e8b13a;color:#4a3008;border-radius:5px;padding:9px 16px;
+ animation:pkpulse 1.1s ease-in-out infinite}
+@keyframes pkpulse{50%{transform:scale(1.06)}}
+.prankad.quiet{background:#fff;border-color:var(--line,#e6d4e0)}
+.prankad.quiet b{color:#57394f;font-family:'Lora',Georgia,serif;font-weight:500}
+.prankad.quiet span{color:#8a7382;font-family:'Lora',Georgia,serif}
+/* it moves when she goes for it, twice, and then it gives up */
+.prankx{position:absolute;right:6px;top:6px;width:26px;height:26px;border-radius:50%;
+ border:1px solid #d9b441;background:#fff;color:#8a5a12;font:700 15px/1 sans-serif;
+ padding:0;display:grid;place-items:center;transition:transform .16s ease}
+
+.devbuild{font:600 10.5px/1 ui-monospace,monospace;letter-spacing:.12em;color:#f9a8c8;opacity:.75;margin:-6px 0 10px;text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -637,6 +671,7 @@ body:has(#pvbar:not([hidden])) #stage{padding-top:38px}
 </div>
 <div id="dev">
   <h4>Dev panel · Murtaza only</h4>
+  <div class="devbuild">build 161281</div>
   <div class="drow">
     <button id="dJump">Jump to day ▸</button>
     <input id="dDay" type="number" min="1" max="30" value="1" style="width:62px">
@@ -670,7 +705,7 @@ let ATXT={};
 
 const GDEF={
  wordle:{words:'ROSES\nTULIPS\nLILIES',
-  hint:'Three of them, and you\u2019d be pleased to get any of the three. \uD83C\uDF37'},
+  hint:'They are flowers. All three are ones you like. \uD83C\uDF37'},
  wordsearch:{words:'LYCHEE\nSCOOTER\nTULIP\nSPIDER\nBHINDA\nCOFFEE\nUMME\nAPRIL'},
  unscramble:{words:'HAPPY\nBIRTHDAY'},
  truefalse:{qs:'I had to be told to actually ask you to be my girlfriend. | true | Painfully true. You had to explain it. 🙈\n'+
@@ -729,7 +764,7 @@ const GDEF={
 /* what the editor shows, per game */
 const GSPEC={
  wordle:[{f:'words',l:'Answer words',h:'One per line, played in that order. 3 to 8 letters each.'},
-  {f:'hint',l:'The nudge',h:'Shows under the grid after two wrong guesses. Leave blank for none.'}],
+  {f:'hint',l:'The nudge',h:'Behind a button that refuses seven times first. Leave blank for no button.'}],
  wordsearch:[{f:'words',l:'Words to hide',h:'One per line, no spaces. 6–8 works best.'}],
  unscramble:[{f:'words',l:'The words',h:'One per line, in order.'}],
  truefalse:[{f:'qs',l:'Statements',h:'statement | true or false | what she sees after answering'}],
@@ -811,94 +846,94 @@ const dMsg=D=>hasText(D.m)?D.m:(FALLBACK_M+SIGN);
 const dTease=D=>(D.n&&D.n.trim())?D.n:FALLBACK_N;
 const isWritten=D=>!!(D.t&&D.t.trim())||hasText(D.m);
 const DAYS=[
-{t:"",g:"scratch",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"OPENING01",
+{t:"",g:"scratch",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"OPENING01",
  m:``,
  n:""},
-{t:"",g:"memory",a:"before",af:true,tz:"",wn:"",a2:"kitchen",az:"<p>Also \u2014 you told me what you wanted to do tonight.</p><p>I couldn\u2019t give you the evening. So I made you the next best thing.</p>",ab:"Open it \u2726",mv:false,mz:"",mb:"",pw:"MUGS02",
+{t:"",g:"memory",a:"before",af:true,tz:"",wn:"",pk:"",a2:"kitchen",az:"<p>Also \u2014 you told me what you wanted to do tonight.</p><p>I couldn\u2019t give you the evening. So I made you the next best thing.</p>",ab:"Open it \u2726",mv:false,mz:"",mb:"",pw:"MUGS02",
  m:``,
  n:""},
-{t:"",g:"wordle",a:"april22",af:true,tz:"<p>Game\u2019s still waiting. So is the note \u2014 read it after.</p><p>Tomorrow: the six weeks where nothing happened.</p><p>There\u2019s a spreadsheet in it, and a joke you found much funnier than it was. \ud83c\udf38</p>",wn:"posy",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SCOOTER03",
+{t:"",g:"wordle",a:"april22",af:true,tz:"<p>Game\u2019s still waiting. So is the note \u2014 read it after.</p><p>Tomorrow: the six weeks where nothing happened.</p><p>There\u2019s a spreadsheet in it, and a joke you found much funnier than it was. \ud83c\udf38</p>",wn:"posy",pk:"ad",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SCOOTER03",
  m:``,
  n:""},
-{t:"",g:"spotdiff",a:"slow",af:true,tz:"<p>There\u2019s a game after this, and a note after that. Skip neither.</p><p>Tomorrow: every excuse I invented to get your number.</p><p>There were a lot of them. None of them were subtle. \ud83c\udf38</p>",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"FLOWERS04",
+{t:"",g:"spotdiff",a:"slow",af:true,tz:"<p>There\u2019s a game after this, and a note after that. Skip neither.</p><p>Tomorrow: every excuse I invented to get your number.</p><p>There were a lot of them. None of them were subtle. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"FLOWERS04",
  m:``,
  n:""},
-{t:"",g:"dobble",a:"excuses",af:true,tz:"<p>Game first, then the note. Both still waiting.</p><p>Tomorrow: the day I waited outside yours and gave up.</p><p>You already know how it ends. Come and watch me find out. \ud83c\udf38</p>",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"FRIES05",
+{t:"",g:"dobble",a:"excuses",af:true,tz:"<p>Game first, then the note. Both still waiting.</p><p>Tomorrow: the day I waited outside yours and gave up.</p><p>You already know how it ends. Come and watch me find out. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"FRIES05",
  m:``,
  n:""},
-{t:"",g:"bubblewrap",a:"may23",af:true,tz:"<p>Game, then the note. In that order.</p><p>Tomorrow: the night neither of us said it for about four hours.</p><p>Then you made me. \ud83c\udf38</p>",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"CLIPS06",
+{t:"",g:"bubblewrap",a:"may23",af:true,tz:"<p>Game, then the note. In that order.</p><p>Tomorrow: the night neither of us said it for about four hours.</p><p>Then you made me. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"CLIPS06",
  m:``,
  n:""},
-{t:"",g:"stack",a:"may27",af:true,tz:"<p>The game\u2019s below, and the note\u2019s after it.</p><p>Tomorrow: what I did instead of sleeping.</p><p>You went very red. \ud83c\udf38</p>",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"BOOKS07",
+{t:"",g:"stack",a:"may27",af:true,tz:"<p>The game\u2019s below, and the note\u2019s after it.</p><p>Tomorrow: what I did instead of sleeping.</p><p>You went very red. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"BOOKS07",
  m:``,
  n:""},
-{t:"",g:"jigsaw",a:"may28",af:true,tz:"<p>Game, then note. Same as always.</p><p>Tomorrow: two questions, and me answering one of them extremely badly.</p><p>You had to help. \ud83c\udf38</p>",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"COFFEE08",
+{t:"",g:"jigsaw",a:"may28",af:true,tz:"<p>Game, then note. Same as always.</p><p>Tomorrow: two questions, and me answering one of them extremely badly.</p><p>You had to help. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"COFFEE08",
  m:``,
  n:""},
-{t:"",g:"colourscene",a:"may29",af:true,tz:"<p>Game, then the note.</p><p>Tomorrow we\u2019re past the beginning.</p><p>Everything after this one is us. \ud83c\udf38</p>",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SPIDER09",
+{t:"",g:"colourscene",a:"may29",af:true,tz:"<p>Game, then the note.</p><p>Tomorrow we\u2019re past the beginning.</p><p>Everything after this one is us. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SPIDER09",
  m:``,
  n:""},
-{t:"",g:"unscramble",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"TULIP10",
+{t:"",g:"unscramble",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"TULIP10",
  m:``,
  n:""},
-{t:"",g:"truefalse",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"LAUGH11",
+{t:"",g:"truefalse",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"LAUGH11",
  m:``,
  n:""},
-{t:"",g:"maze",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"VOICE12",
+{t:"",g:"maze",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"VOICE12",
  m:``,
  n:""},
-{t:"",g:"simon",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"BRAIN13",
+{t:"",g:"simon",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"BRAIN13",
  m:``,
  n:""},
-{t:"",g:"wordsearch",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"LILY14",
+{t:"",g:"wordsearch",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"LILY14",
  m:``,
  n:""},
-{t:"",g:"mood",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"CHAI15",
+{t:"",g:"mood",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"CHAI15",
  m:``,
  n:""},
-{t:"",g:"datematch",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"WEBS16",
+{t:"",g:"datematch",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"WEBS16",
  m:``,
  n:""},
-{t:"",g:"dobble2",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"NOTE17",
+{t:"",g:"dobble2",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"NOTE17",
  m:``,
  n:""},
-{t:"",g:"paint",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"PAINT18",
+{t:"",g:"paint",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"PAINT18",
  m:``,
  n:""},
-{t:"",g:"timeline",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"KNOTS19",
+{t:"",g:"timeline",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"KNOTS19",
  m:``,
  n:""},
-{t:"",g:"pour",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"ORDER20",
+{t:"",g:"pour",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"ORDER20",
  m:``,
  n:""},
-{t:"",g:"scooter",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"POUR21",
+{t:"",g:"scooter",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"POUR21",
  m:``,
  n:""},
-{t:"",g:"colorbynum",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"RIDE22",
+{t:"",g:"colorbynum",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"RIDE22",
  m:``,
  n:""},
-{t:"",g:"oddone",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"COLOUR23",
+{t:"",g:"oddone",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"COLOUR23",
  m:``,
  n:""},
-{t:"",g:"thisorthat",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"YOURS24",
+{t:"",g:"thisorthat",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"YOURS24",
  m:``,
  n:""},
-{t:"",g:"safe",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"ROSE25",
+{t:"",g:"safe",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"ROSE25",
  m:``,
  n:""},
-{t:"",g:"constellation",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SAFE26",
+{t:"",g:"constellation",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SAFE26",
  m:``,
  n:""},
-{t:"",g:"dobble3",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"STARS27",
+{t:"",g:"dobble3",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"STARS27",
  m:``,
  n:""},
-{t:"",g:"mandala",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"WINGS28",
+{t:"",g:"mandala",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"WINGS28",
  m:``,
  n:""},
-{t:"",g:"stars",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:true,mz:"",mb:"",pw:"SKY29",
+{t:"",g:"stars",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:true,mz:"",mb:"",pw:"SKY29",
  m:``,
  n:""},
-{t:"",g:"none",a:"",af:false,tz:"",wn:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"BIRTHDAY30",
+{t:"",g:"none",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"BIRTHDAY30",
  m:``,
  n:""}
 ].map((d,i)=>({...d,d:i+1,m:d.m+SIGN}));
@@ -1810,17 +1845,20 @@ function applyContent(c){
   if(typeof d.t==='string'&&d.t)D.t=d.t;
   if(typeof d.m==='string'&&d.m)D.m=d.m;
   if(typeof d.n==='string')D.n=d.n;
-  if(typeof d.a==='string')D.a=d.a;
-  if(typeof d.af==='boolean')D.af=d.af;
-  if(typeof d.tz==='string')D.tz=d.tz;
-  if(typeof d.a2==='string')D.a2=d.a2;
-  if(typeof d.az==='string')D.az=d.az;
-  if(typeof d.ab==='string')D.ab=d.ab;
-  if(typeof d.bt==='string')D.bt=d.bt;
-  if(typeof d.wn==='string')D.wn=d.wn;
+  /* a blank from an older content.json must not wipe what the build
+     wired up -- only a real value replaces one */
+  if(typeof d.a==='string'&&d.a){D.a=d.a;
+   if(typeof d.af==='boolean')D.af=d.af;}
+  if(typeof d.tz==='string'&&d.tz)D.tz=d.tz;
+  if(typeof d.a2==='string'&&d.a2)D.a2=d.a2;
+  if(typeof d.az==='string'&&d.az)D.az=d.az;
+  if(typeof d.ab==='string'&&d.ab)D.ab=d.ab;
+  if(typeof d.bt==='string'&&d.bt)D.bt=d.bt;
+  if(typeof d.wn==='string'&&d.wn)D.wn=d.wn;
+  if(typeof d.pk==='string'&&d.pk)D.pk=d.pk;
   if(typeof d.mv==='boolean')D.mv=d.mv;
-  if(typeof d.mz==='string')D.mz=d.mz;
-  if(typeof d.mb==='string')D.mb=d.mb;
+  if(typeof d.mz==='string'&&d.mz)D.mz=d.mz;
+  if(typeof d.mb==='string'&&d.mb)D.mb=d.mb;
   if(typeof d.g==='string'){
    const keep=d.g.split(',').map(x=>x.trim()).filter(k=>GAME_KEYS.includes(k));
    if(keep.length)D.g=keep.join(',')}});
@@ -1867,7 +1905,7 @@ async function loadRemote(){
  return false;
 }
 function buildContent(){return{v:1,cfg:{giftPw:CFG.giftPw},games:GTXT,anims:ATXT,
- days:DAYS.map(d=>({t:d.t,m:d.m,n:d.n,g:d.g,a:d.a||'',af:!!d.af,tz:d.tz||'',a2:d.a2||'',az:d.az||'',ab:d.ab||'',bt:d.bt||'',wn:d.wn||'',mv:!!d.mv,mz:d.mz||'',mb:d.mb||''})),
+ days:DAYS.map(d=>({t:d.t,m:d.m,n:d.n,g:d.g,a:d.a||'',af:!!d.af,tz:d.tz||'',a2:d.a2||'',az:d.az||'',ab:d.ab||'',bt:d.bt||'',wn:d.wn||'',pk:d.pk||'',mv:!!d.mv,mz:d.mz||'',mb:d.mb||''})),
  flowers:Object.fromEntries(Object.keys(FLOWERS).map(k=>[k,{k:FLOWERS[k].k,line:FLOWERS[k].line}]))}}
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function htmlToText(h){
@@ -2425,6 +2463,49 @@ function stopAnim(){if(ASTOP){try{ASTOP()}catch(e){}ASTOP=null}}
 
 /* forceKey plays a named scene on this day instead of the day's own one —
    that's how a day can have a second animation after the note. */
+const PRANKS={
+ ad:{name:'Pop-up ads',where:'film',
+  blurb:'Two ads over the film. The close button runs away twice each.',
+  run(host){
+   const AD=[{t:'\ud83d\udd25 ONE WEIRD TRICK',s:'Number 4 will shock you',b:'LEARN MORE'},
+             {t:'\u26a0\ufe0f YOUR PATIENCE IS AT 2%',s:'Tap now to recharge',b:'RECHARGE'}];
+   let n=0;
+   function card(a,quiet){
+    const o=document.createElement('div');
+    o.className='prankad'+(quiet?' quiet':'');
+    o.innerHTML=(quiet?'':'<button class="prankx" aria-label="close">\u00d7</button>')+
+     '<b>'+a.t+'</b>'+(a.s?'<span>'+a.s+'</span>':'')+(a.b?'<i>'+a.b+'</i>':'');
+    host.appendChild(o);
+    return o;
+   }
+   function show(){
+    if(n>=AD.length){
+     const o=card({t:'Okay. Sorry.',s:'That was the last one. \ud83c\udf38',b:''},true);
+     setTimeout(()=>o.remove(),2400);
+     return;
+    }
+    const o=card(AD[n++],false), x=o.querySelector('.prankx');
+    let dodged=0;
+    x.onclick=()=>{
+     /* it runs away twice and then lets her have it -- any more than that
+        and it stops being a joke and becomes a thing she cannot close */
+     if(dodged>=2){o.remove();setTimeout(show,420);return}
+     dodged++;
+     x.style.transform='translate('+(dodged%2?-62:56)+'px,'+(dodged%2?38:-2)+'px)';
+    };
+   }
+   show();
+  }}
+};
+function pranksFor(where,d){
+ const raw=String(((DAYS[d-1]||{}).pk)||'');
+ return raw.split(',').map(x=>x.trim())
+   .filter(k=>PRANKS[k]&&PRANKS[k].where===where);
+}
+function runPrank(key,host){
+ const p=PRANKS[key];if(!p)return;
+ try{p.run(host)}catch(e){}
+}
 function animView(d,onDone,replay,forceKey){
  const k=(forceKey&&ASCENES[forceKey])?forceKey:animFor(d);
  if(!k||!ASCENES[k]){onDone();return}
@@ -2471,6 +2552,7 @@ function animView(d,onDone,replay,forceKey){
     Scenes without beats still get the even spread. */
  const CU=aCues(sc,words), cues=CU.ins, outs=CU.outs;
  let shownTo=-1;
+ const filmPranks=pranksFor('film',d);let prankAt=filmPranks.length?0:-1;
 
  function frame(n){
   if(!t0){t0=n;last=n}
@@ -2494,6 +2576,11 @@ function animView(d,onDone,replay,forceKey){
   /* and it goes when its picture goes */
   if(shownTo>=0&&P>=outs[shownTo]){
    const q=tx.children[shownTo];if(q)q.classList.remove('in');
+  }
+  /* the interruption, if this day has one */
+  if(prankAt>=0&&P>=.34+prankAt*.28){
+   const k=filmPranks[prankAt];prankAt=prankAt+1<filmPranks.length?prankAt+1:-1;
+   runPrank(k,wrap);
   }
   if(P>=1&&!ended&&!A.hold){ended=true;finish();return}
   raf=requestAnimationFrame(frame);
@@ -6873,17 +6960,21 @@ stack:{name:'Stack the collection',blurb:'Tap to drop each mug. Keep the tower s
   return ()=>{done=true;g.destroy()};
  }},
 
-wordle:{name:'Her flowers',blurb:'Six guesses a word. Three words, and she knows all of them.',
+wordle:{name:'Three words',blurb:'Six guesses each. You already know all three.',
  start(box,win,stat){
   /* the list is played in order, one word per round, and the grid sizes
      itself to whatever word it is on -- the words are not all one length */
   const POOL=GLD('wordle','words',1).map(w=>w.toUpperCase().replace(/[^A-Z]/g,''))
     .filter(w=>w.length>=3&&w.length<=8);
   const HINT=(GLD('wordle','hint',1)[0]||'').trim();
-  const HINT_AFTER=2;          /* nothing until she has actually struggled */
+  const HINT_TAPS=7;    /* how many times she has to ask before he gives in */
+  const HINT_BAIT=['no.','still no.','you can do this.','i believe in you.',
+   'okay, i am wavering.','\u2026almost.'];
   const words=(POOL.length?POOL:['TULIP']);
   const wrap=el('div');box.appendChild(wrap);
   let ri=0;
+  /* how many times she has asked for the hint, across the whole set */
+  if(typeof window.__hint!=='number')window.__hint=0;
   /* which flowers she has earned, in the order she earned them -- the
      bouquet at the end grows in that order */
   window.__posy=[];
@@ -6893,7 +6984,10 @@ wordle:{name:'Her flowers',blurb:'Six guesses a word. Three words, and she knows
    const ANSWER=words[ri], LEN=ANSWER.length;
    let row=0,cur='',done=false;const keys={};
    wrap.innerHTML=(words.length>1?'<div class="wround" id="wr"></div>':'')+
-     '<div class="wgrid" id="wg"></div><div class="whint" id="wh" hidden></div><div class="kb" id="kb"></div>';
+     '<div class="wgrid" id="wg"></div>'+
+     (HINT?'<div class="whintrow"><button class="hintbtn" id="hb"></button>'+
+           '<div class="whint" id="wh" hidden></div></div>':'')+
+     '<div class="kb" id="kb"></div>';
    if(words.length>1){
     $('#wr',wrap).innerHTML=words.map((w,i)=>
       '<i class="'+(i<ri?'done':i===ri?'on':'')+'"></i>').join('')+
@@ -6908,8 +7002,30 @@ wordle:{name:'Her flowers',blurb:'Six guesses a word. Three words, and she knows
    }
    const rows=$$('.wrow',wg);
    const paint=()=>{[...rows[row].children].forEach((c,i)=>c.textContent=cur[i]||'')};
-   const hint=$('#wh',wrap);
-   const showHint=()=>{if(HINT&&row>=HINT_AFTER){hint.textContent=HINT;hint.hidden=false}};
+   /* the hint is behind a button that does not want to give it to her, and
+      the count carries across rounds -- begging once is enough for the set */
+   const hb=$('#hb',wrap), hint=$('#wh',wrap);
+   if(hb){
+    const paintHint=()=>{
+     if(window.__hint>=HINT_TAPS){
+      hb.textContent='fine. here:';hb.classList.add('gave');
+      hint.textContent=HINT;hint.hidden=false;
+     }else{
+      hb.textContent=window.__hint>0
+       ?HINT_BAIT[Math.min(window.__hint-1,HINT_BAIT.length-1)]
+       :'Need a hint?';
+      hb.classList.toggle('grump',window.__hint>0);
+     }
+    };
+    hb.onclick=()=>{
+     if(window.__hint>=HINT_TAPS)return;
+     window.__hint++;
+     hb.classList.remove('nudge');void hb.offsetWidth;hb.classList.add('nudge');
+     paintHint();
+    };
+    paintHint();
+   }
+   const showHint=()=>{};
    const kb=$('#kb',wrap);
    ['QWERTYUIOP','ASDFGHJKL','⏎ZXCVBNM⌫'].forEach(line=>{
     const r=el('div','kbr');
@@ -6937,8 +7053,12 @@ wordle:{name:'Her flowers',blurb:'Six guesses a word. Three words, and she knows
        stat.textContent='got it';
        setTimeout(()=>{wrap.innerHTML='';round()},1100);
       }else{
-       stat.textContent='all three';
-       setTimeout(win,900);
+       /* solving the lot without ever prising the hint out of him deserves
+          to be said out loud */
+       const clean=window.__hint<HINT_TAPS;
+       stat.textContent=clean?'all three, no hints':'all three';
+       if(clean&&hb){hb.classList.add('gave');hb.textContent='you didn\u2019t need me.'}
+       setTimeout(win,clean?1600:900);
       }
       return;
      }
