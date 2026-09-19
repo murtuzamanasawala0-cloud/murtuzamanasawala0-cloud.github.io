@@ -658,6 +658,13 @@ body:has(#pvbar:not([hidden])) #stage{padding-top:38px}
  color:#ffe9f3;border-radius:999px;padding:4px 10px;margin-left:4px;letter-spacing:.06em}
 #edsheet{position:relative}
 
+/* ---- the dev bar and its panel ----
+   CSS owns this, not inline styles: the bar used to be switched off by hand
+   and switched back on in only one place, which left it dead to the touch. */
+#devbar{transition:opacity .18s ease}
+body.devpanelon #devbar{opacity:0;pointer-events:none}
+
+
 .devbuild{font:600 10.5px/1 ui-monospace,monospace;letter-spacing:.12em;color:#f9a8c8;opacity:.75;margin:-6px 0 10px;text-transform:uppercase}.devbuildbar{font:600 9.5px/1 ui-monospace,monospace;letter-spacing:.1em;color:#f9a8c8;opacity:.7;margin-left:7px;align-self:center}
 </style>
 </head>
@@ -802,11 +809,11 @@ body:has(#pvbar:not([hidden])) #stage{padding-top:38px}
   <button id="pvEnd">back to the editor</button></div>
 <div id="devbar" hidden>
   <button id="dPrev" aria-label="previous day">◀</button><span id="dLabel">Day 1</span><button id="dNext" aria-label="next day">▶</button>
-  <button id="dWin2">win</button><button id="dEdit">edit</button><button id="dRead">read all</button><button id="dMore">⚙</button><span class="devbuildbar">00F95E</span>
+  <button id="dWin2">win</button><button id="dEdit">edit</button><button id="dRead">read all</button><button id="dMore">⚙</button><span class="devbuildbar">5BC925</span>
 </div>
 <div id="dev">
   <h4>Dev panel · Murtaza only</h4>
-  <div class="devbuild">build 00F95E</div>
+  <div class="devbuild">build 5BC925</div>
   <div class="drow">
     <button id="dJump">Jump to day ▸</button>
     <input id="dDay" type="number" min="1" max="30" value="1" style="width:62px">
@@ -822,7 +829,7 @@ body:has(#pvbar:not([hidden])) #stage{padding-top:38px}
     <button id="dBday">Jump to 17 Oct 00:00</button>
     <button id="d845">Jump to 17 Oct 20:45</button>
   </div>
-  <div class="drow"><button id="dHide">Close panel</button><button id="dExit">Exit dev mode</button><span id="dNow"></span></div>
+  <div class="drow"><button id="dEdit2">Edit this day</button><button id="dHide">Close panel</button><button id="dExit">Exit dev mode</button><span id="dNow"></span></div>
   <h4>Passwords for missed days</h4>
   <div class="pw" id="dPw"></div>
 </div>
@@ -2425,7 +2432,7 @@ if(location.hash.toLowerCase().includes('murtaza'))setTimeout(()=>toggleDev(true
 function toggleDev(force){
  dev=force!==undefined?force:!dev;
  $('#devbadge').hidden=!dev;$('#devbar').hidden=!dev;
- if(!dev)devPanel.classList.remove('show');
+ if(!dev){devPanel.classList.remove('show');document.body.classList.remove('devpanelon')}
  if(dev&&!$('#dPw').childElementCount)$('#dPw').innerHTML=DAYS.map(d=>`<span>${String(d.d).padStart(2,'0')} ${d.pw}</span>`).join('');
  devLabel();renderCal();if(mode!=='game')render();
 }
@@ -2448,14 +2455,21 @@ function reviewAll(){
  $('#revBack',w).onclick=()=>{mode='day';render();devLabel()};
  devLabel();
 }
-$('#dHide').onclick=()=>{devPanel.classList.remove('show');$('#devbar').style.opacity='1';$('#devbar').style.pointerEvents='auto'};
+function setDevPanel(on){
+ devPanel.classList.toggle('show',on);
+ document.body.classList.toggle('devpanelon',on);
+}
+$('#dHide').onclick=()=>setDevPanel(false);
 $('#dJump').onclick=()=>devGo(+$('#dDay').value||1);
 $('#dPrev').onclick=()=>devGo((shown||curDay()||1)-1);
 $('#dNext').onclick=()=>devGo((shown||curDay()||1)+1);
 $('#dWin2').onclick=()=>{if(mode==='game'&&window.__win)window.__win();else{const b=$('#playBtn');if(b){b.click();setTimeout(()=>window.__win&&window.__win(),250)}}};
 $('#dRead').onclick=reviewAll;
 $('#dEdit').onclick=()=>openEditor(shown||curDay()||1);
-$('#dMore').onclick=()=>{const on=devPanel.classList.toggle('show');$('#devbar').style.opacity=on?'0':'1';$('#devbar').style.pointerEvents=on?'none':'auto'};
+$('#dMore').onclick=()=>setDevPanel(!devPanel.classList.contains('show'));
+/* tapping the page behind it closes it, like every other sheet here */
+devPanel.addEventListener('click',e=>{if(e.target===devPanel)setDevPanel(false)});
+$('#dEdit2').onclick=()=>{setDevPanel(false);openEditor(shown||curDay()||1)};
 $('#dExit').onclick=()=>toggleDev(false);
 /* ================= the thirty seconds before the note =================
    One engine, many scenes. A scene is data: how it draws, how long it runs,
@@ -2660,7 +2674,8 @@ const PK_SAFETY=14000;   /* nothing covers the note for longer than this */
 
 function pkEl(cls,html){
  const e=document.createElement('div');
- e.className=cls;if(html!=null)e.innerHTML=html;
+ /* every prank element carries pkon: it is how the film knows to wait */
+ e.className=cls+' pkon';if(html!=null)e.innerHTML=html;
  return e;
 }
 /* every prank goes through this, so every prank gets the timer whether its
@@ -3052,16 +3067,26 @@ function animView(d,onDone,replay,forceKey){
     Scenes without beats still get the even spread. */
  const CU=aCues(sc,words), cues=CU.ins, outs=CU.outs;
  let shownTo=-1;
- const filmPranks=pranksFor('film',d);let prankAt=filmPranks.length?0:-1;
+ /* only the day's own film gets interrupted: not the bouquet she has
+    just earned, and not a rewatch -- a joke told twice is a bug */
+ const filmPranks=(forceKey||replay)?[]:pranksFor('film',d);
+ let prankAt=filmPranks.length?0:-1;
 
+ /* time lost to an interruption, given back rather than charged to her */
+ let frozen=0;
  function frame(n){
   if(!t0){t0=n;last=n}
   /* motion uses frame time (clamped, so a stall doesn't teleport anything),
      but how far through the scene we are is wall clock — otherwise a slow
      phone quietly stretches a 15-second film into half a minute. */
-  const dt=Math.min(.05,(n-last)/1000);last=n;t+=dt;
+  const raw=n-last;
+  const dt=Math.min(.05,raw/1000);last=n;
+  /* while something is sitting on top of the film, the film waits: she should
+     not have to watch an advert AND miss the bit underneath it */
+  const covered=!!wrap.querySelector('.pkon');
+  if(covered)frozen+=raw;else t+=dt;
   /* a holding scene sits at the end of its timeline until it says otherwise */
-  let P=Math.min(1,(n-t0)/1000/dur);
+  let P=Math.min(1,(n-t0-frozen)/1000/dur);
   if(A.hold&&P>=1)P=1;
   bg();
   try{sc.draw(A,c,W,H,t,P,pal)}catch(e){}
