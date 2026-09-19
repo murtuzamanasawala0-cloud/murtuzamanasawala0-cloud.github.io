@@ -9,9 +9,19 @@
   },
   "stars": {
    "lines": "3 | you are more beautiful than all the stars above us\n9 | more precious than every grain of sand\n15 | more loved than you could ever imagine\n21 | my love for you is bigger than all the oceans\n27 | and somehow it keeps growing every single day"
+  },
+  "wordle": {
+   "words": "PEACE\nLOVED\nCLOSE"
   }
  },
- "anims": {},
+ "anims": {
+  "__movie": {
+   "openA": "Twenty-nine days",
+   "openB": "all of it, in order",
+   "endA": "That was the year",
+   "endB": "tomorrow is the actual day"
+  }
+ },
  "days": [
   {
    "t": "Prettyyy youu!!",
@@ -24,7 +34,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "Random dayss??",
@@ -33,24 +46,30 @@
    "g": "datematch",
    "a": "before",
    "af": true,
-   "tz": "",
+   "tz": "<p>Come back tomorrow and you’ll see what happens next.</p><p>I know you already know. You were there for all of it. You have every single spoiler.</p><p>Come anyway. 🌸</p>",
    "a2": "kitchen",
    "az": "<p>Also — you told me what you wanted to do tonight.</p><p>I couldn’t give you the evening. So I made you the next best thing.</p>",
    "ab": "Open it ✦",
-   "bt": ""
+   "bt": "bav jaldi che 😄\nwait for tomorrow\nno. tomorrow.\nyou can keep tapping. it will still be tomorrow.\nokay fine — tomorrow, but earlier. 🌸",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
-   "t": "Just another day?",
-   "m": "<p>funny how some dates are just dates until someone comes along and gives them a meaning<br>before you 27th May was just a date<br>29th May was just a date<br>6th June was just a date<br>but nowww somehow i dont think ill ever look at these dates the same way again<br>you entered my life so unexpectedly and in such a short amount of time you made so many normal days feel sooooo special<br>and its not even just the big days<br>its the random days too<br>the beach days<br>the cold coffee mornings<br>the silly little moments<br>the funnnyyyy conversations<br>the days where we literally did nothing and somehow i still remember them so deeply<br>i loveee how i can look at a date now and immediately think of you<br>you didnt just become a part of my life<br>you became a part of my daysss ❤️</p><div class=\"sign\">— M</div>",
+   "t": "How we mett!!",
+   "m": "<p>baby you know what i keep thinking about sometimes 😭❤️<br>how sooo many tiny little things had to go right for us to even meet properly<br>you joined the internship on 22nd april<br>i had already joined on 14th april<br>and we were in the same place but we still couldve easily just stayed strangers<br>and then there's hitesh 😭<br>he normally used to sit beside me<br>but he was on leave for those few days<br>and because he wasnt there<br>you ended up sitting beside meee<br>just think about that<br>if hitesh wasnt on leave<br>you probably wouldnt have been sitting next to me<br>and if we werent sitting next to each other<br>who knows if we would've even had that first conversation<br>and if we didnt have that first conversation<br>maybe everything after that just never happens<br>27th may<br>29th may<br>6th june<br>the beach days<br>the letters<br>the cold coffees<br>the spiderman<br>all of ittt<br>it's actually crazy when you think about how many tiny things had to align<br>you had to join that internship<br>i had to already be there<br>hitesh had to be on leave<br>you had to end up sitting beside me<br>we had to actually talk<br>and then somehow we had to keep choosing to talk againnn<br>and none of us knew any of this was happening<br>we were literally just living our normal lives 😭<br>our first conversation wasnt some huge movie moment either<br>it was just two people talking<br>and somehowww that tiny little conversation became the beginning of something i now can't imagine my life without<br>that's what makes our story so special to me baby<br>it was random<br>it was unexpected<br>it was made up of a hundred tiny coincidences<br>and yet somehow all those little things lined up perfectly enough for us to find each other<br>sometimes i think about how easily we could've missed each other<br>and honestly that's kinda crazy<br>because somewhere in all those millions of little possibilities<br>there was one where you ended up sitting beside me<br>and i'm really really glad we got that one ❤️<br>who knew hitesh going on leave would end up becoming such an important part of our love story 😭😂❤️</p><div class=\"sign\">— M</div>",
    "n": "Come back tomorrow becoz there’s another little piece of my heart waiting for you to unlock",
-   "g": "datematch",
-   "a": "shirt",
+   "g": "wordle",
+   "a": "april22",
    "af": false,
    "tz": "",
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "bav jaldi che 😄\nwait for tomorrow\nno. tomorrow.\nyou can keep tapping. it will still be tomorrow.\nokay fine — tomorrow, but earlier. 🌸",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -63,7 +82,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -76,7 +98,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -89,7 +114,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -102,7 +130,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -115,7 +146,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -128,7 +162,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -141,7 +178,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -154,7 +194,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -167,7 +210,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -180,7 +226,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -193,7 +242,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -206,7 +258,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -219,7 +274,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -232,7 +290,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -245,7 +306,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -258,7 +322,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -271,7 +338,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -284,7 +354,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -297,7 +370,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -310,7 +386,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -323,7 +402,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -336,7 +418,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -349,7 +434,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -362,7 +450,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -375,7 +466,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -388,7 +482,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": true,
+   "mz": "",
+   "mb": ""
   },
   {
    "t": "",
@@ -401,7 +498,10 @@
    "a2": "",
    "az": "",
    "ab": "",
-   "bt": ""
+   "bt": "",
+   "mv": false,
+   "mz": "",
+   "mb": ""
   }
  ],
  "flowers": {
