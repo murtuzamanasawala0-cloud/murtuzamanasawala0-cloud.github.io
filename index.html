@@ -656,13 +656,20 @@ body:has(#pvbar:not([hidden])) #stage{padding-top:38px}
 /* ---- the picker in the editor ---- */
 .edtry{font:600 10.5px/1 'Lora',serif;border:1px solid #6b4f68;background:#33253d;
  color:#ffe9f3;border-radius:999px;padding:4px 10px;margin-left:4px;letter-spacing:.06em}
-#edsheet{position:relative}
+/* NOTE: do not give #edsheet position:relative to host a preview. It is a
+   fixed full-screen overlay, and relative drops it out of the viewport and
+   below the page, where the editor looks like it never opened at all. */
 
 /* ---- the dev bar and its panel ----
    CSS owns this, not inline styles: the bar used to be switched off by hand
    and switched back on in only one place, which left it dead to the touch. */
 #devbar{transition:opacity .18s ease}
 body.devpanelon #devbar{opacity:0;pointer-events:none}
+
+/* ---- errors, where he can actually see them ---- */
+#devErr{position:fixed;left:8px;right:8px;bottom:66px;z-index:80;
+ background:#5a1226;color:#ffd9e4;border:1px solid #93304c;border-radius:10px;
+ padding:9px 12px;font:600 11px/1.45 ui-monospace,monospace;word-break:break-word}
 
 
 .devbuild{font:600 10.5px/1 ui-monospace,monospace;letter-spacing:.12em;color:#f9a8c8;opacity:.75;margin:-6px 0 10px;text-transform:uppercase}.devbuildbar{font:600 9.5px/1 ui-monospace,monospace;letter-spacing:.1em;color:#f9a8c8;opacity:.7;margin-left:7px;align-self:center}
@@ -809,11 +816,12 @@ body.devpanelon #devbar{opacity:0;pointer-events:none}
   <button id="pvEnd">back to the editor</button></div>
 <div id="devbar" hidden>
   <button id="dPrev" aria-label="previous day">◀</button><span id="dLabel">Day 1</span><button id="dNext" aria-label="next day">▶</button>
-  <button id="dWin2">win</button><button id="dEdit">edit</button><button id="dRead">read all</button><button id="dMore">⚙</button><span class="devbuildbar">5BC925</span>
+  <button id="dWin2">win</button><button id="dEdit">edit</button><button id="dRead">read all</button><button id="dMore">⚙</button><span class="devbuildbar">EC07B7</span>
 </div>
+<div id="devErr" hidden></div>
 <div id="dev">
   <h4>Dev panel · Murtaza only</h4>
-  <div class="devbuild">build 5BC925</div>
+  <div class="devbuild">build EC07B7</div>
   <div class="drow">
     <button id="dJump">Jump to day ▸</button>
     <input id="dDay" type="number" min="1" max="30" value="1" style="width:62px">
@@ -1258,8 +1266,9 @@ function fillPranks(cur){
   const t=$('#edPKTry');
   if(t)t.onclick=()=>{
    /* shown where it will actually land, so he can judge it in place */
-   const host=document.querySelector('#edsheet')||document.body;
-   runPrank(sel.value,host);
+   /* previewed against the page, never inside the sheet -- the sheet is a
+      fixed overlay and must not be made a positioning context */
+   runPrank(sel.value,document.body);
   };
  };
  sel.onchange=say;say();
@@ -2102,6 +2111,29 @@ const edsheet=$('#edsheet');let edDay=1;let edGames=['none'];
 function openEditor(d){
  if(pvSnap!=null){try{S=JSON.parse(pvSnap)}catch(e){}pvSnap=null;relive=0;
   const b=$('#pvbar');if(b)b.hidden=true}
+ /* open it FIRST. A half-filled editor he can see and tell me about
+    beats a perfect one that never appears. */
+ try{edsheet.classList.add('show');edsheetOnScreen()}catch(e){}
+ try{fillEditor(d)}catch(e){
+  try{$('#edStat').textContent='Editor stumbled: '+(e&&e.message||e)}catch(e2){}
+  try{console.error('openEditor',e)}catch(e2){}
+ }
+}
+function edsheetOnScreen(){
+ setTimeout(()=>{
+  try{
+   const box=edsheet.querySelector('.sheetbox');if(!box)return;
+   const r=box.getBoundingClientRect();
+   if(r.height>40&&r.top<innerHeight-40&&r.bottom>40)return;   /* visible: fine */
+   edsheet.style.position='fixed';edsheet.style.inset='0';
+   edsheet.style.display='flex';edsheet.style.alignItems='flex-end';
+   edsheet.style.zIndex='36';
+   const b=$('#devErr');
+   if(b&&dev){b.hidden=false;b.textContent='\u26a0 editor sheet was off-screen \u2014 forced back. tell M.'}
+  }catch(e){}
+ },90);
+}
+function fillEditor(d){
  edDay=Math.max(1,Math.min(30,d||shown||curDay()||1));
  const D=DAYS[edDay-1];
  $('#edTitle').textContent=`Day ${edDay} · ${fmt(dateOf(edDay))}`;
@@ -2119,7 +2151,6 @@ function openEditor(d){
  $('#edP').value=CFG.giftPw;
  renderGameFields($('#edG').value);
  $('#edStat').textContent='';
- edsheet.classList.add('show');
 }
 const GAME_GROUPS=[
  {t:'Puzzles & thinking',k:['wordle','jigsaw','maze','wordsearch','unscramble','safe']},
@@ -2429,6 +2460,20 @@ clock.addEventListener('click',()=>{
 });
 addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&(e.key==='M'||e.key==='m'))toggleDev()});
 if(location.hash.toLowerCase().includes('murtaza'))setTimeout(()=>toggleDev(true),200);
+/* in dev mode, a thrown error is shown rather than swallowed -- the app
+   is his workshop as well as her gift */
+addEventListener('error',e=>{
+ if(!dev)return;
+ const b=$('#devErr');if(!b)return;
+ b.hidden=false;
+ b.textContent='\u26a0 '+(e.message||'error')+'  \u00b7  '+
+   String(e.filename||'').split('/').pop()+':'+(e.lineno||'?');
+});
+addEventListener('unhandledrejection',e=>{
+ if(!dev)return;
+ const b=$('#devErr');if(!b)return;
+ b.hidden=false;b.textContent='\u26a0 '+(e.reason&&e.reason.message||e.reason||'promise error');
+});
 function toggleDev(force){
  dev=force!==undefined?force:!dev;
  $('#devbadge').hidden=!dev;$('#devbar').hidden=!dev;
