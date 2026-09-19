@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f4a0bc">
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+<meta name="googlebot" content="noindex,nofollow">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="30 Days">
@@ -388,6 +390,52 @@ textarea.edgame{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-h
 #sndBtn.off svg{opacity:.45}
 #sndBtn svg{width:20px;height:20px}
 
+/* ================= the animation stage ================= */
+.animwrap{position:relative;width:100%;height:min(62vh,520px);border-radius:22px;overflow:hidden;
+ box-shadow:0 18px 50px rgba(90,50,80,.22);transition:opacity .5s ease;isolation:isolate}
+.animwrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.animtext{position:absolute;inset:auto 0 0 0;padding:20px 22px 26px;display:flex;
+ flex-direction:column;gap:7px;pointer-events:none;
+ background:linear-gradient(to top,rgba(0,0,0,.30),rgba(0,0,0,0))}
+.animwrap[data-tod="morning"] .animtext,
+.animwrap[data-tod="day"] .animtext{background:linear-gradient(to top,rgba(255,255,255,.55),rgba(255,255,255,0))}
+.animtext p{margin:0;font-family:'Lora',Georgia,serif;font-size:16.5px;line-height:1.5;
+ color:var(--aink,#fff);text-shadow:0 1px 10px rgba(0,0,0,.35);
+ opacity:0;transform:translateY(10px);transition:opacity 1.1s ease,transform 1.1s ease}
+.animwrap[data-tod="morning"] .animtext p,
+.animwrap[data-tod="day"] .animtext p{text-shadow:0 1px 8px rgba(255,255,255,.7)}
+.animtext p.in{opacity:1;transform:none}
+/* one line at a time: they all sit in the same place, so nothing stacks up
+   over the picture and the drawing keeps the room it was composed in */
+.animtext.solo{display:block;min-height:96px}
+.animtext.solo p{position:absolute;left:22px;right:22px;bottom:26px}
+.animskip{position:absolute;right:12px;top:12px;border:0;border-radius:999px;
+ background:rgba(0,0,0,.28);color:#fff;font:500 12px/1 'Lora',serif;letter-spacing:.06em;
+ padding:8px 14px;cursor:pointer;backdrop-filter:blur(6px);opacity:.75}
+.animskip:active{transform:scale(.95)}
+.animwrap[data-tod="morning"] .animskip,
+.animwrap[data-tod="day"] .animskip{background:rgba(120,80,100,.3)}
+
+/* ================= she writes back ================= */
+.reply{margin-top:14px}
+.reply .eyebrow{margin-bottom:8px}
+.reply textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:16px;
+ padding:13px 15px;font:400 15.5px/1.55 'Lora',Georgia,serif;color:var(--ink);
+ background:rgba(255,255,255,.72);resize:vertical;min-height:84px}
+.reply textarea:focus{outline:none;border-color:var(--accent);background:#fff}
+.reply .rrow{display:flex;align-items:center;gap:10px;margin-top:9px}
+.reply .rsaved{font:400 13px/1 'Lora',serif;color:var(--green,#6f9f7c);opacity:0;transition:opacity .3s}
+.reply .rsaved.on{opacity:1}
+.diaryitem{border-left:2px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0}
+.diaryitem .dday{font:600 11.5px/1 'Lora',serif;letter-spacing:.14em;text-transform:uppercase;
+ color:var(--ink2);margin-bottom:5px}
+.diaryitem .dtext{font-family:'Caveat',cursive;font-size:20px;line-height:1.45;color:var(--ink);white-space:pre-wrap}
+
+/* ================= the mural ================= */
+.mural{width:100%;aspect-ratio:1/1;border-radius:20px;display:block;
+ box-shadow:0 14px 40px rgba(40,20,50,.35)}
+.muralwrap{margin-top:14px}
+
 </style>
 </head>
 <body>
@@ -458,6 +506,18 @@ textarea.edgame{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-h
       <button class="edbtn" id="edNextBlank">next unwritten day →</button>
     </div>
     <div class="gchips" id="edGameList"></div>
+    <label class="edfield"><span>animation before the note</span><select id="edA"></select></label>
+    <div class="edgamedesc" id="edAnimDesc"></div>
+    <div class="edbtns" style="margin-top:6px">
+      <button class="edbtn" id="edTryAnim">▶ watch it</button>
+      <button class="edbtn tiny" id="edAnimReset">reset its words</button>
+    </div>
+    <div id="edAnimWrap" hidden>
+      <div class="edgamehead"><span id="edAnimName">this animation</span></div>
+      <div id="edAnimFields"></div>
+      <label class="edfield"><span>how long it runs — <i>seconds, 4 to 60. Blank uses the built-in length.</i></span>
+        <input id="edADur" inputmode="decimal" autocomplete="off"></label>
+    </div>
     <div id="edGameWrap" hidden>
       <div class="edgamehead"><span id="edGameName">this game</span><button class="edbtn tiny" id="edGameReset">reset to default</button></div>
       <div id="edGameFields"></div>
@@ -507,6 +567,11 @@ textarea.edgame{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-h
 <script>
 (()=>{
 'use strict';
+/* The animation registry and its overrides are declared up here because
+   applyContent() runs at load, long before the engine itself is defined. */
+const ASCENES={};
+let ATXT={};
+
 /* ================= editable game text ================= */
 /* Everything a game says that is about the two of you lives here, so it can be
    edited from the phone and published like the daily messages.               */
@@ -652,94 +717,94 @@ const dMsg=D=>hasText(D.m)?D.m:(FALLBACK_M+SIGN);
 const dTease=D=>(D.n&&D.n.trim())?D.n:FALLBACK_N;
 const isWritten=D=>!!(D.t&&D.t.trim())||hasText(D.m);
 const DAYS=[
-{t:"",g:"scratch",pw:"OPENING01",
+{t:"",g:"scratch",a:"",af:false,a2:"",az:"",ab:"",pw:"OPENING01",
  m:``,
  n:""},
-{t:"",g:"memory",pw:"MUGS02",
+{t:"",g:"memory",a:"before",af:true,a2:"kitchen",az:"<p>Also \u2014 you told me what you wanted to do tonight.</p><p>I couldn\u2019t give you the evening. So I made you the next best thing.</p>",ab:"Open it \u2726",pw:"MUGS02",
  m:``,
  n:""},
-{t:"",g:"wordle",pw:"SCOOTER03",
+{t:"",g:"wordle",a:"shirt",af:false,a2:"",az:"",ab:"",pw:"SCOOTER03",
  m:``,
  n:""},
-{t:"",g:"spotdiff",pw:"FLOWERS04",
+{t:"",g:"spotdiff",a:"band",af:false,a2:"",az:"",ab:"",pw:"FLOWERS04",
  m:``,
  n:""},
-{t:"",g:"dobble",pw:"FRIES05",
+{t:"",g:"dobble",a:"july25",af:false,a2:"",az:"",ab:"",pw:"FRIES05",
  m:``,
  n:""},
-{t:"",g:"bubblewrap",pw:"CLIPS06",
+{t:"",g:"bubblewrap",a:"call",af:false,a2:"",az:"",ab:"",pw:"CLIPS06",
  m:``,
  n:""},
-{t:"",g:"stack",pw:"BOOKS07",
+{t:"",g:"stack",a:"order",af:false,a2:"",az:"",ab:"",pw:"BOOKS07",
  m:``,
  n:""},
-{t:"",g:"jigsaw",pw:"COFFEE08",
+{t:"",g:"jigsaw",a:"",af:false,a2:"",az:"",ab:"",pw:"COFFEE08",
  m:``,
  n:""},
-{t:"",g:"colourscene",pw:"SPIDER09",
+{t:"",g:"colourscene",a:"",af:false,a2:"",az:"",ab:"",pw:"SPIDER09",
  m:``,
  n:""},
-{t:"",g:"unscramble",pw:"TULIP10",
+{t:"",g:"unscramble",a:"",af:false,a2:"",az:"",ab:"",pw:"TULIP10",
  m:``,
  n:""},
-{t:"",g:"truefalse",pw:"LAUGH11",
+{t:"",g:"truefalse",a:"",af:false,a2:"",az:"",ab:"",pw:"LAUGH11",
  m:``,
  n:""},
-{t:"",g:"maze",pw:"VOICE12",
+{t:"",g:"maze",a:"",af:false,a2:"",az:"",ab:"",pw:"VOICE12",
  m:``,
  n:""},
-{t:"",g:"simon",pw:"BRAIN13",
+{t:"",g:"simon",a:"",af:false,a2:"",az:"",ab:"",pw:"BRAIN13",
  m:``,
  n:""},
-{t:"",g:"wordsearch",pw:"LILY14",
+{t:"",g:"wordsearch",a:"",af:false,a2:"",az:"",ab:"",pw:"LILY14",
  m:``,
  n:""},
-{t:"",g:"mood",pw:"CHAI15",
+{t:"",g:"mood",a:"",af:false,a2:"",az:"",ab:"",pw:"CHAI15",
  m:``,
  n:""},
-{t:"",g:"datematch",pw:"WEBS16",
+{t:"",g:"datematch",a:"",af:false,a2:"",az:"",ab:"",pw:"WEBS16",
  m:``,
  n:""},
-{t:"",g:"dobble2",pw:"NOTE17",
+{t:"",g:"dobble2",a:"",af:false,a2:"",az:"",ab:"",pw:"NOTE17",
  m:``,
  n:""},
-{t:"",g:"paint",pw:"PAINT18",
+{t:"",g:"paint",a:"",af:false,a2:"",az:"",ab:"",pw:"PAINT18",
  m:``,
  n:""},
-{t:"",g:"timeline",pw:"KNOTS19",
+{t:"",g:"timeline",a:"",af:false,a2:"",az:"",ab:"",pw:"KNOTS19",
  m:``,
  n:""},
-{t:"",g:"pour",pw:"ORDER20",
+{t:"",g:"pour",a:"",af:false,a2:"",az:"",ab:"",pw:"ORDER20",
  m:``,
  n:""},
-{t:"",g:"scooter",pw:"POUR21",
+{t:"",g:"scooter",a:"",af:false,a2:"",az:"",ab:"",pw:"POUR21",
  m:``,
  n:""},
-{t:"",g:"colorbynum",pw:"RIDE22",
+{t:"",g:"colorbynum",a:"",af:false,a2:"",az:"",ab:"",pw:"RIDE22",
  m:``,
  n:""},
-{t:"",g:"oddone",pw:"COLOUR23",
+{t:"",g:"oddone",a:"",af:false,a2:"",az:"",ab:"",pw:"COLOUR23",
  m:``,
  n:""},
-{t:"",g:"thisorthat",pw:"YOURS24",
+{t:"",g:"thisorthat",a:"",af:false,a2:"",az:"",ab:"",pw:"YOURS24",
  m:``,
  n:""},
-{t:"",g:"safe",pw:"ROSE25",
+{t:"",g:"safe",a:"",af:false,a2:"",az:"",ab:"",pw:"ROSE25",
  m:``,
  n:""},
-{t:"",g:"constellation",pw:"SAFE26",
+{t:"",g:"constellation",a:"",af:false,a2:"",az:"",ab:"",pw:"SAFE26",
  m:``,
  n:""},
-{t:"",g:"dobble3",pw:"STARS27",
+{t:"",g:"dobble3",a:"",af:false,a2:"",az:"",ab:"",pw:"STARS27",
  m:``,
  n:""},
-{t:"",g:"mandala",pw:"WINGS28",
+{t:"",g:"mandala",a:"",af:false,a2:"",az:"",ab:"",pw:"WINGS28",
  m:``,
  n:""},
-{t:"",g:"stars",pw:"SKY29",
+{t:"",g:"stars",a:"",af:false,a2:"",az:"",ab:"",pw:"SKY29",
  m:``,
  n:""},
-{t:"",g:"none",pw:"BIRTHDAY30",
+{t:"",g:"none",a:"",af:false,a2:"",az:"",ab:"",pw:"BIRTHDAY30",
  m:``,
  n:""}
 ].map((d,i)=>({...d,d:i+1,m:d.m+SIGN}));
@@ -832,6 +897,7 @@ function dayHead(d){
  return `<div class="daytag"><span class="big">${d}</span><span class="of">of 30</span></div>
  <div class="datestr">${fmt(dt)} · ${D.exam?'exam day':weekOf(d)==='b'?'the day':'day '+d}</div>`;
 }
+function animFirst(d){const D=DAYS[d-1];return !!(D&&D.af)&&!!animFor(d)}
 function openDay(d){
  shown=d;mode='day';setWeek(d);if(dev)setTimeout(devLabel,0);
  const D=DAYS[d-1];
@@ -844,7 +910,7 @@ function openDay(d){
     <div><button class="btn pulse" id="playBtn">Play to unlock ✦</button></div>
   </div>`);
  $('#env',w).onclick=()=>{AUDIO.fx('open');$('#playBtn',w).click()};
- $('#playBtn',w).onclick=()=>gameView(d);
+ $('#playBtn',w).onclick=()=>{if(animFirst(d)&&!isDone(d))animView(d,()=>teaseView(d));else gameView(d)};
 }
 function gameView(d,idx){
  idx=idx||0;mode='game';
@@ -863,7 +929,9 @@ function gameView(d,idx){
   if(mode!=='game')return;
   if(idx+1<list.length){try{sparkle(innerWidth/2,innerHeight*.42,16)}catch(e){}
    setTimeout(()=>gameView(d,idx+1),700);return}
-  mode='won';celebrate(d);setTimeout(()=>messageView(d,true),900);
+  mode='won';celebrate(d);
+  setTimeout(()=>{if(animFor(d)&&!animFirst(d))animView(d,()=>messageView(d,true));
+                  else messageView(d,true)},900);
  };
  window.__win=won;
  try{cleanup=G.start($('#gbox',w),won,$('#gstat',w),d)||null}
@@ -875,6 +943,17 @@ function celebrate(d){
  burst(W/2,H*.42,big?150:90,big?1.15:1);
  if(big)setTimeout(()=>rain(90),350);
 }
+function teaseView(d){
+ mode='tease';shown=d;setWeek(d);
+ const D=DAYS[d-1];
+ const w=show(`${dayHead(d)}
+  <div class="card center stack">
+    <div class="msg">${D.tz||TEASE_DEFAULT}</div>
+    <div><button class="btn pulse" id="goGame">Play today's game ✦</button></div>
+  </div>`);
+ AUDIO.setMode('read');
+ $('#goGame',w).onclick=()=>gameView(d);
+}
 function messageView(d,fresh){
  mode='msg';shown=d;setWeek(d);
  const D=DAYS[d-1],last=d>=30;
@@ -885,14 +964,77 @@ function messageView(d,fresh){
     <div class="msg">${dMsg(D)}</div>
   </div>
   ${FLOWERS[d]?giveFlower(d):''}
+  ${afterCard(d)}
+  ${replyBox(d)}
   ${fresh&&!last?`<div class="card center" style="margin-top:14px"><p class="tease">Come back tomorrow at 8:45 pm 🌸<br><b style="color:var(--accent)">Day ${d+1}</b> — ${dTease(D)}</p></div>`:''}
   <div class="row" style="margin-top:16px">
     <button class="btn ghost" id="calOpen">See all 30 days</button>
     ${gamesFor(D)[0]!=='none'?'<button class="btn ghost" id="replay">Play again</button>':''}
+    ${animFor(d)?'<button class="btn ghost" id="rewatch">Watch again ✦</button>':''}
   </div>`);
  AUDIO.setMode('read');
  const r=$('#replay',w);if(r)r.onclick=()=>gameView(d);
+ const rw=$('#rewatch',w);if(rw)rw.onclick=()=>animView(d,()=>messageView(d,false),true);
+ wireReply(w,d);
+ const ag=$('#afterGo',w);
+ if(ag)ag.onclick=()=>{const k=DAYS[d-1].a2;
+  animView(d,()=>messageView(d,false),true,k)};
  $('#calOpen',w).onclick=openSheet;
+}
+function afterCard(d){
+ const D=DAYS[d-1],k=D&&D.a2;
+ if(!k||!ASCENES[k])return '';
+ return `<div class="card center stack" id="afterCard" style="margin-top:14px">
+   <div class="msg">${D.az||AFTER_DEFAULT}</div>
+   <div><button class="btn pulse" id="afterGo">${D.ab||'One more thing \u2726'}</button></div>
+ </div>`;
+}
+function replyBox(d){
+ const v=(S.reply&&S.reply[d])||'';
+ return `<div class="card reply" id="replyCard">
+   <div class="eyebrow">say something back</div>
+   <textarea id="replyIn" rows="3" spellcheck="true"
+     placeholder="anything. one word is fine.">${esc(v)}</textarea>
+   <div class="rrow"><button class="btn ghost" id="replySave">Keep it</button>
+     <span class="rsaved" id="replyOk">kept 🌸</span></div>
+   <p class="tease" style="margin-top:8px">This stays on your phone. Nobody else sees it — not even him.</p>
+ </div>`;
+}
+function wireReply(w,d){
+ const ta=$('#replyIn',w),btn=$('#replySave',w),ok=$('#replyOk',w);
+ if(!ta||!btn)return;
+ const put=()=>{
+  if(!S.reply)S.reply={};
+  const v=ta.value.trim();
+  if(v)S.reply[d]=v;else delete S.reply[d];
+  save();ok.classList.add('on');setTimeout(()=>ok.classList.remove('on'),1800);
+ };
+ btn.onclick=put;
+ let tm=0;
+ ta.addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(put,1200)});
+}
+function diaryCard(){
+ const days=[];for(let d=1;d<=29;d++)if(S.reply&&S.reply[d])days.push(d);
+ if(!days.length)return '';
+ return `<div class="card" style="margin-top:16px;text-align:left">
+   <div class="eyebrow">and one more thing</div>
+   <div class="line" style="font-family:'Playfair Display',serif;font-size:19px;margin:6px 0 2px">
+     You were writing too.</div>
+   <div class="note" style="margin-bottom:6px">${days.length} ${days.length===1?'day':'days'} of it. Here they are.</div>
+   ${days.map(d=>`<div class="diaryitem"><div class="dday">day ${d} · ${fmt(dateOf(d))}</div>
+     <div class="dtext">${esc(S.reply[d])}</div></div>`).join('')}
+ </div>`;
+}
+function muralCard(){
+ const n=(S.marks?Object.keys(S.marks).length:0);
+ if(n<3)return '';
+ return `<div class="card muralwrap" style="text-align:left">
+   <div class="eyebrow">what you made</div>
+   <div class="line" style="font-family:'Playfair Display',serif;font-size:19px;margin:6px 0 4px">
+     Every one of those little films left something behind.</div>
+   <div class="note" style="margin-bottom:10px">${n} of them. You never saw it until now.</div>
+   <canvas class="mural" id="muralCv"></canvas>
+ </div>`;
 }
 function birthdayView(){
  mode='bday';shown=30;document.body.dataset.week='b';AUDIO.setMode('read');AUDIO.birthdaySong();
@@ -906,6 +1048,8 @@ function birthdayView(){
      <div class="line">Look behind all of this.</div>
      <div class="note">Roses, lilies and tulips — they have been growing back there since the first day,
      a little more every time you showed up. Today they are open.<br>They still don't die. Neither does this.</div></div>
+   ${muralCard()}
+   ${diaryCard()}
    <div class="card giftcard" id="giftCard">
      <span class="giftlock">🎁</span>
      <div class="line">There's one more thing.</div>
@@ -920,6 +1064,7 @@ function birthdayView(){
    </div></div>`);
  $('#calOpen',w).onclick=openSheet;
  wireGift(w);
+ const mc=$('#muralCv',w);if(mc)setTimeout(()=>{try{drawMural(mc)}catch(e){}},60);
  const mb=$('#mom',w);if(mb)mb.onclick=momentView;
  if(!S.done[30]){S.done[30]=true;save();updateDot();rain(140);setTimeout(()=>burst(W/2,H*.4,140,1.1),500)}
 }
@@ -985,6 +1130,7 @@ const GARDEN=(()=>{
  const cv=$('#garden');if(!cv)return{set(){},stop(){}};
  const ctx=cv.getContext('2d');
  let W=0,H=0,t=0,raf=0,last=0,P=0,target=0,bloomAt=0;
+ let hl=0,heads=[];                       // the brief moment after an animation
  const FDAYS=Object.keys(FLOWERS).map(Number).sort((a,b)=>a-b);
  const STEMS=FDAYS.map((d,i)=>({d,i,
   x:.10+.80*(i/(FDAYS.length-1||1)),      // spread across the width
@@ -1069,8 +1215,12 @@ const GARDEN=(()=>{
   const p=P;
 
   // overall presence — faint at first, fully there on the day
-  const alpha=dark?.85:(.42+.34*ease(p));
+  // ...and briefly, right after an animation, it steps forward and is seen
+  const boost=hl>0?Math.sin(Math.min(1,(performance.now()-hl)/2600)*Math.PI):0;
+  const alpha=Math.min(1,(dark?.85:(.42+.34*ease(p)))+boost*.5);
+  if(hl>0&&performance.now()-hl>2600)hl=0;
   ctx.globalAlpha=alpha;
+  heads=[];
 
   // soil + roots
   const rootG=seg(p,.01,.12);
@@ -1131,6 +1281,7 @@ const GARDEN=(()=>{
 
    // bud, then bloom
    const bg=seg(g,.52,.78),og=seg(g,.80,1);
+   heads.push({x:cx,y:top,i:s.i,live:og>0||bg>0});
    if(og<=0){ if(bg>0)bud(ctx,cx,top,1+.5*grow,bg); }
    else head(ctx,(FLOWERS[s.d]||{}).k||'rose',cx,top,.9+.5*grow,og,dark);
   });
@@ -1165,7 +1316,17 @@ const GARDEN=(()=>{
   set(v,instant){target=Math.max(0,Math.min(1,v));
    if(instant)P=target;
    if(!raf){last=performance.now();raf=requestAnimationFrame(loop)}},
-  stop(){if(raf)cancelAnimationFrame(raf);raf=0}
+  stop(){if(raf)cancelAnimationFrame(raf);raf=0},
+  /* step forward for a couple of seconds, so the thing she half-noticed is suddenly there */
+  highlight(){hl=performance.now();
+   if(!raf){last=performance.now();raf=requestAnimationFrame(loop)}},
+  /* where the newest flower is, in page coordinates */
+  frontPoint(){
+   const live=heads.filter(h=>h.live);
+   if(!live.length)return null;
+   const h=live[live.length-1],r=cv.getBoundingClientRect();
+   return{x:r.left+h.x,y:r.top+h.y};
+  }
  };
 })();
 
@@ -1302,6 +1463,117 @@ const AUDIO=(()=>{
    Math.max(0,(end-now())*1000));
  }
 
+ /* ---- a slow jazz waltz, for a scene that needs one ----
+    Written here rather than downloaded: the repo is public, so anything
+    dropped in it is public too. Three-four, brushes, a lazy piano over
+    seventh chords. Original — it only has to feel like that kind of night. */
+ const JZ={F2:87.31,G2:98,A2:110,Bb2:116.54,C3:130.81,D3:146.83,E3:164.81,F3:174.61,
+           Fs3:185,G3:196,A3:220,Bb3:233.08,C4:261.63,D4:293.66,E4:329.63,F4:349.23,
+           Fs4:369.99,G4:392,A4:440,Bb4:466.16,C5:523.25,D5:587.33,E5:659.25,F5:698.46,
+           G5:783.99,A5:880};
+ /* eight two-bar phrases: F  Dm  Gm  C7  Am  D7  Gm  C7 -> F */
+ const JZ_CHORDS=[
+  {b:[JZ.F2,JZ.C3], c:[JZ.A3,JZ.C4,JZ.E4]},
+  {b:[JZ.D3,JZ.A2], c:[JZ.F3,JZ.A3,JZ.C4]},
+  {b:[JZ.G2,JZ.D3], c:[JZ.Bb3,JZ.D4,JZ.F4]},
+  {b:[JZ.C3,JZ.G2], c:[JZ.E3,JZ.Bb3,JZ.D4]},
+  {b:[JZ.A2,JZ.E3], c:[JZ.C4,JZ.E4,JZ.G4]},
+  {b:[JZ.D3,JZ.A2], c:[JZ.Fs3,JZ.C4,JZ.D4]},
+  {b:[JZ.G2,JZ.D3], c:[JZ.Bb3,JZ.D4,JZ.F4]},
+  {b:[JZ.C3,JZ.G2], c:[JZ.E3,JZ.Bb3,JZ.D4]}
+ ];
+ /* the tune, in beats — six to a phrase */
+ const JZ_MEL=[
+  [[JZ.C5,1],[JZ.E5,1],[JZ.F5,2],[JZ.E5,2]],
+  [[JZ.D5,1],[JZ.C5,1],[JZ.A4,2],[JZ.C5,2]],
+  [[JZ.Bb4,1],[JZ.D5,1],[JZ.F5,2],[JZ.D5,2]],
+  [[JZ.E5,1],[JZ.D5,1],[JZ.C5,3],[0,1]],
+  [[JZ.C5,1],[JZ.E5,2],[JZ.G5,3]],
+  [[JZ.F5,1],[JZ.E5,1],[JZ.D5,2],[JZ.A4,2]],
+  [[JZ.Bb4,2],[JZ.C5,1],[JZ.D5,3]],
+  [[JZ.C5,1],[JZ.Bb4,1],[JZ.A4,2],[JZ.F4,2]]
+ ];
+ function jazzWaltz(){
+  if(!boot()||!on)return ()=>{};
+  try{if(ctx.state==='suspended')ctx.resume()}catch(e){}
+  const G=ctx.createGain();G.gain.value=.0001;
+  G.connect(master);G.connect(verb);
+  G.gain.exponentialRampToValueAtTime(.55,now()+1.2);
+  const nodes=[];
+  const keep=o=>{nodes.push(o);return o};
+
+  /* an upright bass: round, short, no edge on it */
+  function bass(f,at,dur,vel){
+   const o=keep(ctx.createOscillator()),g=ctx.createGain(),lp=ctx.createBiquadFilter();
+   o.type='sine';o.frequency.value=f;
+   lp.type='lowpass';lp.frequency.value=420;
+   g.gain.setValueAtTime(.0001,at);
+   g.gain.exponentialRampToValueAtTime(vel,at+.03);
+   g.gain.exponentialRampToValueAtTime(.0001,at+dur);
+   o.connect(lp);lp.connect(g);g.connect(G);
+   o.start(at);o.stop(at+dur+.05);
+  }
+  /* the piano, comping and singing */
+  function piano(f,at,dur,vel){
+   if(!f)return;
+   const o=keep(ctx.createOscillator()),h=keep(ctx.createOscillator()),
+         hg=ctx.createGain(),g=ctx.createGain();
+   o.type='triangle';h.type='sine';
+   o.frequency.value=f;h.frequency.value=f*2.002;
+   hg.gain.value=.22;
+   g.gain.setValueAtTime(.0001,at);
+   g.gain.exponentialRampToValueAtTime(vel,at+.02);
+   g.gain.exponentialRampToValueAtTime(.0001,at+dur);
+   o.connect(g);h.connect(hg);hg.connect(g);g.connect(G);
+   o.start(at);h.start(at);o.stop(at+dur+.05);h.stop(at+dur+.05);
+  }
+  /* a brush on a snare — noise, filtered high, very quiet */
+  const nb=ctx.createBuffer(1,Math.floor(ctx.sampleRate*.4),ctx.sampleRate);
+  {const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
+  function brush(at,vel){
+   const s=keep(ctx.createBufferSource()),g=ctx.createGain(),hp=ctx.createBiquadFilter();
+   s.buffer=nb;hp.type='highpass';hp.frequency.value=2600;
+   g.gain.setValueAtTime(vel,at);
+   g.gain.exponentialRampToValueAtTime(.0001,at+.22);
+   s.connect(hp);hp.connect(g);g.connect(G);
+   s.start(at);s.stop(at+.3);
+  }
+
+  const beat=.68, bar=beat*3;               /* three-four, and in no hurry */
+  let at=now()+.35;
+  JZ_CHORDS.forEach((ch,i)=>{
+   for(let b=0;b<2;b++){                    /* two bars on each chord */
+    const t0=at+b*bar;
+    bass(ch.b[0],t0,beat*1.5,.20);
+    bass(ch.b[1],t0+beat*2,beat*1.1,.14);
+    /* comping lands on two and three, never on the downbeat */
+    ch.c.forEach(f=>{
+     piano(f,t0+beat*1.02,beat*.85,.045);
+     piano(f,t0+beat*2.04,beat*.85,.038);
+    });
+    brush(t0,.030);brush(t0+beat,.019);brush(t0+beat*2,.022);
+   }
+   /* the tune, stretched a touch behind the beat so it drags the way it should */
+   let m=at+beat*.18;
+   JZ_MEL[i].forEach(([f,d])=>{piano(f,m,beat*d*1.15,f?.115:0);m+=beat*d});
+   at+=bar*2;
+  });
+  /* it lands on an F and stays there */
+  [JZ.F2,JZ.F3,JZ.A3,JZ.C4,JZ.E4,JZ.F4].forEach((f,i)=>piano(f,at+i*.07,5.2,i?.075:.1));
+  piano(JZ.F5,at+.5,5.4,.10);
+
+  let dead=false;
+  return ()=>{
+   if(dead)return;dead=true;
+   const t=now();
+   try{G.gain.cancelScheduledValues(t);
+       G.gain.setValueAtTime(Math.max(.0002,G.gain.value),t);
+       G.gain.exponentialRampToValueAtTime(.0001,t+.5)}catch(e){}
+   setTimeout(()=>{nodes.forEach(o=>{try{o.stop()}catch(e){}});
+                   try{G.disconnect()}catch(e){}},700);
+  };
+ }
+
  function setOn(v){
   on=v;try{localStorage.setItem('zb30snd',v?'1':'0')}catch(e){}
   boot();
@@ -1329,7 +1601,7 @@ const AUDIO=(()=>{
  addEventListener('pointerdown',wake,{passive:true});
  addEventListener('keydown',wake,{passive:true});
 
- return{setMode,fx,setOn,paintBtn,birthdaySong,isOn:()=>on,wake};
+ return{setMode,fx,setOn,paintBtn,birthdaySong,jazzWaltz,isOn:()=>on,wake};
 })();
 
 /* ---- what the games are doing, without touching all 33 of them ---- */
@@ -1381,9 +1653,19 @@ function applyContent(c){
   if(typeof d.t==='string'&&d.t)D.t=d.t;
   if(typeof d.m==='string'&&d.m)D.m=d.m;
   if(typeof d.n==='string')D.n=d.n;
+  if(typeof d.a==='string')D.a=d.a;
+  if(typeof d.af==='boolean')D.af=d.af;
+  if(typeof d.tz==='string')D.tz=d.tz;
+  if(typeof d.a2==='string')D.a2=d.a2;
+  if(typeof d.az==='string')D.az=d.az;
+  if(typeof d.ab==='string')D.ab=d.ab;
   if(typeof d.g==='string'){
    const keep=d.g.split(',').map(x=>x.trim()).filter(k=>GAME_KEYS.includes(k));
    if(keep.length)D.g=keep.join(',')}});
+ if(c.anims&&typeof c.anims==='object'&&!Array.isArray(c.anims)){
+  ATXT={};Object.keys(c.anims).forEach(k=>{const o=c.anims[k];
+   if(o&&typeof o==='object'){const t={};Object.keys(o).forEach(f=>{if(typeof o[f]==='string')t[f]=o[f]});
+    if(Object.keys(t).length)ATXT[k]=t}})}
  if(c.games&&typeof c.games==='object'&&!Array.isArray(c.games)){
   GTXT={};Object.keys(c.games).forEach(k=>{const o=c.games[k];
    if(o&&typeof o==='object'){const t={};Object.keys(o).forEach(f=>{if(typeof o[f]==='string')t[f]=o[f]});
@@ -1393,6 +1675,8 @@ function applyContent(c){
   if(typeof f.line==='string'&&f.line)FLOWERS[k].line=f.line;
   if(f.k&&FL_COLORS[f.k])FLOWERS[k].k=f.k}});
 }
+const AFTER_DEFAULT=`<p>One more thing before you go.</p>`;
+const TEASE_DEFAULT=`<p>Come back tomorrow and you’ll see what happens next.</p><p>I know you already know. You were there for all of it. You have every single spoiler.</p><p>Come anyway. 🌸</p>`;
 const CFG={giftPw:'SERENDIPITY'};
 const LS_DRAFT='zb30draft',LS_TOK='zb30gh',LS_REPO='zb30repo';
 function applyLocal(){
@@ -1420,8 +1704,8 @@ async function loadRemote(){
  }catch(e){}
  return false;
 }
-function buildContent(){return{v:1,cfg:{giftPw:CFG.giftPw},games:GTXT,
- days:DAYS.map(d=>({t:d.t,m:d.m,n:d.n,g:d.g})),
+function buildContent(){return{v:1,cfg:{giftPw:CFG.giftPw},games:GTXT,anims:ATXT,
+ days:DAYS.map(d=>({t:d.t,m:d.m,n:d.n,g:d.g,a:d.a||'',af:!!d.af,tz:d.tz||'',a2:d.a2||'',az:d.az||'',ab:d.ab||''})),
  flowers:Object.fromEntries(Object.keys(FLOWERS).map(k=>[k,{k:FLOWERS[k].k,line:FLOWERS[k].line}]))}}
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function htmlToText(h){
@@ -1444,6 +1728,7 @@ function openEditor(d){
   g.k.filter(k=>GAMES[k]).map(k=>`<option value="${k}"${k===D.g?' selected':''}>${GAMES[k].name}</option>`).join('')+'</optgroup>').join('');
  describeGame($('#edG').value);
  paintGameList();
+ paintAnimPicker(D);
  const fw=$('#edFlowerWrap');
  if(FLOWERS[edDay]){fw.hidden=false;$('#edF').value=FLOWERS[edDay].line}else fw.hidden=true;
  $('#edP').value=CFG.giftPw;
@@ -1466,6 +1751,58 @@ function paintGameList(){
    <button data-rm="${i}" aria-label="remove">×</button></span>`).join('')
    +(edGames.length>1?`<span class="gchipnote">played in this order</span>`:'');
  renderGameFields();
+}
+/* built from the registry, not a hand-kept list -- a scene that exists
+   always shows up in the picker, and one that is deleted disappears. */
+function animGroups(){
+ const out=[],by={};
+ Object.keys(ASCENES).forEach(k=>{
+  const g=ASCENES[k].grp||'Animations';
+  if(!by[g]){by[g]={t:g,k:[]};out.push(by[g])}
+  by[g].k.push(k);
+ });
+ return out;
+}
+function paintAnimPicker(D){
+ const sel=$('#edA');if(!sel)return;
+ const cur=(D&&D.a)||'';
+ sel.innerHTML='<option value="">no animation on this day</option>'+
+  animGroups().map(g=>`<optgroup label="${g.t}">`+
+   g.k.map(k=>`<option value="${k}"${k===cur?' selected':''}>${ASCENES[k].name}</option>`).join('')
+   +'</optgroup>').join('');
+ describeAnim(cur);
+}
+function describeAnim(k){
+ const box=$('#edAnimDesc');if(box)box.textContent=k&&ASCENES[k]?(ASCENES[k].blurb||''):'';
+ renderAnimFields(k);
+}
+function renderAnimFields(k){
+ const wrap=$('#edAnimWrap'),host=$('#edAnimFields');
+ if(!wrap||!host)return;
+ const sc=ASCENES[k];
+ if(!sc||!sc.fields||!sc.fields.length){wrap.hidden=true;host.innerHTML='';return}
+ wrap.hidden=false;
+ $('#edAnimName').textContent=sc.name+' — the words';
+ host.innerHTML=sc.fields.map(s=>`<label class="edfield"><span>${s.l} — <i>${s.h}</i></span>
+   <textarea class="edanim" data-a="${k}" data-f="${s.f}" spellcheck="false" rows="${s.f==='words'?3:2}"></textarea></label>`).join('');
+ $$('.edanim',host).forEach(t=>{t.value=AT(k,t.dataset.f)});
+ const du=$('#edADur');if(du)du.value=(ATXT[k]&&ATXT[k].dur)||'';
+}
+function readAnimFields(){
+ const k=$('#edA')?$('#edA').value:'';
+ if(!k)return;
+ $$('.edanim',$('#edAnimFields')).forEach(t=>{
+  const f=t.dataset.f,v=t.value.replace(/\r/g,'').trim();
+  if(!ATXT[k])ATXT[k]={};
+  const dflt=((ASCENES[k]||{}).def||{})[f];
+  const dstr=Array.isArray(dflt)?dflt.join('\n'):(dflt||'');
+  if(v&&v!==String(dstr).trim())ATXT[k][f]=v;else delete ATXT[k][f];
+ });
+ const du=$('#edADur'),dv=du?du.value.trim():'';
+ if(!ATXT[k])ATXT[k]={};
+ const dn=parseFloat(dv);
+ if(dv&&isFinite(dn)&&dn>=4&&dn<=60)ATXT[k].dur=String(dn);else delete ATXT[k].dur;
+ if(!Object.keys(ATXT[k]).length)delete ATXT[k];
 }
 function describeGame(k){
  const g=GAMES[k],box=$('#edGameDesc');if(!box)return;
@@ -1501,6 +1838,8 @@ function readEditor(){
  if($('#edM').value.trim())D.m=textToHtml($('#edM').value);
  D.n=$('#edN').value.trim();
  D.g=(edGames.length?edGames:[$('#edG').value]).join(',');
+ readAnimFields();
+ D.a=$('#edA')?$('#edA').value:'';
  readGameFields();
  if($('#edP').value.trim())CFG.giftPw=$('#edP').value.trim().toUpperCase();
  if(FLOWERS[edDay]&&$('#edF').value.trim())FLOWERS[edDay].line=$('#edF').value.trim();
@@ -1636,7 +1975,7 @@ function reviewAll(){
   <div class="review">${DAYS.map(d=>`<div class="card"><div class="meta"><span>Day ${d.d} · ${fmt(dateOf(d.d))}</span><span>${d.pw}</span></div>
    <h3>${dTitle(d)}${isWritten(d)?'':' <span style=&quot;color:#c4406f&quot;>· not written yet</span>'}</h3><div class="msg">${dMsg(d)}</div>
    <div style="font-size:12.5px;color:var(--ink2);font-style:italic;border-top:1px solid var(--line);padding-top:8px;margin-top:10px">
-   game: ${gamesFor(d).map(k=>GAMES[k].name).join(' → ')}${d.n?` · teaser: ${d.n}`:''}</div></div>`).join('')}</div>
+   game: ${gamesFor(d).map(k=>GAMES[k].name).join(' → ')}${d.a&&ASCENES[d.a]?' · '+ASCENES[d.a].name:''}${d.n?` · teaser: ${d.n}`:''}</div></div>`).join('')}</div>
   <div class="row" style="margin:18px 0"><button class="btn ghost" id="revBack">Back to the site</button></div>`);
  $('#revBack',w).onclick=()=>{mode='day';render();devLabel()};
  devLabel();
@@ -1650,10 +1989,1433 @@ $('#dRead').onclick=reviewAll;
 $('#dEdit').onclick=()=>openEditor(shown||curDay()||1);
 $('#dMore').onclick=()=>{const on=devPanel.classList.toggle('show');$('#devbar').style.opacity=on?'0':'1';$('#devbar').style.pointerEvents=on?'none':'auto'};
 $('#dExit').onclick=()=>toggleDev(false);
+/* ================= the thirty seconds before the note =================
+   One engine, many scenes. A scene is data: how it draws, how long it runs,
+   what words float over it, and the one small mark it leaves behind on the
+   mural she never sees until the last day.                                */
+
+/* ---- what time is it, and what colour is that ---- */
+const APAL={
+ morning:{a:'#ffe9d6',b:'#ffd6e6',ink:'#5c3b4d',glow:'#ffb48c',star:.10,label:'morning'},
+ day    :{a:'#e8f1ff',b:'#ffe6f1',ink:'#4b3a54',glow:'#ffd394',star:.04,label:'afternoon'},
+ dusk   :{a:'#ff9f7a',b:'#7d5aa8',ink:'#fff2f8',glow:'#ffc98f',star:.40,label:'dusk'},
+ evening:{a:'#3a2a5e',b:'#7a4a78',ink:'#ffeaf4',glow:'#ffc07a',star:.75,label:'evening'},
+ late   :{a:'#141029',b:'#2e1f46',ink:'#ffe4f0',glow:'#9fb8ff',star:1,  label:'late'}
+};
+function todKey(){
+ const h=now().getHours();
+ if(h>=5&&h<11)return 'morning';
+ if(h>=11&&h<16)return 'day';
+ if(h>=16&&h<19)return 'dusk';
+ if(h>=19&&h<23)return 'evening';
+ return 'late';
+}
+function apal(){const p=APAL[todKey()]||APAL.evening;return Object.assign({dark:p.star>.35},p)}
+
+/* ---- small shared maths ---- */
+const aEase=v=>v<=0?0:v>=1?1:v*v*(3-2*v);
+const aSeg=(v,a,b)=>aEase((v-a)/(b-a));
+const aLerp=(a,b,t)=>a+(b-a)*t;
+function aMix(c1,c2,t){
+ const p=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+ const[a,b]=[p(c1),p(c2)];
+ return`rgb(${a.map((v,i)=>Math.round(aLerp(v,b[i],t))).join(',')})`;
+}
+/* a deterministic little random, so a day always looks the same to her */
+function aRng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;return s/233280}}
+
+/* ---- sampling points out of a shape, used by several scenes ---- */
+const _shapeCache={};
+function shapePoints(text,n,w,h){
+ const key=text+'|'+n+'|'+Math.round(w)+'x'+Math.round(h);
+ if(_shapeCache[key])return _shapeCache[key];
+ const c=document.createElement('canvas');
+ c.width=Math.max(8,Math.round(w));c.height=Math.max(8,Math.round(h));
+ const x=c.getContext('2d',{willReadFrequently:true});
+ let size=Math.min(c.width,c.height)*.92;
+ x.fillStyle='#000';x.textAlign='center';x.textBaseline='middle';
+ x.font=`700 ${size}px "Playfair Display",Georgia,serif`;
+ /* shrink until it fits the box */
+ for(let i=0;i<6&&x.measureText(text).width>c.width*.95;i++){
+  size*=c.width*.95/x.measureText(text).width;
+  x.font=`700 ${size}px "Playfair Display",Georgia,serif`;
+ }
+ x.fillText(text,c.width/2,c.height/2);
+ let img;try{img=x.getImageData(0,0,c.width,c.height).data}catch(e){return _shapeCache[key]=[]}
+ const hits=[];
+ for(let py=0;py<c.height;py+=2)for(let px=0;px<c.width;px+=2)
+  if(img[(py*c.width+px)*4+3]>128)hits.push([px,py]);
+ const out=[];
+ if(!hits.length)return _shapeCache[key]=[];
+ for(let i=0;i<n;i++)out.push(hits[Math.floor(i*hits.length/n)]);
+ /* shuffle deterministically so they don't fill top-to-bottom */
+ const r=aRng(text.length+n);
+ for(let i=out.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[out[i],out[j]]=[out[j],out[i]]}
+ return _shapeCache[key]=out.map(([px,py])=>({x:px,y:py}));
+}
+
+/* ================= the scenes ================= */
+/* ASCENES and ATXT are declared at the very top of the app, because
+   applyContent() reads them at load. Each scene is:
+     {name,grp,blurb,dur,def,fields,init,draw,mark}
+   init(A,W,H,R)         — build state on A, R is the seeded random
+   draw(A,c,W,H,t,P,pal) — t seconds, P is 0..1 through the scene
+   mark(c,s,R)           — the keepsake, in a box of size s, origin 0,0 */
+
+function AT(k,f){
+ const o=ATXT[k]&&typeof ATXT[k][f]==='string'?ATXT[k][f].trim():'';
+ if(o)return o;
+ const d=((ASCENES[k]||{}).def||{})[f];
+ return Array.isArray(d)?d.join('\n'):(d==null?'':String(d));
+}
+function AL(k,f){return AT(k,f).split('\n').map(s=>s.trim()).filter(Boolean)}
+/* the lines that float over a scene */
+const aWords=k=>AL(k,'words');
+
+/* which animation runs on a given day */
+function animFor(d){
+ const D=DAYS[d-1];
+ const k=D&&D.a;
+ return (k&&ASCENES[k])?k:'';
+}
+function animDur(k){
+ const v=parseFloat(AT(k,'dur'));
+ if(isFinite(v)&&v>=4&&v<=60)return v;
+ return (ASCENES[k]||{}).dur||14;
+}
+
+/* ================= the mural she doesn't know about ================= */
+/* Every animation she finishes leaves one mark. Thirty days later it's a picture. */
+function addMark(d,k){
+ if(!S.marks)S.marks={};
+ if(S.marks[d])return;
+ S.marks[d]=k;save();
+}
+function muralSpots(n){
+ /* Laid out along a heart, day one to day twenty-nine, going round.
+    A spiral just looked like spilled stickers; this reads as one thing. */
+ const out=[];
+ for(let i=0;i<n;i++){
+  const t=-Math.PI/2+(i/n)*Math.PI*2;          // start at the top, go round
+  const hx=Math.pow(Math.sin(t),3);
+  const hy=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))/16;
+  /* a little wobble so it's hand-made rather than plotted */
+  const r=aRng(i*13+5);
+  out.push({x:.5+hx*.36+(r()-.5)*.028,
+            y:.5+hy*.34+(r()-.5)*.028+.02,
+            s:.92+(i%3)*.06});
+ }
+ return out;
+}
+function drawMural(cv){
+ const dp=Math.min(devicePixelRatio||1,2);
+ const W=cv.clientWidth||300,H=cv.clientHeight||300;
+ cv.width=W*dp;cv.height=H*dp;
+ const c=cv.getContext('2d');c.setTransform(dp,0,0,dp,0,0);
+ const pal=apal();
+ const g=c.createLinearGradient(0,0,W,H);
+ g.addColorStop(0,'#1a1130');g.addColorStop(1,'#43254a');
+ c.fillStyle=g;c.fillRect(0,0,W,H);
+ /* a faint dust of stars underneath */
+ const r0=aRng(11);
+ c.fillStyle='rgba(255,255,255,.28)';
+ for(let i=0;i<70;i++){const x=r0()*W,y=r0()*H,s=r0()*1.3+.3;c.beginPath();c.arc(x,y,s,0,7);c.fill()}
+ const days=[];for(let d=1;d<=29;d++)if(S.marks&&S.marks[d])days.push(d);
+ const spots=muralSpots(29);
+
+ /* the thread running through them, in the order she did them */
+ if(days.length>1){
+  c.strokeStyle='rgba(255,210,232,.22)';c.lineWidth=1.1;c.lineCap='round';
+  c.beginPath();
+  days.forEach((d,i)=>{const s=spots[d-1];if(!s)return;
+   const x=s.x*W,y=s.y*H;i?c.lineTo(x,y):c.moveTo(x,y)});
+  c.stroke();
+ }
+
+ days.forEach(d=>{
+  const k=S.marks[d],sc=ASCENES[k];
+  const sp=spots[d-1];if(!sp)return;
+  const base=Math.min(W,H)*0.062*sp.s;
+  c.save();
+  c.translate(sp.x*W-base/2,sp.y*H-base/2);
+  c.globalAlpha=.94;
+  try{(sc&&sc.mark?sc.mark:defaultMark)(c,base,aRng(d*17+3),pal)}catch(e){}
+  c.restore();
+ });
+ return days.length;
+}
+function defaultMark(c,s){
+ c.fillStyle='#ffd9e8';c.beginPath();c.arc(s/2,s/2,s*.22,0,7);c.fill();
+}
+
+/* ================= the stage ================= */
+let ASTOP=null;
+function stopAnim(){if(ASTOP){try{ASTOP()}catch(e){}ASTOP=null}}
+
+/* forceKey plays a named scene on this day instead of the day's own one —
+   that's how a day can have a second animation after the note. */
+function animView(d,onDone,replay,forceKey){
+ const k=(forceKey&&ASCENES[forceKey])?forceKey:animFor(d);
+ if(!k||!ASCENES[k]){onDone();return}
+ const sc=ASCENES[k],pal=apal(),dur=animDur(k),words=aWords(k);
+ mode='anim';
+ const w=show(`<div class="animwrap" id="awrap">
+   <canvas id="acv"></canvas>
+   <div class="animtext" id="atext">${words.map((l,i)=>`<p style="--i:${i}">${l}</p>`).join('')}</div>
+   <button class="animskip" id="askip" hidden>skip</button>
+  </div>`);
+ const wrap=$('#awrap',w),cv=$('#acv',w),tx=$('#atext',w),skip=$('#askip',w);
+ if(sc.solo)tx.classList.add('solo');   /* the lines share one spot instead of stacking */
+ wrap.dataset.tod=todKey();
+ wrap.style.setProperty('--aink',pal.ink);
+ const c=cv.getContext('2d');
+ let W=0,H=0,raf=0,t0=0,last=0,t=0,ended=false;
+ const A={pal,rng:aRng(d*31+7),day:d,key:k,words};
+ /* a scene that needs her to do something holds the ending open and
+    finishes itself, instead of the clock finishing it */
+ A.hold=!!sc.hold;
+ A.words=words;
+
+ function size(){
+  const dp=Math.min(devicePixelRatio||1,2);
+  W=wrap.clientWidth||innerWidth;H=wrap.clientHeight||Math.round(innerHeight*.62);
+  cv.width=W*dp;cv.height=H*dp;c.setTransform(dp,0,0,dp,0,0);
+  A.W=W;A.H=H;
+  try{sc.init&&sc.init(A,W,H,A.rng)}catch(e){}
+ }
+ function bg(){
+  const g=c.createLinearGradient(0,0,0,H);
+  /* a scene can paint its own ground — the parallel universe drains it */
+  const pa=A.bgA||pal.a, pb=A.bgB||pal.b;
+  g.addColorStop(0,pa);g.addColorStop(1,pb);
+  c.fillStyle=g;c.fillRect(0,0,W,H);
+ }
+ /* the words come in on their own schedule, spread through the scene */
+ const cues=words.map((_,i)=>0.16+0.56*(words.length===1?0.25:i/(words.length-1)));
+ let shownTo=-1;
+
+ function frame(n){
+  if(!t0){t0=n;last=n}
+  /* motion uses frame time (clamped, so a stall doesn't teleport anything),
+     but how far through the scene we are is wall clock — otherwise a slow
+     phone quietly stretches a 15-second film into half a minute. */
+  const dt=Math.min(.05,(n-last)/1000);last=n;t+=dt;
+  /* a holding scene sits at the end of its timeline until it says otherwise */
+  let P=Math.min(1,(n-t0)/1000/dur);
+  if(A.hold&&P>=1)P=1;
+  bg();
+  try{sc.draw(A,c,W,H,t,P,pal)}catch(e){}
+  /* the smallest settle at the very end, so the handover isn't a hard cut */
+  if(P>.94)wrap.style.opacity=String(1-(P-.94)/.06*0.15);
+  for(let i=shownTo+1;i<cues.length;i++)if(P>=cues[i]){
+   /* a solo scene shows one line at a time — otherwise five lines pile up
+      and the picture ends up underneath the words */
+   if(sc.solo&&shownTo>=0){const q=tx.children[shownTo];if(q)q.classList.remove('in')}
+   const p=tx.children[i];if(p)p.classList.add('in');shownTo=i;
+  }
+  if(P>=1&&!ended&&!A.hold){ended=true;finish();return}
+  raf=requestAnimationFrame(frame);
+ }
+ /* a scene can bring its own music; it has to go quiet whichever way this ends */
+ let soundOff=null;
+ const endSound=()=>{if(soundOff){try{soundOff()}catch(e){}soundOff=null}};
+ function finish(){
+  endSound();
+  if(raf)cancelAnimationFrame(raf);raf=0;
+  if(!replay){addMark(d,k);flowerMoment();}
+  setTimeout(()=>{if(mode==='anim')onDone()},replay?420:900);
+ }
+ const stop=()=>{endSound();if(raf)cancelAnimationFrame(raf);raf=0;ASTOP=null};
+ ASTOP=stop;cleanup=stop;
+
+ /* a scene that takes taps gets them in its own coordinates */
+ if(sc.tap){
+  const hit=e=>{
+   e.preventDefault();
+   const r=cv.getBoundingClientRect();
+   try{sc.tap(A,e.clientX-r.left,e.clientY-r.top,W,H)}catch(err){}
+  };
+  cv.style.touchAction='none';
+  cv.addEventListener('pointerdown',hit,{passive:false});
+ }
+ /* a holding scene calls this when she has finished whatever it asked */
+ A.release=()=>{
+  if(ended||!A.hold)return;
+  A.hold=false;
+ };
+ /* extra lines a scene wants to put up itself, beyond the timed ones */
+ A.say=(txt)=>{
+  const p=document.createElement('p');
+  p.textContent=txt;tx.appendChild(p);
+  requestAnimationFrame(()=>p.classList.add('in'));
+ };
+ A.clearWords=()=>{tx.innerHTML='';shownTo=cues.length};
+
+ /* she can always get past it — but not instantly, or it's just a button */
+ setTimeout(()=>{if(mode==='anim'&&!sc.noskip)skip.hidden=false},4200);
+ skip.onclick=()=>{if(ended)return;ended=true;stop();
+  if(!replay){addMark(d,k);flowerMoment()}
+  onDone();};
+
+ size();
+ addEventListener('resize',size);
+ const offResize=()=>removeEventListener('resize',size);
+ const prevStop=stop;
+ ASTOP=()=>{offResize();prevStop()};cleanup=ASTOP;
+ /* the background track steps aside for a scene that plays its own */
+ if(sc.sound){AUDIO.setMode('none');try{soundOff=sc.sound(A,dur)}catch(e){}}
+ else AUDIO.setMode('read');
+ raf=requestAnimationFrame(frame);
+}
+
+/* A small door, so the scenes can be driven from outside while they're being
+   built. Nothing here shows up in the app; she will never open a console. */
+try{window.__zb={
+ ASCENES,DAYS,S,animView,drawMural,animFor,animDur,aWords,apal,todKey,
+ txt:()=>ATXT, setTxt(v){ATXT=v||{}}, save,
+ openEditor:d=>openEditor(d)
+}}catch(e){}
+
+/* the day's flower opens while she's still looking at it */
+function flowerMoment(){
+ try{
+  GARDEN.highlight&&GARDEN.highlight();
+  const p=GARDEN.frontPoint&&GARDEN.frontPoint();
+  if(p)setTimeout(()=>sparkle(p.x,p.y,20),260);
+ }catch(e){}
+}
+
+/* ================= colour, and the absence of it =================
+   Shared by every scene: the drain, the text that has to read on a ground
+   which changes underneath it, and a wrapper. */
+
+/* ---- colour, and the absence of it ---- */
+function aHexRGB(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]}
+function aGreyOf(h){
+ const[r,g,b]=aHexRGB(h);
+ const y=Math.round(0.299*r+0.587*g+0.114*b);
+ return`rgb(${y},${y},${y})`;
+}
+/* k = 0 fully drained, 1 fully itself.
+   At k=0 this is a flat luminance grey and nothing else — the drained world
+   is black, grey and white, with no hue left anywhere in it. */
+function aCol(hex,k){
+ if(k>=1)return hex;
+ const[r,g,b]=aHexRGB(hex);
+ const y=0.299*r+0.587*g+0.114*b;
+ const m=c=>Math.round(Math.max(0,Math.min(255,y+(c-y)*k)));
+ return`rgb(${m(r)},${m(g)},${m(b)})`;
+}
+/* the ground goes from near-black to pink while this text is on screen,
+   so every line gets a shadow in the opposite direction and reads on both */
+function aGlowText(c,light){
+ c.shadowColor=light?'rgba(20,12,26,.75)':'rgba(255,240,248,.85)';
+ c.shadowBlur=10;c.shadowOffsetY=light?1:0;
+ c.fillStyle=light?'#f6ecf4':'#3f2838';
+}
+function aClearShadow(c){c.shadowColor='transparent';c.shadowBlur=0;c.shadowOffsetY=0}
+function aWrap(c,text,maxW){
+ const out=[],words=String(text).split(' ');let cur='';
+ words.forEach(w=>{const t=cur?cur+' '+w:w;
+  if(c.measureText(t).width>maxW&&cur){out.push(cur);cur=w}else cur=t});
+ if(cur)out.push(cur);
+ return out;
+}
+
+
+/* ================= batch two · the ones that are about something =================
+   Every scene here is a memory with a turn in it. Setup, then something moves,
+   then the bit she recognises. No people are drawn — objects and silhouettes
+   only, because a badly drawn face ruins it and a well drawn object doesn't. */
+
+/* ---- shared bits of drawing ---- */
+function aShadow(c,f){c.save();c.shadowColor='rgba(60,30,50,.22)';c.shadowBlur=18;c.shadowOffsetY=6;f();c.restore()}
+function aRR(c,x,y,w,h,r){
+ if(c.roundRect){c.beginPath();c.roundRect(x,y,w,h,r);return}
+ r=Math.min(r,w/2,h/2);c.beginPath();
+ c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);
+ c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();
+}
+const APAPER='#fffaf4';
+
+/* ---------- 1 · the rubber band ---------- */
+ASCENES.band={
+ name:'The rubber band',grp:'Ours',dur:13,
+ blurb:'One wrist, then the other. She gave it to you, not the other way round.',
+ def:{words:['You didn\'t make it a moment.',
+             'You just took it off your wrist and handed it over, mid-sentence.',
+             'I have kept it like it was one.']},
+ fields:[{f:'words',l:'Lines that float over it',h:'One per line.'}],
+ init(A,W,H){A.done=false},
+ /* a forearm coming in from the edge of frame: sleeve, arm, a simple hand.
+    The first version drew soft blobs and they read as nothing at all. */
+ wrist(c,x,y,L,T,dir,skin,cuff){
+  c.save();c.translate(x,y);c.scale(dir,1);
+  const wristX=L*.66, handX=L*.88;
+  /* sleeve */
+  c.fillStyle=cuff;
+  aRR(c,-L*.06,-T*.60,L*.30,T*1.20,T*.18);c.fill();
+  /* forearm, tapering to the wrist */
+  c.fillStyle=skin;
+  c.beginPath();
+  c.moveTo(L*.20,-T*.50);
+  c.quadraticCurveTo(L*.48,-T*.44,wristX,-T*.33);
+  c.lineTo(wristX,T*.33);
+  c.quadraticCurveTo(L*.48,T*.44,L*.20,T*.50);
+  c.closePath();c.fill();
+  /* the hand — wider than the wrist, which is the thing that makes it read.
+     No fingers: at this size they turn into fringe. */
+  c.beginPath();
+  c.moveTo(wristX,-T*.32);
+  c.quadraticCurveTo(handX-L*.02,-T*.52,handX+L*.07,-T*.34);
+  c.quadraticCurveTo(handX+L*.17,-T*.02,handX+L*.13,T*.24);
+  c.quadraticCurveTo(handX+L*.06,T*.50,wristX,T*.34);
+  c.closePath();c.fill();
+  /* thumb, up and out from the wrist */
+  c.save();c.translate(wristX+L*.05,-T*.28);c.rotate(-.55);
+  c.beginPath();c.ellipse(0,0,L*.075,T*.20,0,0,7);c.fill();c.restore();
+  c.restore();
+ },
+ band(c,x,y,rx,ry,tilt,alpha,squash){
+  c.save();c.translate(x,y);c.rotate(tilt);
+  c.globalAlpha=alpha;
+  c.strokeStyle='#241d26';c.lineWidth=Math.max(2.4,rx*.16);
+  c.beginPath();c.ellipse(0,0,rx,ry*(squash||1),0,0,7);c.stroke();
+  /* one soft highlight so a black ring doesn't read as a hole */
+  c.strokeStyle='rgba(255,255,255,.30)';c.lineWidth=Math.max(1,rx*.055);
+  c.beginPath();c.ellipse(0,-ry*.16,rx*.84,ry*.48*(squash||1),0,3.5,5.9);c.stroke();
+  c.restore();
+ },
+ draw(A,c,W,H,t,P,pal){
+  const cy=H*.50;
+  const L=W*.46, T=Math.min(H*.125,W*.145);
+  const lift =aSeg(P,.18,.38);
+  const cross=aSeg(P,.38,.72);
+  const land =aSeg(P,.72,.90);
+  const rest =aSeg(P,.90,1);
+
+  const g=c.createRadialGradient(W/2,cy,0,W/2,cy,W*.75);
+  g.addColorStop(0,pal.dark?'rgba(255,224,240,.13)':'rgba(255,255,255,.45)');
+  g.addColorStop(1,'rgba(255,255,255,0)');
+  c.fillStyle=g;c.fillRect(0,0,W,H);
+
+  const inL=aSeg(P,0,.16), inR=aSeg(P,.28,.50);
+  const lx=-L*.10-(1-inL)*L*.5, ly=cy-H*.14;
+  const rx=W+L*.10+(1-inR)*L*.5, ry=cy+H*.15;
+  aShadow(c,()=>this.wrist(c,lx,ly,L,T, 1,'#cd9271','#f0dce6'));
+  if(inR>0)aShadow(c,()=>this.wrist(c,rx,ry,L,T,-1,'#b97f5d','#dfe6f2'));
+
+  const rr=T*.50, ryy=T*.29;
+  const aX=lx+L*.60, aY=ly;
+  const bX=rx-L*.60, bY=ry;
+
+  if(cross<=0){
+   this.band(c,aX,aY,rr,ryy,-.10+lift*.35,1,1-lift*.20);
+  }else if(land<1){
+   const e=aEase(cross);
+   const x=aLerp(aX,bX,e), y=aLerp(aY,bY,e)-Math.sin(e*Math.PI)*H*.22;
+   const stretch=1+Math.sin(e*Math.PI)*.5;
+   c.save();c.translate(x,y);c.rotate(-.10+e*3.0);c.translate(-x,-y);
+   this.band(c,x,y,rr*stretch,ryy/Math.max(.65,stretch*.85),0,1,1);
+   c.restore();
+  }else{
+   const sc=1+Math.sin(rest*Math.PI)*.10;
+   this.band(c,bX,bY,rr*sc,ryy*sc,.14,1,1);
+  }
+ },
+ mark(c,s){c.strokeStyle='#241d26';c.lineWidth=s*.13;
+  c.beginPath();c.ellipse(s*.5,s*.5,s*.34,s*.22,.3,0,7);c.stroke()}
+};
+
+/* ---------- 2 · the pink shirt ---------- */
+ASCENES.shirt={
+ name:'The pink shirt',grp:'Ours',dur:14,
+ blurb:'The first day and the last day, side by side — until you notice it is the same shirt.',
+ def:{words:['You wore it the day you walked in.',
+             'And again on the day you left.',
+             'You did that on purpose. I noticed. I never stopped noticing.'],
+      left:'22 April',right:'13 June'},
+ fields:[{f:'words',l:'Lines that float over it',h:'One per line.'},
+         {f:'left',l:'Label on the left panel',h:'Short — a date works best.'},
+         {f:'right',l:'Label on the right panel',h:'Short — a date works best.'}],
+ init(A){},
+ shirt(c,x,y,s,tone){
+  /* formal, full sleeves rolled to the forearm, fine white stripes */
+  c.save();c.translate(x,y);c.scale(s,s);
+  const line='rgba(118,68,92,.26)';
+  c.lineJoin='round';
+
+  /* sleeves: down and out, ending in a rolled cuff */
+  c.fillStyle=tone;c.strokeStyle=line;c.lineWidth=1.1;
+  [-1,1].forEach(d=>{
+   c.beginPath();
+   c.moveTo(d*24,-30);
+   c.quadraticCurveTo(d*46,-22,d*52,2);      // outer edge of the sleeve
+   c.lineTo(d*38,10);
+   c.quadraticCurveTo(d*34,-8,d*22,-14);     // inner edge back to the body
+   c.closePath();c.fill();c.stroke();
+   /* the roll — two stacked bands, lighter, which is what reads as rolled */
+   c.fillStyle='rgba(255,255,255,.55)';
+   c.beginPath();
+   c.moveTo(d*52,2);c.lineTo(d*38,10);c.lineTo(d*41,18);c.lineTo(d*55,10);
+   c.closePath();c.fill();c.stroke();
+   c.beginPath();
+   c.moveTo(d*55,10);c.lineTo(d*41,18);c.lineTo(d*43,24);c.lineTo(d*57,16);
+   c.closePath();c.fill();c.stroke();
+   c.fillStyle=tone;
+  });
+
+  /* body */
+  c.beginPath();
+  c.moveTo(-25,-31);
+  c.lineTo(-27,46);
+  c.quadraticCurveTo(0,52,27,46);
+  c.lineTo(25,-31);
+  c.quadraticCurveTo(0,-24,-25,-31);
+  c.closePath();c.fill();c.stroke();
+
+  /* the stripes, clipped to the body */
+  c.save();
+  c.beginPath();
+  c.moveTo(-25,-31);c.lineTo(-27,46);
+  c.quadraticCurveTo(0,52,27,46);c.lineTo(25,-31);
+  c.quadraticCurveTo(0,-24,-25,-31);c.closePath();c.clip();
+  c.strokeStyle='rgba(255,255,255,.72)';c.lineWidth=1.6;
+  for(let sx=-22;sx<=22;sx+=7.5){
+   c.beginPath();c.moveTo(sx,-34);c.lineTo(sx,52);c.stroke();
+  }
+  c.restore();
+
+  /* collar: two pointed flaps, which is the whole difference between
+     a formal shirt and a t-shirt at this size */
+  c.fillStyle=tone;c.strokeStyle=line;c.lineWidth=1.2;
+  c.beginPath();c.moveTo(-13,-30);c.lineTo(-2,-18);c.lineTo(-14,-14);c.closePath();c.fill();c.stroke();
+  c.beginPath();c.moveTo( 13,-30);c.lineTo( 2,-18);c.lineTo( 14,-14);c.closePath();c.fill();c.stroke();
+
+  /* placket and buttons */
+  c.strokeStyle='rgba(118,68,92,.34)';c.lineWidth=1.2;
+  c.beginPath();c.moveTo(0,-17);c.lineTo(0,45);c.stroke();
+  c.fillStyle='rgba(118,68,92,.38)';
+  [-4,8,20,32,42].forEach(by=>{c.beginPath();c.arc(0,by,1.5,0,7);c.fill()});
+  c.restore();
+ },
+ panel(c,x,y,w,h,label,warm,pal){
+  c.save();
+  aShadow(c,()=>{c.fillStyle=warm?'#fff3e6':'#eef2fb';aRR(c,x,y,w,h,18);c.fill()});
+  c.restore();
+  if(!label)return;
+  c.fillStyle='rgba(90,60,78,.58)';
+  c.font=`600 ${Math.max(10,w*.082)}px Lora,Georgia,serif`;
+  c.textAlign='center';c.textBaseline='alphabetic';
+  c.fillText(label,x+w/2,y+Math.max(20,h*.10));
+ },
+ draw(A,c,W,H,t,P,pal){
+  const show=aSeg(P,.04,.24);
+  const merge=aSeg(P,.36,.80);
+  const e=aEase(merge);
+  const pw=W*.40,ph=H*.52,py=H*.20;
+  /* the two panels slide toward each other and overlap into one */
+  const lx=aLerp(W*.05,W*.5-pw/2,e), rx=aLerp(W*.55,W*.5-pw/2,e);
+  const alphaR=1-aSeg(P,.72,.92)*.9;
+
+  /* light crossing both panels, so the wait before the merge isn't dead air */
+  const sweep=(t*.16)%1;
+  const merged=aSeg(P,.80,.96);
+  c.globalAlpha=show;
+  this.panel(c,lx,py,pw,ph,merged>.5?'':AT(A.key,'left'),false,pal);
+  c.globalAlpha=show*alphaR;
+  this.panel(c,rx,py,pw,ph,AT(A.key,'right'),true,pal);
+  c.globalAlpha=1;
+
+  const s=Math.min(pw,ph)/120*1.15;
+  const sy=py+ph*.52;
+  /* the shirts: same colour all along, which is the whole point */
+  c.globalAlpha=show;
+  this.shirt(c,lx+pw/2,sy,s,'#f3a8c2');
+  c.globalAlpha=show*alphaR;
+  this.shirt(c,rx+pw/2,sy,s,'#f3a8c2');
+  c.globalAlpha=1;
+
+  /* the light moves across, morning on one side and evening on the other */
+  c.save();
+  c.globalAlpha=show*.5;
+  const sx=aLerp(-W*.3,W*1.3,sweep);
+  const sg=c.createLinearGradient(sx-W*.3,0,sx+W*.3,0);
+  sg.addColorStop(0,'rgba(255,225,190,0)');
+  sg.addColorStop(.5,'rgba(255,232,200,.55)');
+  sg.addColorStop(1,'rgba(255,225,190,0)');
+  c.fillStyle=sg;
+  aRR(c,lx,py,pw,ph,18);c.fill();
+  if(alphaR>.15){aRR(c,rx,py,pw,ph,18);c.fill()}
+  c.restore();
+  c.globalAlpha=1;
+
+  /* the two dates land on the one card */
+  if(merged>0){
+   c.save();c.globalAlpha=merged;
+   c.fillStyle='rgba(90,60,78,.72)';
+   c.font=`600 ${Math.max(10,pw*.085)}px Lora,Georgia,serif`;
+   c.textAlign='center';
+   c.fillText(AT(A.key,'left')+'  ·  '+AT(A.key,'right'),W/2,py+ph-14);
+   c.restore();
+  }
+
+  /* once they're one, a quiet glow around the single shirt */
+  if(merge>.8){
+   const a=(merge-.8)/.2;
+   const gg=c.createRadialGradient(W/2,sy,0,W/2,sy,pw*.9);
+   gg.addColorStop(0,`rgba(255,190,214,${.35*a})`);
+   gg.addColorStop(1,'rgba(255,190,214,0)');
+   c.fillStyle=gg;c.fillRect(0,0,W,H);
+  }
+ },
+ mark(c,s){ASCENES.shirt.shirt(c,s*.5,s*.5,s/120*.92,'#f3a8c2')}
+};
+
+/* ---------- 3 · the twenty-fifth of July ---------- */
+ASCENES.july25={
+ name:'25th July',grp:'Ours',dur:15,
+ blurb:'A grey day at a door, and then the flowers turn up.',
+ def:{words:['I made you cry, and then I stood in a shop picking flowers,',
+             'like a bunch of stems could undo an afternoon.',
+             'You kept them anyway. You always keep the things I get wrong.']},
+ fields:[{f:'words',l:'Lines that float over it',h:'One per line.'}],
+ init(A,W,H){
+  A.d=[];for(let i=0;i<70;i++)A.d.push({x:A.rng()*W,y:A.rng()*H,v:180+A.rng()*260,l:8+A.rng()*14});
+ },
+ bouquet(c,x,y,s,open){
+  c.save();c.translate(x,y);c.scale(s,s);
+  const o=aEase(open);
+  /* wrap */
+  c.fillStyle='#fff6ea';c.strokeStyle='rgba(140,90,110,.25)';c.lineWidth=1;
+  c.beginPath();c.moveTo(0,10);c.lineTo(-16*o,-20*o);c.lineTo(16*o,-20*o);c.closePath();
+  c.fill();c.stroke();
+  /* stems and heads */
+  const heads=[[-11,-30],[0,-36],[11,-30],[-6,-24],[6,-24]];
+  c.strokeStyle='rgba(110,160,122,.9)';c.lineWidth=1.6;
+  heads.forEach(([hx,hy])=>{c.beginPath();c.moveTo(0,6);c.lineTo(hx*o,hy*o);c.stroke()});
+  heads.forEach(([hx,hy],i)=>{
+   const r=(4.4+(i%2)*1.5)*o;
+   c.fillStyle=i%2?'#f4a0bc':'#e8729a';
+   c.beginPath();c.arc(hx*o,hy*o,r,0,7);c.fill();
+   c.fillStyle='rgba(255,255,255,.45)';
+   c.beginPath();c.arc(hx*o-r*.3,hy*o-r*.3,r*.34,0,7);c.fill();
+  });
+  c.restore();
+ },
+ draw(A,c,W,H,t,P,pal){
+  const clearing=aSeg(P,.56,.94);
+  const arrive=aSeg(P,.40,.62);
+  const doorW=W*.46,doorH=H*.62,dx=(W-doorW)/2,dy=H*.12;
+
+  /* grey over everything, lifting later */
+  c.fillStyle=`rgba(96,104,124,${.42*(1-clearing)})`;c.fillRect(0,0,W,H);
+
+  /* the door */
+  aShadow(c,()=>{c.fillStyle=aMix('#8d6a76','#c99a86',clearing);aRR(c,dx,dy,doorW,doorH,10);c.fill()});
+  c.strokeStyle='rgba(255,255,255,.22)';c.lineWidth=1.4;
+  aRR(c,dx+doorW*.12,dy+doorH*.10,doorW*.76,doorH*.34,6);c.stroke();
+  aRR(c,dx+doorW*.12,dy+doorH*.52,doorW*.76,doorH*.34,6);c.stroke();
+  c.fillStyle=aMix('#d8c48f','#f0d79a',clearing);
+  c.beginPath();c.arc(dx+doorW*.86,dy+doorH*.52,Math.max(3,doorW*.032),0,7);c.fill();
+  /* the step */
+  c.fillStyle=`rgba(80,60,72,${.35-.12*clearing})`;
+  c.fillRect(dx-W*.04,dy+doorH,doorW+W*.08,H*.035);
+
+  /* rain, easing off as it clears */
+  const n=Math.round(A.d.length*(1-clearing*.9));
+  c.strokeStyle=`rgba(210,222,240,${.5*(1-clearing*.7)})`;c.lineWidth=1.2;c.lineCap='round';
+  for(let i=0;i<n;i++){
+   const d=A.d[i];
+   d.y+=d.v/60;if(d.y>H){d.y=-20;d.x=A.rng()*W}
+   c.beginPath();c.moveTo(d.x,d.y);c.lineTo(d.x-2,d.y+d.l);c.stroke();
+  }
+
+  /* the flowers arrive on the step */
+  if(arrive>0){
+   const drop=aEase(Math.min(1,arrive*1.25));
+   const by=aLerp(dy+doorH-H*.22,dy+doorH-H*.005,drop);
+   this.bouquet(c,W/2,by,Math.min(W*.0072,H*.0042),aSeg(P,.50,.80));
+  }
+
+  /* warmth coming back into the frame */
+  if(clearing>0){
+   const gg=c.createRadialGradient(W/2,dy+doorH*.55,0,W/2,dy+doorH*.55,Math.max(W,H)*.8);
+   gg.addColorStop(0,`rgba(255,206,152,${.34*clearing})`);
+   gg.addColorStop(1,'rgba(255,206,152,0)');
+   c.fillStyle=gg;c.fillRect(0,0,W,H);
+  }
+ },
+ mark(c,s){ASCENES.july25.bouquet(c,s*.5,s*.78,s/70,1)}
+};
+
+/* ---------- 4 · the order ---------- */
+ASCENES.order={
+ name:'The order',grp:'Ours',dur:14,
+ blurb:'The ride, the burger place, the fries — and which one is still there at the end.',
+ def:{words:['We have never once looked at a menu.',
+             'The ride, the same place, the same order.',
+             'The fries were always the point. So were you.']},
+ fields:[{f:'words',l:'Lines that float over it',h:'One per line.'}],
+ init(A){},
+ scooter(c,x,y,s){
+  c.save();c.translate(x,y);c.scale(s,s);
+  c.strokeStyle='rgba(74,47,62,.85)';c.lineWidth=2.6;c.lineCap='round';c.fillStyle='rgba(74,47,62,.85)';
+  c.beginPath();c.arc(-17,0,7.5,0,7);c.stroke();       // wheels
+  c.beginPath();c.arc(17,0,7.5,0,7);c.stroke();
+  c.beginPath();                                        // body
+  c.moveTo(-17,0);c.lineTo(-10,-4);c.quadraticCurveTo(-2,-16,8,-14);
+  c.lineTo(15,-14);c.lineTo(17,0);c.stroke();
+  c.beginPath();c.moveTo(13,-14);c.lineTo(17,-25);c.lineTo(24,-25);c.stroke();  // handlebar
+  c.beginPath();c.moveTo(-11,-14);c.quadraticCurveTo(-4,-19,4,-16);c.stroke();  // seat
+  c.restore();
+ },
+ burger(c,x,y,s){
+  c.save();c.translate(x,y);c.scale(s,s);
+  c.fillStyle='#e0a45f';c.beginPath();
+  c.moveTo(-15,-3);c.quadraticCurveTo(-15,-17,0,-17);c.quadraticCurveTo(15,-17,15,-3);c.closePath();c.fill();
+  c.fillStyle='rgba(255,255,255,.5)';[-8,0,8].forEach(sx=>{c.beginPath();c.arc(sx,-11,1.3,0,7);c.fill()});
+  c.fillStyle='#8fbd7a';c.fillRect(-16,-3,32,3.4);
+  c.fillStyle='#9a5c42';c.fillRect(-14.5,.4,29,4.4);
+  c.fillStyle='#e8b46f';c.beginPath();
+  c.moveTo(-15,4.8);c.quadraticCurveTo(-15,12,0,12);c.quadraticCurveTo(15,12,15,4.8);c.closePath();c.fill();
+  c.restore();
+ },
+ fries(c,x,y,s,pulse){
+  c.save();c.translate(x,y);c.scale(s,s);
+  c.fillStyle='#f0c86a';
+  [[-7,-20,-9],[-2,-25,-3],[3,-23,4],[8,-18,10],[0,-21,0]].forEach(([fx,fy,tx])=>{
+   c.save();c.translate(fx,0);c.rotate((tx-fx)*.02);
+   aRR(c,-2.2,fy,4.4,Math.abs(fy)+4,1.8);c.fill();c.restore();
+  });
+  c.fillStyle='#e8536b';
+  c.beginPath();c.moveTo(-12,-6);c.lineTo(12,-6);c.lineTo(8,14);c.lineTo(-8,14);c.closePath();c.fill();
+  c.fillStyle='rgba(255,255,255,.85)';
+  aRR(c,-8,-2,16,5,1.5);c.fill();
+  if(pulse>0){
+   c.globalAlpha=pulse*.5;c.fillStyle='#fff';
+   c.beginPath();c.arc(0,0,26,0,7);c.fill();c.globalAlpha=1;
+  }
+  c.restore();
+ },
+ draw(A,c,W,H,t,P,pal){
+  const y=H*.56, s=Math.min(W,H)/150*1.55;
+  /* the table */
+  c.strokeStyle=pal.dark?'rgba(255,220,238,.30)':'rgba(120,80,100,.28)';
+  c.lineWidth=1.6;
+  c.beginPath();c.moveTo(W*.06,y+H*.075);c.lineTo(W*.94,y+H*.075);c.stroke();
+
+  const slots=[W*.24,W*.5,W*.76];
+  const ins=[aSeg(P,.06,.24),aSeg(P,.26,.44),aSeg(P,.46,.64)];
+  const fade=aSeg(P,.70,.90);          // the first two step back
+  const hero=aSeg(P,.74,.96);          // the fries stay
+
+  const put=(i,f)=>{
+   const e=aEase(ins[i]);
+   if(e<=0)return;
+   const drop=(1-e)*H*.16;
+   c.save();c.globalAlpha=e;
+   c.translate(0,-drop);
+   f(slots[i],y);
+   c.restore();
+  };
+  c.globalAlpha=1;
+  const dim=1-fade*.88;
+  c.globalAlpha=dim; put(0,(x,yy)=>this.scooter(c,x,yy,s));
+  c.globalAlpha=dim; put(1,(x,yy)=>this.burger(c,x,yy,s));
+  c.globalAlpha=1;
+  /* the fries drift to the middle and stay lit */
+  const hx=aLerp(slots[2],W*.5,aEase(hero));
+  const hs=s*(1+aEase(hero)*.55);
+  const e2=aEase(ins[2]);
+  if(e2>0){
+   c.save();c.globalAlpha=e2;
+   c.translate(0,-(1-e2)*H*.16);
+   this.fries(c,hx,y,hs,hero*Math.abs(Math.sin(t*1.6))*.5);
+   c.restore();
+  }
+ },
+ mark(c,s){ASCENES.order.fries(c,s*.5,s*.55,s/60,0)}
+};
+
+/* ---------- 6 · the call ---------- */
+ASCENES.call={
+ name:'The call',grp:'Ours',dur:14,
+ blurb:'Two phones, and three words making the trip between them.',
+ def:{words:['No setting, no plan, nothing arranged.',
+             'Just your voice, and three words I was not ready for.',
+             'I have replayed that call more than you know.'],said:'i love you'},
+ fields:[{f:'words',l:'Lines that float over it',h:'One per line.'},
+         {f:'said',l:'What lands on the screen',h:'Short. It appears letter by letter.'}],
+ init(A){},
+ phone(c,x,y,w,h,lit,pal){
+  aShadow(c,()=>{
+   c.fillStyle='#3b2b3e';aRR(c,x-w/2,y-h/2,w,h,w*.17);c.fill();
+  });
+  c.fillStyle=lit?'#ffe9f3':'#5d4a60';
+  aRR(c,x-w/2+w*.07,y-h/2+h*.045,w*.86,h*.91,w*.12);c.fill();
+  c.fillStyle='rgba(255,255,255,.35)';
+  aRR(c,x-w*.10,y-h/2+h*.02,w*.20,h*.016,2);c.fill();
+ },
+ draw(A,c,W,H,t,P,pal){
+  const pw=Math.min(W*.20,H*.14), ph=pw*2.0;
+  const ax=W*.24, ay=H*.30, bx=W*.76, by=H*.70;
+  const travel=aSeg(P,.22,.66);
+  const landed=aSeg(P,.66,.90);
+
+  /* the line between them */
+  c.strokeStyle=pal.dark?'rgba(255,214,235,.22)':'rgba(140,90,120,.22)';
+  c.setLineDash([3,8]);c.lineWidth=1.2;
+  c.beginPath();c.moveTo(ax,ay);c.quadraticCurveTo(W*.5,H*.40,bx,by);c.stroke();
+  c.setLineDash([]);
+
+  this.phone(c,ax,ay,pw,ph,true,pal);
+  this.phone(c,bx,by,pw,ph,landed>0,pal);
+
+  /* the waveform making the trip */
+  if(travel>0&&landed<1){
+   const e=aEase(travel);
+   const px=(1-e)*(1-e)*ax+2*(1-e)*e*W*.5+e*e*bx;
+   const py=(1-e)*(1-e)*ay+2*(1-e)*e*H*.40+e*e*by;
+   const span=Math.min(W,H)*.10;
+   c.strokeStyle='#e8729a';c.lineWidth=2.2;c.lineCap='round';
+   for(let i=-4;i<=4;i++){
+    const hgt=span*(.25+.75*Math.abs(Math.sin(t*5+i*.8)))*(1-Math.abs(i)/5.5);
+    c.beginPath();c.moveTo(px+i*span*.16,py-hgt/2);c.lineTo(px+i*span*.16,py+hgt/2);c.stroke();
+   }
+  }
+
+  /* and the words arriving on his screen, one letter at a time */
+  const said=AT(A.key,'said')||'';
+  if(landed>0&&said){
+   const n=Math.max(0,Math.floor(said.length*aSeg(P,.68,.92)));
+   const txt=said.slice(0,n);
+   c.save();
+   c.fillStyle='#7a3f5c';
+   c.font=`italic ${Math.max(9,pw*.17)}px Lora,Georgia,serif`;
+   c.textAlign='center';c.textBaseline='middle';
+   /* wrap it inside the little screen */
+   const words=txt.split(' ');const lines=[];let cur='';
+   words.forEach(w=>{const tryl=cur?cur+' '+w:w;
+    if(c.measureText(tryl).width>pw*.74&&cur){lines.push(cur);cur=w}else cur=tryl});
+   if(cur)lines.push(cur);
+   const lh=pw*.22;
+   lines.forEach((l,i)=>c.fillText(l,bx,by-(lines.length-1)*lh/2+i*lh));
+   c.restore();
+   if(landed>.85){
+    const a=(landed-.85)/.15;
+    const gg=c.createRadialGradient(bx,by,0,bx,by,pw*2.2);
+    gg.addColorStop(0,`rgba(255,180,210,${.30*a})`);
+    gg.addColorStop(1,'rgba(255,180,210,0)');
+    c.fillStyle=gg;c.fillRect(0,0,W,H);
+   }
+  }
+ },
+ mark(c,s){c.fillStyle='#3b2b3e';aRR(c,s*.32,s*.14,s*.36,s*.72,s*.08);c.fill();
+  c.fillStyle='#ffe9f3';aRR(c,s*.36,s*.18,s*.28,s*.60,s*.05);c.fill()}
+};
+
+/* ================= the two of them =================
+   Deliberately cartoon: round faces, two dots and a mouth. A different
+   register from the careful object drawing, and that contrast is the point. */
+
+/* two figures, drawn simply and on purpose — this register is cartoon,
+   not the careful object-drawing the memories use */
+function pdFig(c,x,y,s,who,opt){
+ opt=opt||{};
+ const k=opt.k==null?1:opt.k;
+ const skin=aCol(who==='z'?'#d9a583':'#c08a63',k);
+ const cloth=aCol(who==='z'?'#e8729a':'#5c6b9c',k);
+ const hairC=aCol('#2f2129',k), capC=aCol('#3f4c78',k), capD=aCol('#33406a',k);
+ c.save();c.translate(x,y);c.scale(s,s);
+ if(opt.flip)c.scale(-1,1);
+ /* body */
+ c.fillStyle=cloth;
+ c.beginPath();
+ c.moveTo(-14,34);c.quadraticCurveTo(-16,2,-9,-6);
+ c.lineTo(9,-6);c.quadraticCurveTo(16,2,14,34);
+ c.closePath();c.fill();
+ /* arms */
+ c.strokeStyle=cloth;c.lineWidth=7;c.lineCap='round';
+ if(opt.wave){
+  c.beginPath();c.moveTo(-10,2);c.lineTo(-20,-14);c.stroke();
+  c.beginPath();c.moveTo(10,2);c.lineTo(17,18);c.stroke();
+ }else if(opt.reach){
+  c.beginPath();c.moveTo(10,2);c.lineTo(26,10);c.stroke();
+  c.beginPath();c.moveTo(-10,2);c.lineTo(-16,18);c.stroke();
+ }else{
+  c.beginPath();c.moveTo(-10,2);c.lineTo(-16,20);c.stroke();
+  c.beginPath();c.moveTo(10,2);c.lineTo(16,20);c.stroke();
+ }
+ /* head */
+ c.fillStyle=skin;
+ c.beginPath();c.arc(0,-20,13,0,7);c.fill();
+ if(who==='z'){
+  /* hair */
+  c.fillStyle=hairC;
+  c.beginPath();c.arc(0,-22,14,Math.PI,0);c.fill();
+  c.beginPath();c.ellipse(-13,-14,5,12,.2,0,7);c.fill();
+  c.beginPath();c.ellipse(13,-14,5,12,-.2,0,7);c.fill();
+ }else{
+  /* the cap, because of the coupon */
+  c.fillStyle=capC;
+  c.beginPath();c.arc(0,-24,13.5,Math.PI,0);c.fill();
+  c.fillRect(-13.5,-25,27,4);
+  c.fillStyle=capD;
+  c.beginPath();c.ellipse(11,-22,11,3.6,0,0,7);c.fill();
+ }
+ /* face — two dots and a curve, nothing more */
+ c.fillStyle=hairC;
+ c.beginPath();c.arc(-4.5,-20,1.7,0,7);c.fill();
+ c.beginPath();c.arc(4.5,-20,1.7,0,7);c.fill();
+ c.strokeStyle=hairC;c.lineWidth=1.6;c.lineCap='round';
+ c.beginPath();
+ if(opt.sad)c.arc(0,-11,5,Math.PI*1.15,Math.PI*1.85);
+ else if(opt.flat){c.moveTo(-4.5,-14.5);c.lineTo(4.5,-14.5)}   /* neither happy nor sad */
+ else c.arc(0,-16,5.5,0.25,Math.PI-0.25);
+ c.stroke();
+ c.restore();
+}
+
+
+/* ================= before =================
+   Night one. A calm, unremarkable few months — office, the ride home, a desk
+   at night — and a man with no idea what is about to happen to him. It must
+   not read as sad, and it must not read like the other life: that one is cold
+   and grainy and wrong. This one is just quiet. The drama is all in the text,
+   and it ends on the one thing nobody was looking at.                     */
+
+/* a calm, low-saturation world of its own, whatever time she opens it */
+const BF_INK='#e8e2ee';
+const bfc=(hex,m)=>aCol(hex,m==null?.42:m);
+
+/* the same two figures, muted */
+function bfFig(c,x,y,s,who,opt){
+ opt=Object.assign({flat:true},opt||{},{k:opt&&opt.k!=null?opt.k:.42});
+ pdFig(c,x,y,s,who,opt);
+}
+
+ASCENES.before={
+ name:'Before',grp:'Ours',dur:34,
+ blurb:'Office, the ride home, a desk at night — and the empty chair nobody was looking at.',
+ def:{
+  beats:'This was me, a few months ago.\n'+
+        'Office. Then home. The same road, every evening.\n'+
+        'Books, a screen, and a very reasonable amount of nothing.\n'+
+        'I was not waiting for anyone. It had not occurred to me that I should be.',
+  teaser:'A few days after this,\nsomebody sat down right there.',
+  words:[]
+ },
+ fields:[
+  {f:'beats',l:'The four quiet scenes',h:'One line each, in order: office, the ride home, home at night, and the last one before the chair.'},
+  {f:'teaser',l:'The teaser at the end',h:'What makes her want tomorrow. One or two lines.'}
+ ],
+
+ /* ---------- the four quiet scenes ---------- */
+ /* his seat and the empty one, inside an office drawn at (x,y,S) */
+ seatSpots(x,y,S){
+  return {mine :{x:x-S*.26,y:y+S*.06,s:S*.9},
+          empty:{x:x+S*.22,y:y+S*.06,s:S*.9}};
+ },
+ /* him on his chair — drawn together so they can travel together */
+ seated(c,sp,S,lit){
+  this.chair(c,sp.x,sp.y,sp.s,0);
+  bfFig(c,sp.x,sp.y-sp.s*.30,sp.s*.0074,'m',{});
+ },
+ office(c,x,y,S,t,f,withSeats){
+  /* a desk, him sitting at it, and the chair beside him */
+  c.fillStyle=bfc('#8a6a52');
+  aRR(c,x-S*.66,y+S*.22,S*1.32,S*.09,S*.02);c.fill();
+  c.fillStyle=bfc('#6f5442');
+  c.fillRect(x-S*.58,y+S*.31,S*.05,S*.26);
+  c.fillRect(x+S*.53,y+S*.31,S*.05,S*.26);
+  /* the monitor glow, which is the only warmth in his evening */
+  const g=c.createRadialGradient(x-S*.26,y+S*.02,0,x-S*.26,y+S*.02,S*.62);
+  g.addColorStop(0,'rgba(150,180,220,.16)');
+  g.addColorStop(1,'rgba(150,180,220,0)');
+  c.fillStyle=g;c.beginPath();c.arc(x-S*.26,y+S*.02,S*.62,0,7);c.fill();
+  if(withSeats!==false){
+   const sp=this.seatSpots(x,y,S);
+   this.seated(c,sp.mine,S,0);
+   this.chair(c,sp.empty.x,sp.empty.y,sp.empty.s,0);
+  }
+  /* the laptop sits in front of him */
+  c.fillStyle=bfc('#4b4450');
+  aRR(c,x-S*.42,y+S*.08,S*.32,S*.13,S*.012);c.fill();
+ },
+ chair(c,x,y,S,lit){
+  c.save();c.translate(x,y);
+  if(lit>0){
+   const g=c.createRadialGradient(0,-S*.05,0,0,-S*.05,S*.62);
+   g.addColorStop(0,`rgba(255,206,152,${.30*lit})`);
+   g.addColorStop(1,'rgba(255,206,152,0)');
+   c.fillStyle=g;c.beginPath();c.arc(0,-S*.05,S*.62,0,7);c.fill();
+  }
+  const tone=lit>0?aCol('#8a7490',.42+lit*.4):bfc('#6d5c74');
+  c.fillStyle=tone;
+  aRR(c,-S*.17,-S*.34,S*.34,S*.36,S*.035);c.fill();
+  c.fillStyle=lit>0?aCol('#9c85a2',.42+lit*.4):bfc('#7e6b86');
+  aRR(c,-S*.21,S*.03,S*.42,S*.08,S*.02);c.fill();
+  c.fillStyle=bfc('#5a4b62');
+  c.fillRect(-S*.17,S*.11,S*.035,S*.24);
+  c.fillRect( S*.135,S*.11,S*.035,S*.24);
+  c.restore();
+ },
+ road(c,x,y,S,t){
+  /* the same route, drawn as motion rather than as a place */
+  c.strokeStyle=bfc('#6f6478');c.lineWidth=Math.max(2,S*.014);
+  const shift=(t*S*.22)%(S*.16);
+  c.setLineDash([S*.08,S*.08]);c.lineDashOffset=-shift;
+  c.beginPath();c.moveTo(x-S*.95,y+S*.34);c.lineTo(x+S*.95,y+S*.34);c.stroke();
+  c.setLineDash([]);c.lineDashOffset=0;
+  /* streetlights going past */
+  for(let i=0;i<4;i++){
+   const lx=x-S*.9+(((i*S*.62+t*S*.30)%(S*2.0)));
+   c.strokeStyle=bfc('#5c5668');c.lineWidth=Math.max(1.4,S*.010);
+   c.beginPath();c.moveTo(lx,y+S*.22);c.lineTo(lx,y-S*.42);c.stroke();
+   c.beginPath();c.moveTo(lx,y-S*.42);c.lineTo(lx+S*.07,y-S*.45);c.stroke();
+   const g=c.createRadialGradient(lx+S*.07,y-S*.44,0,lx+S*.07,y-S*.44,S*.22);
+   g.addColorStop(0,'rgba(255,214,150,.20)');
+   g.addColorStop(1,'rgba(255,214,150,0)');
+   c.fillStyle=g;c.beginPath();c.arc(lx+S*.07,y-S*.44,S*.22,0,7);c.fill();
+  }
+  /* him, going home */
+  const bob=Math.sin(t*2.2)*S*.006;
+  c.save();c.translate(x,y+bob);
+  const body=bfc('#4a2f3e');
+  [[-S*.26,1],[S*.28,1]].forEach(([wx])=>{
+   c.fillStyle=body;c.beginPath();c.arc(wx,S*.24,S*.095,0,7);c.fill();
+   c.fillStyle=bfc('#c9b3c2');c.beginPath();c.arc(wx,S*.24,S*.042,0,7);c.fill();
+  });
+  c.fillStyle=body;
+  c.beginPath();
+  c.moveTo(-S*.36,S*.10);c.quadraticCurveTo(-S*.38,-S*.01,-S*.25,-S*.03);
+  c.lineTo(-S*.05,-S*.03);c.quadraticCurveTo(S*.02,-S*.01,S*.06,S*.09);
+  c.lineTo(S*.20,S*.10);c.lineTo(S*.20,S*.17);c.lineTo(-S*.10,S*.17);
+  c.quadraticCurveTo(-S*.25,S*.17,-S*.30,S*.14);c.closePath();c.fill();
+  c.beginPath();
+  c.moveTo(S*.18,S*.11);c.quadraticCurveTo(S*.24,-S*.02,S*.27,-S*.12);
+  c.lineTo(S*.34,-S*.11);c.quadraticCurveTo(S*.30,S*.00,S*.28,S*.12);
+  c.closePath();c.fill();
+  c.strokeStyle=body;c.lineWidth=Math.max(2,S*.020);c.lineCap='round';
+  c.beginPath();c.moveTo(S*.24,-S*.15);c.lineTo(S*.39,-S*.17);c.stroke();
+  c.fillStyle=bfc('#7a5468');
+  aRR(c,-S*.31,-S*.06,S*.31,S*.06,S*.028);c.fill();
+  bfFig(c,S*.04,-S*.26,S*.0056,'m',{});
+  c.restore();
+ },
+ night(c,x,y,S,t){
+  /* a window with the dark outside it, a lamp, a book, and no hurry */
+  c.fillStyle=bfc('#3a4152');
+  aRR(c,x-S*.52,y-S*.62,S*1.04,S*.72,S*.03);c.fill();
+  c.fillStyle='rgba(20,24,38,.85)';
+  aRR(c,x-S*.46,y-S*.56,S*.92,S*.60,S*.02);c.fill();
+  c.strokeStyle=bfc('#4d5566');c.lineWidth=Math.max(1.2,S*.011);
+  c.beginPath();c.moveTo(x,y-S*.56);c.lineTo(x,y+S*.04);c.stroke();
+  c.beginPath();c.moveTo(x-S*.46,y-S*.26);c.lineTo(x+S*.46,y-S*.26);c.stroke();
+  /* a few lights out there belonging to other people */
+  const r=aRng(9);
+  for(let i=0;i<11;i++){
+   const lx=x-S*.42+r()*S*.84, ly=y-S*.52+r()*S*.50;
+   c.fillStyle=`rgba(255,214,150,${.18+r()*.30})`;
+   c.fillRect(lx,ly,S*.022,S*.016);
+  }
+  /* the desk under it */
+  c.fillStyle=bfc('#8a6a52');
+  aRR(c,x-S*.60,y+S*.24,S*1.20,S*.08,S*.02);c.fill();
+  /* lamp */
+  c.strokeStyle=bfc('#4b4450');c.lineWidth=Math.max(2,S*.018);
+  c.beginPath();c.moveTo(x+S*.42,y+S*.24);c.lineTo(x+S*.42,y+S*.02);
+  c.lineTo(x+S*.30,y-S*.06);c.stroke();
+  c.fillStyle='rgba(244,201,106,.85)';
+  c.beginPath();c.moveTo(x+S*.21,y-S*.01);c.lineTo(x+S*.38,y-S*.01);
+  c.lineTo(x+S*.35,y-S*.13);c.lineTo(x+S*.24,y-S*.13);c.closePath();c.fill();
+  const g=c.createRadialGradient(x+S*.28,y+S*.02,0,x+S*.28,y+S*.02,S*.66);
+  g.addColorStop(0,'rgba(255,206,140,.22)');
+  g.addColorStop(1,'rgba(255,206,140,0)');
+  c.fillStyle=g;c.beginPath();c.arc(x+S*.28,y+S*.02,S*.66,0,7);c.fill();
+  bfFig(c,x-S*.16,y+S*.04,S*.0064,'m',{});
+  /* an open book */
+  c.fillStyle=bfc('#efe6ec');
+  c.save();c.translate(x-S*.30,y+S*.19);c.rotate(-.06);
+  aRR(c,-S*.12,-S*.05,S*.24,S*.09,S*.006);c.fill();
+  c.strokeStyle=bfc('#cbb9c6');c.lineWidth=1;
+  c.beginPath();c.moveTo(0,-S*.05);c.lineTo(0,S*.04);c.stroke();
+  c.restore();
+ },
+
+ init(A,W,H){A.bgA='#2b3040';A.bgB='#4a4256'},
+
+ draw(A,c,W,H,t,P,pal){
+  const S=Math.min(W,H);
+  const lines=AL(A.key,'beats');
+  /* four quiet scenes, then the chair */
+  const N=4;
+  const span=.78/N;
+  c.textAlign='center';c.textBaseline='middle';
+
+  if(P<.78){
+   const idx=Math.min(N-1,Math.floor(P/span));
+   const local=(P-idx*span)/span;
+   const f=Math.min(aEase(Math.min(1,local/.16)),
+                    aEase(Math.min(1,(1-local)/.16)));
+   c.globalAlpha=f;
+   /* a slow drift, so it breathes rather than sits */
+   const dx=Math.sin(t*.28+idx)*S*.012;
+   if(idx===0)this.office(c,W/2+dx,H*.42,S*.62,t,f);
+   else if(idx===1)this.road(c,W/2+dx,H*.42,S*.62,t);
+   else if(idx===2)this.night(c,W/2+dx,H*.42,S*.62,t);
+   else{
+    /* the fourth beat is the office again, and the chair is still there */
+    this.office(c,W/2+dx,H*.42,S*.62,t,f);
+   }
+   if(lines[idx]){
+    aGlowText(c,true);
+    c.font=`italic ${Math.max(14,S*.044)}px Lora,Georgia,serif`;
+    aWrap(c,lines[idx],W*.80).forEach((ln,j,arr)=>
+     c.fillText(ln,W/2,H*.76+(j-(arr.length-1)/2)*S*.056));
+    aClearShadow(c);
+   }
+   c.globalAlpha=1;
+   return;
+  }
+
+  /* ---- and then the only thing that mattered, which was off to one side ---- */
+  const z=aEase(aSeg(P,.78,.92));   // the desk falls away; he does not
+  const lit=aSeg(P,.90,.99);        // a light finds the seat beside him
+  const OS=S*.62, ox=W/2, oy=H*.42;
+
+  /* the desk and the laptop go; he is still sitting there */
+  c.globalAlpha=1-z;
+  this.office(c,ox,oy,OS,t,1,false);
+  c.globalAlpha=1;
+
+  /* both seats drift to the middle together, keeping the gap between them.
+     Redrawing them somewhere new instead of moving them there was the jump
+     that read as a stutter. */
+  const sp=this.seatSpots(ox,oy,OS);
+  const gap=S*.155, endY=H*.44, endS=S*.40;
+  const mine ={x:aLerp(sp.mine.x, W/2-gap,z), y:aLerp(sp.mine.y, endY,z), s:aLerp(sp.mine.s, endS,z)};
+  const empty={x:aLerp(sp.empty.x,W/2+gap,z), y:aLerp(sp.empty.y,endY,z), s:aLerp(sp.empty.s,endS,z)};
+  this.seated(c,mine,S,0);
+  this.chair(c,empty.x,empty.y,empty.s,lit);
+
+  const teaser=AL(A.key,'teaser');
+  if(lit>0&&teaser.length){
+   c.globalAlpha=aSeg(P,.91,.99);
+   aGlowText(c,true);
+   c.font=`500 ${Math.max(16,S*.052)}px 'Playfair Display',Georgia,serif`;
+   let y=H*.74;
+   teaser.forEach(ln=>{
+    aWrap(c,ln,W*.80).forEach(w=>{c.fillText(w,W/2,y);y+=S*.062});
+   });
+   aClearShadow(c);c.globalAlpha=1;
+  }
+ },
+
+ mark(c,s){
+  c.fillStyle='#8a7490';aRR(c,s*.32,s*.24,s*.36,s*.34,s*.04);c.fill();
+  c.fillStyle='#9c85a2';aRR(c,s*.28,s*.60,s*.44,s*.09,s*.03);c.fill();
+ }
+};
+
+/* ================= the kitchen =================
+   Her own plan, handed back to her as a picture. Two people cooking
+   something at night, and then the thing she didn't ask for out loud:
+   the phone goes on, the big light goes off, and nobody lets go.
+
+   Warm on purpose, and warm whatever time she opens it — this one is a
+   night, not a time of day. It paints its own ground.                 */
+
+const KT_WARM='#ffcf9a';
+const ktFig=(c,x,y,s,who,opt)=>pdFig(c,x,y,s,who,opt||{});
+
+ASCENES.kitchen={
+ name:'The kitchen',grp:'Ours',dur:42,
+ blurb:'Cooking together at night, a slow dance, and the rest of the evening after it.',
+ sound(){return AUDIO.jazzWaltz()},
+ solo:true,          /* one line at a time — five of them would bury the picture */
+ def:{
+  words:['You said you wanted to cook something tonight. And dance after.',
+         'We can’t. Not tonight.',
+         'So take it like this for now —',
+         'the food, the song, and me not letting go till it ends.',
+         'One day we do it properly. This is me promising.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line. They come up one at a time.'}],
+
+ init(A,W,H,R){
+  A.bgA='#2b1d30'; A.bgB='#452a33';          /* a warm dark, not the app's palette */
+  A.steam=[];for(let i=0;i<16;i++)A.steam.push({o:R()*6.3,r:.3+R()*.7,sp:.45+R()*.5,x:(R()-.5)});
+  A.notes=[];for(let i=0;i<9;i++)A.notes.push({o:R()*6.3,r:R(),sp:.35+R()*.45,x:(R()-.5)});
+  A.spice=[];for(let i=0;i<14;i++)A.spice.push({d:R(),x:(R()-.5),w:.3+R()*.7});
+ },
+
+ /* ---------- the room ---------- */
+ lamp(c,x,y,W,H,on){
+  if(on<=0)return;
+  /* the flex and the shade */
+  c.strokeStyle='rgba(255,220,180,'+(.30*on)+')';c.lineWidth=2;
+  c.beginPath();c.moveTo(x,0);c.lineTo(x,y);c.stroke();
+  c.fillStyle='rgba(255,214,168,'+(.85*on)+')';
+  c.beginPath();c.moveTo(x-16,y);c.lineTo(x+16,y);c.lineTo(x+9,y-14);c.lineTo(x-9,y-14);
+  c.closePath();c.fill();
+  /* the cone, which is the only light in the room */
+  const g=c.createLinearGradient(0,y,0,H);
+  g.addColorStop(0,'rgba(255,205,150,'+(.30*on)+')');
+  g.addColorStop(1,'rgba(255,205,150,0)');
+  c.fillStyle=g;
+  c.beginPath();c.moveTo(x-15,y);c.lineTo(x+15,y);c.lineTo(x+W*.42,H);c.lineTo(x-W*.42,H);
+  c.closePath();c.fill();
+ },
+ counter(c,W,H,a){
+  if(a<=0)return;
+  c.globalAlpha=a;
+  const y=H*.40;
+  c.fillStyle='#8a6a52';aRR(c,W*.06,y,W*.88,H*.035,4);c.fill();
+  c.fillStyle='#5b4133';c.fillRect(W*.06,y+H*.035,W*.88,H*.10);
+  /* two drawer lines, so it reads as furniture and not a plank */
+  c.strokeStyle='rgba(0,0,0,.22)';c.lineWidth=1.5;
+  c.beginPath();c.moveTo(W*.06,y+H*.085);c.lineTo(W*.94,y+H*.085);c.stroke();
+  c.globalAlpha=1;
+  return y;
+ },
+ /* the pan, with as much steam as the cooking deserves */
+ pan(c,x,y,s,heat,t,A){
+  c.fillStyle='#3a343f';
+  c.beginPath();c.ellipse(x,y,s*.34,s*.11,0,0,7);c.fill();
+  c.fillStyle='#4b434f';
+  c.beginPath();c.ellipse(x,y-s*.035,s*.32,s*.10,0,0,7);c.fill();
+  c.strokeStyle='#2e2a34';c.lineWidth=s*.055;c.lineCap='round';
+  c.beginPath();c.moveTo(x+s*.33,y-s*.02);c.lineTo(x+s*.60,y-s*.09);c.stroke();
+  /* whatever it is, it is orange and it is bubbling */
+  c.fillStyle='rgba(226,140,72,'+(.75*heat)+')';
+  c.beginPath();c.ellipse(x,y-s*.045,s*.24,s*.068,0,0,7);c.fill();
+  if(heat>0)A.steam.forEach(p=>{
+   const u=(t*p.sp*.34+p.o/6.3)%1;
+   c.globalAlpha=heat*(1-u)*.22*p.r;
+   c.fillStyle='#ffe9d2';
+   c.beginPath();
+   c.arc(x+p.x*s*.24+Math.sin(t*p.sp+p.o)*s*.045, y-s*.10-u*s*.52, s*(.020+u*.045),0,7);
+   c.fill();
+  });
+  c.globalAlpha=1;
+ },
+ plates(c,x,y,s,a){
+  if(a<=0)return;
+  c.globalAlpha=a;
+  [-1,1].forEach(d=>{
+   c.fillStyle='#efe0d4';
+   c.beginPath();c.ellipse(x+d*s*.30,y,s*.20,s*.065,0,0,7);c.fill();
+   c.fillStyle='#c98b56';
+   c.beginPath();c.ellipse(x+d*s*.30,y-s*.012,s*.11,s*.034,0,0,7);c.fill();
+  });
+  c.globalAlpha=1;
+ },
+ phone(c,x,y,s,on){
+  c.fillStyle=on>0?'#2a2733':'#23202b';
+  aRR(c,x-s*.05,y-s*.115,s*.10,s*.17,s*.018);c.fill();
+  if(on>0){
+   c.fillStyle='rgba(255,207,154,'+(.55*on)+')';
+   aRR(c,x-s*.042,y-s*.105,s*.084,s*.15,s*.014);c.fill();
+   const g=c.createRadialGradient(x,y-s*.03,0,x,y-s*.03,s*.30);
+   g.addColorStop(0,'rgba(255,200,150,'+(.30*on)+')');
+   g.addColorStop(1,'rgba(255,200,150,0)');
+   c.fillStyle=g;c.beginPath();c.arc(x,y-s*.03,s*.30,0,7);c.fill();
+  }
+ },
+ note(c,x,y,s,a){
+  c.globalAlpha=a;c.fillStyle=KT_WARM;
+  c.beginPath();c.ellipse(x,y,s*.42,s*.30,-.35,0,7);c.fill();
+  c.fillRect(x+s*.30,y-s*1.5,s*.16,s*1.5);
+  c.globalAlpha=1;
+ },
+
+ /* ---------- the two of them ---------- */
+ /* side by side at the counter, both busy, one of them stirring */
+ cooking(c,x,y,s,t,A,mess){
+  const stir=Math.sin(t*2.6)*.5+.5;
+  ktFig(c,x-s*.30,y,s*.0088,'m',{reach:true});
+  ktFig(c,x+s*.30,y-s*.004,s*.0088,'z',{flip:true,reach:true});
+  /* a pinch of something going in, from his side */
+  if(mess>0)A.spice.forEach(p=>{
+   const u=((t*.6+p.d)%1);
+   if(u>mess)return;
+   c.globalAlpha=(1-u)*.8;
+   c.fillStyle='#e8b978';
+   c.beginPath();c.arc(x-s*.10+p.x*s*.08,y-s*.30+u*s*.34,s*.008*p.w,0,7);c.fill();
+  });
+  c.globalAlpha=1;
+  return stir;
+ },
+ /* the part she did not ask for out loud.
+    kiss = 0 while they are still turning, 1 once they have stopped and
+    leaned in — the same two figures the whole way, so it reads as one move. */
+ dance(c,x,y,s,t,turn,kiss){
+  const k=kiss||0;
+  c.save();c.translate(x,y);
+  c.rotate(Math.sin(t*.85)*.045*(1-k*.6));        /* they sway as one thing */
+  c.scale(aLerp(.72+.28*Math.abs(Math.cos(turn)),1,k),1);   /* turning, then still */
+  const gap=aLerp(.155,.112,k);                   /* and closer at the end */
+  /* his arm around her, drawn behind both of them */
+  c.strokeStyle='#5c6b9c';c.lineWidth=s*.055;c.lineCap='round';
+  c.beginPath();c.moveTo(-s*.10,-s*.05);c.quadraticCurveTo(s*.10,-s*.12,s*.27,-s*.02);c.stroke();
+  c.save();c.translate(-s*gap,0);c.rotate(k*.17);
+  ktFig(c,0,0,s*.0088,'m',{reach:true});
+  c.restore();
+  c.save();
+  c.translate(s*gap,s*.012);
+  c.rotate(-.10-k*.17);                           /* her head tips toward him */
+  ktFig(c,0,0,s*.0088,'z',{flip:true,reach:true});
+  c.restore();
+  c.restore();
+  /* one small heart, once, above the two of them */
+  if(k>.25)this.heart(c,x,y-s*.34-aEase((k-.25)/.75)*s*.22,
+                     s*.030*(0.5+aEase(Math.min(1,(k-.25)/.28))*.5),
+                     Math.min(1,(1-k)*3.2));
+ },
+ heart(c,x,y,s,a){
+  if(a<=0)return;
+  c.globalAlpha=a;c.fillStyle='#ff9fbb';
+  c.save();c.translate(x,y);c.scale(s/16,s/16);
+  c.beginPath();
+  for(let ang=0;ang<=6.3;ang+=.08){
+   const hx=16*Math.pow(Math.sin(ang),3);
+   const hy=-(13*Math.cos(ang)-5*Math.cos(2*ang)-2*Math.cos(3*ang)-Math.cos(4*ang));
+   ang?c.lineTo(hx,hy):c.moveTo(hx,hy);
+  }
+  c.closePath();c.fill();c.restore();
+  c.globalAlpha=1;
+ },
+ /* and then the rest of the evening: a sofa, a blanket, nobody moving */
+ cuddle(c,x,y,s,t,a){
+  if(a<=0)return;
+  c.globalAlpha=a;
+  const br=Math.sin(t*.9)*s*.004;                 /* they breathe, barely */
+  /* the sofa back, behind them */
+  c.fillStyle='#4a3550';
+  aRR(c,x-s*.42,y-s*.20,s*.84,s*.40,s*.07);c.fill();
+  c.save();c.translate(0,br);
+  /* him upright, her leaned right into him */
+  ktFig(c,x-s*.095,y+s*.12,s*.0082,'m',{reach:true});
+  c.save();
+  c.translate(x+s*.105,y+s*.15);
+  c.rotate(-.30);                                 /* she is properly tucked in */
+  ktFig(c,0,0,s*.0082,'z',{flip:true,reach:true});
+  c.restore();
+  c.restore();
+  /* the blanket over their laps — its own colour, or it reads as one pink slab */
+  c.fillStyle='#caa07e';
+  c.beginPath();
+  c.moveTo(x-s*.30,y+s*.20+br);
+  c.quadraticCurveTo(x,y+s*.12+br,x+s*.32,y+s*.21+br);
+  c.lineTo(x+s*.34,y+s*.34);c.lineTo(x-s*.32,y+s*.34);
+  c.closePath();c.fill();
+  c.strokeStyle='#a87f60';c.lineWidth=s*.008;
+  c.beginPath();
+  c.moveTo(x-s*.30,y+s*.20+br);
+  c.quadraticCurveTo(x,y+s*.12+br,x+s*.32,y+s*.21+br);
+  c.stroke();
+  c.fillStyle='#3d2b44';
+  aRR(c,x-s*.50,y-s*.02,s*.14,s*.38,s*.05);c.fill();
+  aRR(c,x+s*.36,y-s*.02,s*.14,s*.38,s*.05);c.fill();
+  c.fillStyle='#57406040';
+  aRR(c,x-s*.44,y+s*.30,s*.88,s*.10,s*.04);c.fill();
+  c.globalAlpha=1;
+ },
+
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H);
+  /* everything lives in the top half — the lines of text own the bottom */
+  const cx=W/2, cy=H*.40;
+
+  /* the light comes on */
+  const on=aSeg(P,.02,.10);
+  /* cooking -> eating -> the light goes down -> dance -> kiss -> the sofa */
+  const heat  = aSeg(P,.09,.17)*(1-aSeg(P,.33,.40));
+  const mess  = aSeg(P,.15,.23)*(1-aSeg(P,.30,.37));
+  const plate = aSeg(P,.33,.41)*(1-aSeg(P,.46,.53));
+  const dim   = aSeg(P,.43,.53);                  /* the big light going off */
+  const music = aSeg(P,.45,.53);
+  const away  = aSeg(P,.46,.56);                  /* the counter leaves the frame */
+  const dancing=aSeg(P,.49,.59);
+  const kiss  = aSeg(P,.63,.72);
+  const gone  = aSeg(P,.73,.78);                  /* the dance goes out first... */
+  const sofa  = aSeg(P,.78,.84);                  /* ...and only then the sofa comes in,
+                                                     so the two never ghost through each other */
+
+  this.lamp(c,cx,H*.09,W,H,on*(1-dim*.86));
+
+  /* once the overhead goes off, the phone is the only thing lighting them */
+  if(dim>0){
+   const g=c.createRadialGradient(cx,H*.42,0,cx,H*.42,S*.62);
+   g.addColorStop(0,'rgba(255,196,140,'+(.32*dim)+')');
+   g.addColorStop(1,'rgba(255,196,140,0)');
+   c.fillStyle=g;c.fillRect(0,0,W,H);
+  }
+
+  /* they stand behind the counter, so the counter is painted over their legs */
+  c.save();
+  c.translate(0,away*H*.34);
+  if(dancing<1){
+   c.globalAlpha=1-dancing;
+   this.cooking(c,cx,cy-H*.075,S*.58,t,A,mess);
+   c.globalAlpha=1;
+  }
+  this.counter(c,W,H,1-away);
+  /* the pan sits ON the counter, so it is drawn after it and kept small —
+     it is a pan, not the set */
+  if(heat>0.001) this.pan(c,cx-S*.02,cy+H*.012,S*.24,heat,t,A);
+  this.plates(c,cx,cy+H*.014,S*.30,plate);
+  this.phone(c,W*.82,cy+H*.010,S*.30,music*(1-away));
+  c.restore();
+
+  if(dancing>0&&gone<1){
+   c.globalAlpha=dancing*(1-gone);
+   this.dance(c,cx,H*.40,S*.62,t,t*.42,kiss);
+   c.globalAlpha=1;
+  }
+  if(sofa>0)this.cuddle(c,cx,H*.36,S*.58,t,sofa);
+
+  /* the music, once it is on — kept to the top corner, out of the words */
+  if(music>0)A.notes.forEach(p=>{
+   const u=(t*p.sp*.26+p.o/6.3)%1;
+   this.note(c,W*.82+p.x*W*.12+Math.sin(t*p.sp+p.o)*W*.025,
+             cy-H*.06-u*H*.28, S*.020, music*(1-u)*.8);
+  });
+ },
+
+ /* the keepsake: a pan, and the steam coming off it in the obvious shape */
+ mark(c,s){
+  c.fillStyle='#4b434f';
+  c.beginPath();c.ellipse(s*.48,s*.66,s*.30,s*.10,0,0,7);c.fill();
+  c.strokeStyle='#2e2a34';c.lineWidth=s*.05;c.lineCap='round';
+  c.beginPath();c.moveTo(s*.77,s*.64);c.lineTo(s*.95,s*.58);c.stroke();
+  c.fillStyle='#ffd0b0';
+  c.save();c.translate(s*.48,s*.34);c.scale(s*.012,s*.012);
+  c.beginPath();
+  for(let a=0;a<=6.3;a+=.08){
+   const x=16*Math.pow(Math.sin(a),3);
+   const y=-(13*Math.cos(a)-5*Math.cos(2*a)-2*Math.cos(3*a)-Math.cos(4*a));
+   a?c.lineTo(x,y):c.moveTo(x,y);
+  }
+  c.closePath();c.fill();c.restore();
+ }
+};
+
 growGarden(true);
 AUDIO.paintBtn();
 $('#sndBtn').onclick=()=>{AUDIO.setOn(!AUDIO.isOn());AUDIO.wake()};
 $('#edG').addEventListener('change',()=>describeGame($('#edG').value));
+$('#edA').addEventListener('change',()=>{describeAnim($('#edA').value)});
+$('#edTryAnim').onclick=()=>{readEditor();const k=$('#edA').value;
+ if(!k){$('#edStat').textContent='Pick an animation first.';return}
+ edsheet.classList.remove('show');dev=true;
+ const D=DAYS[edDay-1],was=D.a;D.a=k;
+ animView(edDay,()=>{D.a=was||k;openEditor(edDay);edsheet.classList.add('show')},true)};
+$('#edAnimReset').onclick=()=>{const k=$('#edA').value;if(!k)return;
+ delete ATXT[k];renderAnimFields(k);
+ $('#edStat').textContent='Back to the built-in words for '+ASCENES[k].name+'.'};
 $('#edAdd').onclick=()=>{const k=$('#edG').value;
  if(k==='none'){edGames=['none']}else{edGames=edGames.filter(x=>x!=='none');
   if(edGames.includes(k)){$('#edStat').textContent='That one is already on this day.';return}
@@ -1720,8 +3482,11 @@ function makeField(box,ratio){
  const cv=el('canvas');f.appendChild(cv);box.appendChild(f);
  const g={f,cv,ctx:cv.getContext('2d'),w:300,h:400,flash:0};
  const fit=()=>{const r=f.getBoundingClientRect(),dp=Math.min(devicePixelRatio||1,2);
-  g.w=r.width;g.h=r.height;cv.width=r.width*dp;cv.height=r.height*dp;cv.style.width='100%';cv.style.height='100%';g.ctx.setTransform(dp,0,0,dp,0,0)};
- fit();setTimeout(fit,60);addEventListener('resize',fit);
+  if(!r.width||!r.height)return;
+  if(Math.abs(r.width-g.w)<.5&&Math.abs(r.height-g.h)<.5&&cv.width)return;   // nothing moved: don't wipe it
+  g.w=r.width;g.h=r.height;cv.width=r.width*dp;cv.height=r.height*dp;cv.style.width='100%';cv.style.height='100%';g.ctx.setTransform(dp,0,0,dp,0,0);
+  if(g.onfit)try{g.onfit()}catch(e){}};
+ g.w=0;g.h=0;fit();setTimeout(fit,60);addEventListener('resize',fit);
  g.destroy=()=>removeEventListener('resize',fit);
  g.at=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
  return g;
@@ -3393,6 +5158,7 @@ NEW.constellation={name:'Trace the sky',blurb:'Three constellations, and each on
   const r=el('div','row');const gh=el('button','btn ghost','Show me the outline');
   gh.onclick=()=>{showGhost=!showGhost;gh.textContent=showGhost?'Hide the outline':'Show me the outline';draw()};
   r.appendChild(gh);box.appendChild(r);
+  g.onfit=draw;
   stat.textContent='0 / 10';draw();
   return ()=>{alive=false;g.destroy()};
  }};
