@@ -672,6 +672,91 @@ body.devpanelon #devbar{opacity:0;pointer-events:none}
  padding:9px 12px;font:600 11px/1.45 ui-monospace,monospace;word-break:break-word}
 
 
+/* ================= the editor's tabs =================
+   Three panes in one sheet: the day, what she gets, and what winds her up.
+   The buttons row underneath stays put, so Save and Publish are always to
+   hand whichever pane is open. */
+.edtabs{display:flex;gap:6px;margin:12px 0 14px;
+ border-bottom:1px solid rgba(255,255,255,.10);padding-bottom:0;
+ /* sticky, so switching pane never means scrolling back to the top of a
+    sheet that is now two thousand pixels long */
+ position:sticky;top:0;z-index:3;background:#241b2b;
+ padding-top:10px;
+ /* the sheet has 20px of its own padding above this, which the scrolled
+    content would otherwise peek through: the first shadow paints it out */
+ box-shadow:0 -22px 0 0 #241b2b, 0 12px 14px -12px rgba(0,0,0,.6)}
+.edtab{flex:1;font:600 12.5px/1 'Lora',Georgia,serif;letter-spacing:.02em;
+ border:0;background:transparent;color:rgba(240,228,238,.55);
+ padding:9px 4px 10px;border-bottom:2px solid transparent;cursor:pointer;
+ border-radius:8px 8px 0 0;transition:color .16s ease,border-color .16s ease}
+.edtab:hover{color:rgba(240,228,238,.8)}
+.edtab.on{color:#f6dbe8;border-bottom-color:#e8729a;background:rgba(232,114,154,.09)}
+.edpane{display:none}
+.edpane.on{display:block}
+.edlead{font:italic 12.5px/1.55 'Lora',Georgia,serif;color:rgba(240,228,238,.62);
+ margin:0 0 14px}
+.edonce{font:600 11.5px/1.5 'Lora',Georgia,serif;color:#f0bd7c;
+ background:rgba(240,189,124,.10);border:1px solid rgba(240,189,124,.28);
+ border-radius:9px;padding:9px 11px;margin:0 0 14px}
+
+/* ================= voice notes =================
+   Her side: a play button, thirty bars, a running time. The bars to the
+   left of the playhead are lit; the rest are not. Nothing here moves while
+   it is paused, because a thing that wiggles on its own next to a letter is
+   a distraction rather than a feature. */
+.vncard{--vnp:0%}
+.vnrow{display:flex;align-items:center;gap:12px}
+.vnplay{flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:0;
+ background:var(--accent,#e8729a);color:#fff;display:grid;place-items:center;
+ cursor:pointer;transition:transform .16s ease,box-shadow .2s ease;
+ box-shadow:0 4px 14px rgba(232,114,154,.34)}
+.vnplay:active{transform:scale(.93)}
+.vncard.on .vnplay{box-shadow:0 0 0 6px rgba(232,114,154,.18),0 4px 14px rgba(232,114,154,.34)}
+.vnicon{width:20px;height:20px;fill:currentColor}
+.vnwave{flex:1 1 auto;display:flex;align-items:center;gap:2.5px;height:34px;
+ position:relative;overflow:hidden}
+.vnwave i{flex:1 1 auto;min-width:2px;height:var(--h);border-radius:2px;
+ background:currentColor;opacity:.22;transition:opacity .25s ease}
+/* the played part, masked to the playhead */
+.vnwave::after{content:'';position:absolute;inset:0;width:var(--vnp);
+ background:linear-gradient(90deg,var(--accent,#e8729a),var(--accent,#e8729a));
+ -webkit-mask:var(--vnmask);mask:var(--vnmask);opacity:0;transition:opacity .2s}
+.vncard.on .vnwave i:nth-child(-n+30){opacity:.30}
+.vncard.on .vnplay+.vnwave i{opacity:.30}
+.vntime{flex:0 0 auto;font:600 12.5px/1 'Lora',Georgia,serif;opacity:.6;
+ min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+.vnlab{margin:10px 0 0 !important;opacity:.62}
+/* the bars light up left-to-right with the playhead, done with a gradient on
+   the row rather than per-bar javascript -- thirty style writes per frame is
+   how you make a phone warm */
+.vncard.on .vnwave{
+ background:linear-gradient(90deg,
+   rgba(232,114,154,.30) 0%,
+   rgba(232,114,154,.30) var(--vnp),
+   rgba(0,0,0,0) var(--vnp));
+ border-radius:5px}
+
+/* His side: the recorder. */
+.vnrec{display:flex;align-items:center;gap:11px;margin-top:8px}
+.vnbtn{font:600 12.5px/1 'Lora',Georgia,serif;border:1px solid #6b4f68;
+ background:#33253d;color:#f3dfec;border-radius:999px;padding:11px 17px;cursor:pointer}
+.vnbtn.rec{background:#b5455a;border-color:#d4657a;color:#fff}
+.vnbtn[disabled]{opacity:.42}
+.vnlevel{flex:1 1 auto;height:8px;border-radius:999px;background:rgba(255,255,255,.10);
+ overflow:hidden}
+.vnlevel i{display:block;height:100%;width:0%;border-radius:999px;
+ background:linear-gradient(90deg,#e8729a,#f0bd7c);transition:width .07s linear}
+.vnstat{font:12.5px/1.5 'Lora',Georgia,serif;color:rgba(240,228,238,.66);margin-top:8px}
+.vnstat b{color:#f4c9dd}
+.vnwarn{font:600 11.5px/1.5 'Lora',Georgia,serif;color:#f0bd7c;
+ background:rgba(240,189,124,.10);border:1px solid rgba(240,189,124,.28);
+ border-radius:9px;padding:9px 11px;margin:12px 0}
+audio.vnprev{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
+
+/* the sheet scrolls under the bar, so the bar needs the sheet's own colour
+   behind it -- the editor is dark whatever week the rest of the app is in */
+#edsheet .sheetbox{scroll-padding-top:62px}
+
 .devbuild{font:600 10.5px/1 ui-monospace,monospace;letter-spacing:.12em;color:#f9a8c8;opacity:.75;margin:-6px 0 10px;text-transform:uppercase}.devbuildbar{font:600 9.5px/1 ui-monospace,monospace;letter-spacing:.1em;color:#f9a8c8;opacity:.7;margin-left:7px;align-self:center}
 </style>
 </head>
@@ -731,6 +816,13 @@ body.devpanelon #devbar{opacity:0;pointer-events:none}
 <div id="edsheet" class="sheet">
   <div class="sheetbox">
     <div class="center"><div class="eyebrow">Editor · Murtaza only</div><h2 style="font-size:21px;margin-top:6px" id="edTitle">Day 1</h2></div>
+    <div class="edtabs" role="tablist">
+      <button class="edtab on" id="edTabDay" data-pane="Day">the day</button>
+      <button class="edtab" id="edTabGift" data-pane="Gift">gifts</button>
+      <button class="edtab" id="edTabBait" data-pane="Bait">ragebait</button>
+      <button class="edtab" id="edTabVoice" data-pane="Voice">voice</button>
+    </div>
+    <div class="edpane on" id="edPaneDay">
     <label class="edfield"><span>title</span><input id="edT" autocomplete="off"></label>
     <label class="edfield"><span>message — blank line = new paragraph, **bold**</span><textarea id="edM" spellcheck="true"></textarea></label>
     <label class="edfield"><span>tomorrow's teaser</span><input id="edN" autocomplete="off"></label>
@@ -769,18 +861,6 @@ body.devpanelon #devbar{opacity:0;pointer-events:none}
         back in front of the film. Ask M if a day really needs the game first.</div>
       <label class="edfield" id="edTZW"><span>the card between the film and the game</span>
         <textarea id="edTZ" spellcheck="true" rows="3"></textarea></label>
-      <label class="edfield"><span>one more film, kept back until after the note</span>
-        <select id="edA2"></select></label>
-      <div id="edA2W" hidden>
-        <label class="edfield"><span>what the card above it says</span>
-          <textarea id="edAZ" spellcheck="true" rows="3"></textarea></label>
-        <label class="edfield"><span>what its button says</span><input id="edAB" autocomplete="off"></label>
-      </div>
-      <label class="edfield"><span>“open tomorrow” — <i>one line per tap, she cycles through them</i></span>
-        <textarea id="edBT" spellcheck="true" rows="4"></textarea></label>
-      <label class="edfield"><span>interrupt her — <i>one per day. use each one once.</i></span>
-        <select id="edPK"></select></label>
-      <div class="edhint" id="edPKW"></div>
       <label class="edfield"><span>the whole year, in one sitting</span>
         <select id="edMV"><option value="">not on this day</option>
         <option value="1">yes — offer the film of the whole month</option></select></label>
@@ -795,6 +875,72 @@ body.devpanelon #devbar{opacity:0;pointer-events:none}
       </div>
     </details>
     <label class="edfield"><span>password for the birthday gift (you type this when you meet)</span><input id="edP" autocomplete="off"></label>
+    </div>
+
+    <div class="edpane" id="edPaneGift">
+      <p class="edlead">Something she is actually given, hung off this day.
+        The food ones are hers — chips, soup, biryani, nihari, avocado —
+        and the rest are afternoons rather than objects.</p>
+      <label class="edfield"><span>what she gets today</span>
+        <select id="edGift"></select></label>
+      <div class="edhint" id="edGiftDesc"></div>
+      <div id="edGiftW" hidden>
+        <label class="edfield"><span>when she gets it</span>
+          <select id="edGiftWhen">
+            <option value="a2">after the note — she taps a button for it</option>
+            <option value="wn">the second she wins the game — no button, it just arrives</option>
+          </select></label>
+        <div id="edGiftAW">
+          <label class="edfield"><span>what the card above it says</span>
+            <textarea id="edGiftZ" spellcheck="true" rows="3"></textarea></label>
+          <label class="edfield"><span>what its button says</span>
+            <input id="edGiftB" autocomplete="off"></label>
+        </div>
+        <div class="edhint" id="edGiftUsed"></div>
+        <div style="margin-top:8px"><button class="edtry" id="edGiftTry">watch it ✦</button></div>
+      </div>
+    </div>
+
+    <div class="edpane" id="edPaneBait">
+      <div class="edonce">Everything on this pane happens <b>once</b> — the
+        first time she opens the day. If she comes back to it later, or lives
+        the day again from the envelope, none of it fires. A joke told twice
+        is just a bug.</div>
+      <label class="edfield"><span>interrupt her — <i>one per day. use each one once.</i></span>
+        <select id="edPK"></select></label>
+      <div class="edhint" id="edPKW"></div>
+      <label class="edfield" style="margin-top:16px">
+        <span>the “open tomorrow” button — <i>it never works. this is what it says instead.</i></span>
+        <select id="edBTS"></select></label>
+      <div class="edhint" id="edBTSW"></div>
+      <label class="edfield"><span>the lines themselves — <i>one per tap, she cycles down them</i></span>
+        <textarea id="edBT" spellcheck="true" rows="6"></textarea></label>
+    </div>
+
+    <div class="edpane" id="edPaneVoice">
+      <p class="edlead">Say it out loud instead. It sits under the letter,
+        with a play button — it never starts on its own, and if it fails
+        to load she never finds out there was one.</p>
+      <div class="vnwarn">Her site is a public repo, so a voice note in it can
+        be downloaded by anyone who has the address. Nobody has the address.
+        But that is the deal — same as the music.</div>
+      <div class="vnrec">
+        <button class="vnbtn" id="vnGo">● Record</button>
+        <div class="vnlevel"><i id="vnLvl"></i></div>
+        <span class="vntime" id="vnLen">0:00</span>
+      </div>
+      <div class="vnstat" id="vnStat"></div>
+      <audio class="vnprev" id="vnPrev" controls hidden></audio>
+      <div class="edbtns" style="margin-top:10px">
+        <button class="edbtn" id="vnKeep" hidden>Use this one</button>
+        <button class="edbtn" id="vnScrap" hidden>Throw it away</button>
+        <button class="edbtn" id="vnDel" hidden>Remove today’s note</button>
+      </div>
+      <label class="edfield" style="margin-top:14px">
+        <span>the line under the player</span>
+        <input id="vnLine" autocomplete="off"></label>
+    </div>
+
     <div class="edbtns">
       <button class="edbtn" id="edPrev">◀ day</button>
       <button class="edbtn" id="edNext2">day ▶</button>
@@ -816,12 +962,12 @@ body.devpanelon #devbar{opacity:0;pointer-events:none}
   <button id="pvEnd">back to the editor</button></div>
 <div id="devbar" hidden>
   <button id="dPrev" aria-label="previous day">◀</button><span id="dLabel">Day 1</span><button id="dNext" aria-label="next day">▶</button>
-  <button id="dWin2">win</button><button id="dEdit">edit</button><button id="dRead">read all</button><button id="dMore">⚙</button><span class="devbuildbar">EC07B7</span>
+  <button id="dWin2">win</button><button id="dEdit">edit</button><button id="dRead">read all</button><button id="dMore">⚙</button><span class="devbuildbar">071A1B</span>
 </div>
 <div id="devErr" hidden></div>
 <div id="dev">
   <h4>Dev panel · Murtaza only</h4>
-  <div class="devbuild">build EC07B7</div>
+  <div class="devbuild">build 071A1B</div>
   <div class="drow">
     <button id="dJump">Jump to day ▸</button>
     <input id="dDay" type="number" min="1" max="30" value="1" style="width:62px">
@@ -996,94 +1142,94 @@ const dMsg=D=>hasText(D.m)?D.m:(FALLBACK_M+SIGN);
 const dTease=D=>(D.n&&D.n.trim())?D.n:FALLBACK_N;
 const isWritten=D=>!!(D.t&&D.t.trim())||hasText(D.m);
 const DAYS=[
-{t:"",g:"scratch",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"OPENING01",
+{t:"",g:"scratch",a:"",af:false,tz:"",wn:"",pk:"",bt:"bav jaldi che \ud83d\ude04\nwait for tomorrow\nno. tomorrow.\nyou can keep tapping. it will still be tomorrow.\nokay fine \u2014 tomorrow, but earlier. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"OPENING01",
  m:``,
  n:""},
-{t:"",g:"memory",a:"before",af:true,tz:"",wn:"",pk:"",a2:"kitchen",az:"<p>Also \u2014 you told me what you wanted to do tonight.</p><p>I couldn\u2019t give you the evening. So I made you the next best thing.</p>",ab:"Open it \u2726",mv:false,mz:"",mb:"",pw:"MUGS02",
+{t:"",g:"memory",a:"before",af:true,tz:"",wn:"",pk:"",bt:"bav jaldi che \ud83d\ude04\nkaal sudhi wait kar.\nna. kaal.\ntu tapti reh. kaal j rehse.\nsaru, kaal \u2014 pan vehla. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"kitchen",az:"<p>Also \u2014 you told me what you wanted to do tonight.</p><p>I couldn\u2019t give you the evening. So I made you the next best thing.</p>",ab:"Open it \u2726",mv:false,mz:"",mb:"",pw:"MUGS02",
  m:``,
  n:""},
-{t:"",g:"wordle",a:"april22",af:true,tz:"<p>That was this morning. The game and the letter are for tonight \u2014 they will wait for you.</p><p>Tomorrow: the six weeks where nothing happened.</p><p>There is a spreadsheet in it, and a joke you found much funnier than it was. \ud83c\udf38</p>",wn:"posy",pk:"ad",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SCOOTER03",
+{t:"",g:"wordle",a:"april22",af:true,tz:"<p>That was this morning. The game and the letter are for tonight \u2014 they will wait for you.</p><p>Tomorrow: the six weeks where nothing happened.</p><p>There is a spreadsheet in it, and a joke you found much funnier than it was. \ud83c\udf38</p>",wn:"posy",pk:"ad",bt:"You are number 4,182 in the queue.\nYou are number 4,181 in the queue.\nYou are number 4,206 in the queue.\nOther people have joined the queue.\nIt is just me. I am the queue.\nTomorrow. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SCOOTER03",
  m:``,
  n:""},
-{t:"",g:"spotdiff",a:"slow",af:true,tz:"<p>Come back this evening for the game, and the letter after it.</p><p>Tomorrow: every excuse I invented to get your number.</p><p>There were a lot of them. None of them were subtle. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"FLOWERS04",
+{t:"",g:"spotdiff",a:"slow",af:true,tz:"<p>Come back this evening for the game, and the letter after it.</p><p>Tomorrow: every excuse I invented to get your number.</p><p>There were a lot of them. None of them were subtle. \ud83c\udf38</p>",wn:"",pk:"",bt:"Loading tomorrow\u2026 2%\nLoading tomorrow\u2026 61%\nLoading tomorrow\u2026 99%\nLoading tomorrow\u2026 3%\nOkay. It is not loading. It is tomorrow.\nGo to sleep. \ud83c\udf19",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"FLOWERS04",
  m:``,
  n:""},
-{t:"",g:"dobble",a:"excuses",af:true,tz:"<p>The game and the letter are waiting for tonight.</p><p>Tomorrow: the day I waited outside yours and gave up.</p><p>You already know how it ends. Come and watch me find out. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"FRIES05",
+{t:"",g:"dobble",a:"excuses",af:true,tz:"<p>The game and the letter are waiting for tonight.</p><p>Tomorrow: the day I waited outside yours and gave up.</p><p>You already know how it ends. Come and watch me find out. \ud83c\udf38</p>",wn:"",pk:"skipad",bt:"No.\nStill no.\nWhat are you offering.\nThat is not enough.\nFine \u2014 but you still have to wait.\nTomorrow. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"FRIES05",
  m:``,
  n:""},
-{t:"",g:"bubblewrap",a:"may23",af:true,tz:"<p>Tonight: the game, then the letter. In that order.</p><p>Tomorrow: the night neither of us said it for about four hours.</p><p>Then you made me. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"CLIPS06",
+{t:"",g:"bubblewrap",a:"may23",af:true,tz:"<p>Tonight: the game, then the letter. In that order.</p><p>Tomorrow: the night neither of us said it for about four hours.</p><p>Then you made me. \ud83c\udf38</p>",wn:"",pk:"",bt:"Opening in 5\u2026\nOpening in 4\u2026\nOpening in 3\u2026\nOpening in 9\u2026\nOpening in tomorrow\u2026\nYou knew. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"CLIPS06",
  m:``,
  n:""},
-{t:"",g:"stack",a:"may27",af:true,tz:"<p>The game and the letter are for this evening.</p><p>Tomorrow: what I did instead of sleeping.</p><p>You went very red. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"BOOKS07",
+{t:"",g:"stack",a:"may27",af:true,tz:"<p>The game and the letter are for this evening.</p><p>Tomorrow: what I did instead of sleeping.</p><p>You went very red. \ud83c\udf38</p>",wn:"",pk:"subs",bt:"I know. I know.\nIt is hard, being you.\nTruly, nobody has ever waited like this.\nSomebody should write about it.\nAnyway. Tomorrow. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"BOOKS07",
  m:``,
  n:""},
-{t:"",g:"jigsaw",a:"may28",af:true,tz:"<p>Tonight, when you are done for the day \u2014 the game, then the letter.</p><p>Tomorrow: two questions, and me answering one of them extremely badly.</p><p>You had to help. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"COFFEE08",
+{t:"",g:"jigsaw",a:"may28",af:true,tz:"<p>Tonight, when you are done for the day \u2014 the game, then the letter.</p><p>Tomorrow: two questions, and me answering one of them extremely badly.</p><p>You had to help. \ud83c\udf38</p>",wn:"",pk:"",bt:"\u2026\nSorry, were you tapping something?\nThere is no button here.\nYou are imagining the button.\nGoodnight. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"COFFEE08",
  m:``,
  n:""},
-{t:"",g:"colourscene",a:"may29",af:true,tz:"<p>The game and the letter are for tonight.</p><p>Tomorrow we are past the beginning.</p><p>Everything after this one is us. \ud83c\udf38</p>",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SPIDER09",
+{t:"",g:"colourscene",a:"may29",af:true,tz:"<p>The game and the letter are for tonight.</p><p>Tomorrow we are past the beginning.</p><p>Everything after this one is us. \ud83c\udf38</p>",wn:"",pk:"",bt:"bav jaldi che \ud83d\ude04\nwait for tomorrow\nno. tomorrow.\nyou can keep tapping. it will still be tomorrow.\nokay fine \u2014 tomorrow, but earlier. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SPIDER09",
  m:``,
  n:""},
-{t:"",g:"unscramble",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"TULIP10",
+{t:"",g:"unscramble",a:"weeks",af:true,tz:"<p>Game tonight, then the letter \u2014 and there is a second film waiting after it.</p><p>Tomorrow: how professional we were at work.</p><p>Extremely professional. \ud83c\udf38</p>",wn:"",pk:"lights",bt:"bav jaldi che \ud83d\ude04\nkaal sudhi wait kar.\nna. kaal.\ntu tapti reh. kaal j rehse.\nsaru, kaal \u2014 pan vehla. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"rounds",az:"<p>And there is the other half of those weeks.</p>",ab:"What we did instead \u2726",mv:false,mz:"",mb:"",pw:"TULIP10",
  m:``,
  n:""},
-{t:"",g:"truefalse",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"LAUGH11",
+{t:"",g:"truefalse",a:"secret",af:true,tz:"<p>Tonight: the game, the letter, and one more thing after it.</p><p>Tomorrow: the day I had off and came in anyway.</p><p>You worked out why immediately. \ud83c\udf38</p>",wn:"",pk:"",bt:"You are number 4,182 in the queue.\nYou are number 4,181 in the queue.\nYou are number 4,206 in the queue.\nOther people have joined the queue.\nIt is just me. I am the queue.\nTomorrow. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"monopoly",az:"<p>One more thing about being professional at work.</p>",ab:"The day we got caught \u2726",mv:false,mz:"",mb:"",pw:"LAUGH11",
  m:``,
  n:""},
-{t:"",g:"maze",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"VOICE12",
+{t:"",g:"maze",a:"eid",af:true,tz:"<p>The game and the letter are waiting for this evening.</p><p>Tomorrow: the thing you asked me for as a joke.</p><p>I chose not to notice it was a joke. \ud83c\udf38</p>",wn:"",pk:"hintno",bt:"Loading tomorrow\u2026 2%\nLoading tomorrow\u2026 61%\nLoading tomorrow\u2026 99%\nLoading tomorrow\u2026 3%\nOkay. It is not loading. It is tomorrow.\nGo to sleep. \ud83c\udf19",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"VOICE12",
  m:``,
  n:""},
-{t:"",g:"simon",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"BRAIN13",
+{t:"",g:"simon",a:"brownies",af:true,tz:"<p>Game tonight, then the letter. There is something after it too.</p><p>Tomorrow: the day you refused everything I offered you.</p><p>So I found a way round you. \ud83c\udf38</p>",wn:"",pk:"",bt:"No.\nStill no.\nWhat are you offering.\nThat is not enough.\nFine \u2014 but you still have to wait.\nTomorrow. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"coffee",az:"<p>The brownies were not the only thing I made you.</p>",ab:"The other one \u2726",mv:false,mz:"",mb:"",pw:"BRAIN13",
  m:``,
  n:""},
-{t:"",g:"wordsearch",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"LILY14",
+{t:"",g:"wordsearch",a:"website",af:true,tz:"<p>The game and the letter are for tonight.</p><p>Tomorrow is the big one.</p><p>Sit down for it. It is the longest one yet. \ud83c\udf38</p>",wn:"",pk:"buffer",bt:"Opening in 5\u2026\nOpening in 4\u2026\nOpening in 3\u2026\nOpening in 9\u2026\nOpening in tomorrow\u2026\nYou knew. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"LILY14",
  m:``,
  n:""},
-{t:"",g:"mood",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"CHAI15",
+{t:"",g:"mood",a:"beach",af:true,tz:"<p>Tonight: the game, then the letter.</p><p>Tomorrow: my waras, and what you did about it.</p><p>You got there before everybody. \ud83c\udf38</p>",wn:"",pk:"",bt:"I know. I know.\nIt is hard, being you.\nTruly, nobody has ever waited like this.\nSomebody should write about it.\nAnyway. Tomorrow. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"CHAI15",
  m:``,
  n:""},
-{t:"",g:"datematch",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"WEBS16",
+{t:"",g:"datematch",a:"waras",af:true,tz:"<p>The game and the letter are for this evening.</p><p>Tomorrow is 13th June.</p><p>You know exactly what day that is. \ud83c\udf38</p>",wn:"",pk:"fly",bt:"\u2026\nSorry, were you tapping something?\nThere is no button here.\nYou are imagining the button.\nGoodnight. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"WEBS16",
  m:``,
  n:""},
-{t:"",g:"dobble2",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"NOTE17",
+{t:"",g:"dobble2",a:"lastday",af:true,tz:"<p>Game tonight, then the letter \u2014 and one more thing after it.</p><p>Tomorrow: something you asked for once and never got.</p><p>I have been holding on to this one. \ud83c\udf38</p>",wn:"",pk:"",bt:"bav jaldi che \ud83d\ude04\nwait for tomorrow\nno. tomorrow.\nyou can keep tapping. it will still be tomorrow.\nokay fine \u2014 tomorrow, but earlier. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"shirt",az:"<p>One more thing about today. Look at what you wore.</p>",ab:"Show me \u2726",mv:false,mz:"",mb:"",pw:"NOTE17",
  m:``,
  n:""},
-{t:"",g:"paint",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"PAINT18",
+{t:"",g:"paint",a:"intern",af:true,tz:"<p>The game and the letter are for tonight.</p><p>Tomorrow: burgers, and everybody else from the office.</p><p>And one small black thing. \ud83c\udf38</p>",wn:"",pk:"typing",bt:"bav jaldi che \ud83d\ude04\nkaal sudhi wait kar.\nna. kaal.\ntu tapti reh. kaal j rehse.\nsaru, kaal \u2014 pan vehla. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"PAINT18",
  m:``,
  n:""},
-{t:"",g:"timeline",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"KNOTS19",
+{t:"",g:"timeline",a:"order",af:true,tz:"<p>Tonight: the game, the letter, and a little something after.</p><p>Tomorrow: the last ride.</p><p>And the worst joke I have ever made. \ud83c\udf38</p>",wn:"",pk:"verify",bt:"You are number 4,182 in the queue.\nYou are number 4,181 in the queue.\nYou are number 4,206 in the queue.\nOther people have joined the queue.\nIt is just me. I am the queue.\nTomorrow. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"band",az:"<p>I got you one more thing that day.</p>",ab:"Open it \u2726",mv:false,mz:"",mb:"",pw:"KNOTS19",
  m:``,
  n:""},
-{t:"",g:"pour",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"ORDER20",
+{t:"",g:"pour",a:"lastride",af:true,tz:"<p>The game and the letter are for tonight.</p><p>Tomorrow is not a normal one.</p><p>Give it a bit of time when you open it. \ud83c\udf38</p>",wn:"",pk:"",bt:"Loading tomorrow\u2026 2%\nLoading tomorrow\u2026 61%\nLoading tomorrow\u2026 99%\nLoading tomorrow\u2026 3%\nOkay. It is not loading. It is tomorrow.\nGo to sleep. \ud83c\udf19",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"ORDER20",
  m:``,
  n:""},
-{t:"",g:"scooter",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"POUR21",
+{t:"",g:"scooter",a:"",af:false,tz:"<p>Take your time with today. The game and the letter are still here whenever you want them.</p><p>Tomorrow we are back to normal, I promise. \ud83c\udf38</p>",wn:"",pk:"",bt:"No.\nStill no.\nWhat are you offering.\nThat is not enough.\nFine \u2014 but you still have to wait.\nTomorrow. \ud83c\udf38",pd:true,pz:"<p>Today is not one of the normal ones.</p><p>Nothing bad happens in it. That is sort of the problem.</p>",pb:"Go through \u2726",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"POUR21",
  m:``,
  n:""},
-{t:"",g:"colorbynum",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"RIDE22",
+{t:"",g:"colorbynum",a:"",af:false,tz:"",wn:"",pk:"",bt:"Opening in 5\u2026\nOpening in 4\u2026\nOpening in 3\u2026\nOpening in 9\u2026\nOpening in tomorrow\u2026\nYou knew. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"RIDE22",
  m:``,
  n:""},
-{t:"",g:"oddone",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"COLOUR23",
+{t:"",g:"oddone",a:"",af:false,tz:"",wn:"studyroom",pk:"",bt:"I know. I know.\nIt is hard, being you.\nTruly, nobody has ever waited like this.\nSomebody should write about it.\nAnyway. Tomorrow. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"COLOUR23",exam:true,
  m:``,
  n:""},
-{t:"",g:"thisorthat",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"YOURS24",
+{t:"",g:"thisorthat",a:"",af:false,tz:"",wn:"",pk:"",bt:"\u2026\nSorry, were you tapping something?\nThere is no button here.\nYou are imagining the button.\nGoodnight. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"YOURS24",
  m:``,
  n:""},
-{t:"",g:"safe",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"ROSE25",
+{t:"",g:"safe",a:"",af:false,tz:"",wn:"",pk:"",bt:"bav jaldi che \ud83d\ude04\nwait for tomorrow\nno. tomorrow.\nyou can keep tapping. it will still be tomorrow.\nokay fine \u2014 tomorrow, but earlier. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"ROSE25",
  m:``,
  n:""},
-{t:"",g:"constellation",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SAFE26",
+{t:"",g:"constellation",a:"",af:false,tz:"",wn:"studyroom",pk:"",bt:"bav jaldi che \ud83d\ude04\nkaal sudhi wait kar.\nna. kaal.\ntu tapti reh. kaal j rehse.\nsaru, kaal \u2014 pan vehla. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"SAFE26",exam:true,
  m:``,
  n:""},
-{t:"",g:"dobble3",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"STARS27",
+{t:"",g:"dobble3",a:"",af:false,tz:"",wn:"",pk:"",bt:"You are number 4,182 in the queue.\nYou are number 4,181 in the queue.\nYou are number 4,206 in the queue.\nOther people have joined the queue.\nIt is just me. I am the queue.\nTomorrow. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"STARS27",
  m:``,
  n:""},
-{t:"",g:"mandala",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"WINGS28",
+{t:"",g:"mandala",a:"",af:false,tz:"",wn:"studyroom",pk:"",bt:"Loading tomorrow\u2026 2%\nLoading tomorrow\u2026 61%\nLoading tomorrow\u2026 99%\nLoading tomorrow\u2026 3%\nOkay. It is not loading. It is tomorrow.\nGo to sleep. \ud83c\udf19",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"WINGS28",exam:true,
  m:``,
  n:""},
-{t:"",g:"stars",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:true,mz:"",mb:"",pw:"SKY29",
+{t:"",g:"stars",a:"",af:false,tz:"",wn:"",pk:"",bt:"No.\nStill no.\nWhat are you offering.\nThat is not enough.\nFine \u2014 but you still have to wait.\nTomorrow. \ud83c\udf38",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:true,mz:"",mb:"",pw:"SKY29",
  m:``,
  n:""},
-{t:"",g:"none",a:"",af:false,tz:"",wn:"",pk:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"BIRTHDAY30",
+{t:"",g:"none",a:"",af:false,tz:"",wn:"",pk:"",bt:"",pd:false,pz:"",pb:"",a2:"",az:"",ab:"",mv:false,mz:"",mb:"",pw:"BIRTHDAY30",exam:true,
  m:``,
  n:""}
 ].map((d,i)=>({...d,d:i+1,m:d.m+SIGN}));
@@ -1179,11 +1325,19 @@ function dayHead(d){
 }
 function animFirst(d){const D=DAYS[d-1];return !!(D&&D.af)&&!!animFor(d)}
 let relive=0;   /* the day she has chosen to live through again */
+let fresh1=0;   /* the day she is meeting for the FIRST time, right now */
+const firstPass=d=>fresh1===d;
+function markPass(d){
+ /* a preview is 'as she sees it', so it is always a first time */
+ const pv=(typeof pvSnap!=='undefined')&&pvSnap!=null;
+ fresh1=pv?d:((isDone(d)||relive===d)?0:d);
+}
 function reliveDay(d){relive=d;openDay(d)}
 function openDay(d){
+ markPass(d);
  shown=d;mode='day';setWeek(d);if(dev)setTimeout(devLabel,0);
  const D=DAYS[d-1];
- if(d===30){birthdayView();return}
+ if(d===30){fresh1=0;birthdayView();return}
  if(isDone(d)&&relive!==d){messageView(d,false);return}
  const w=show(`${dayHead(d)}
   <div class="envelope" id="env"><div class="body"></div><div class="flapb"></div><div class="num">day ${d}</div><div class="flap"></div><div class="seal">Z</div></div>
@@ -1191,7 +1345,7 @@ function openDay(d){
     <p class="lead">${d===curDay()?'Today\'s envelope is sealed. One small game and it\'s yours.':'This one\'s unlocked. Play it whenever you like.'}</p>
     <div><button class="btn pulse" id="playBtn">Play to unlock ✦</button></div>
   </div>`);
- $('#env',w).onclick=()=>{AUDIO.fx('open');$('#playBtn',w).click()};
+ $('#env',w).onclick=()=>{AUDIO.fx('open');FEEL.tap('open');$('#playBtn',w).click()};
  $('#playBtn',w).onclick=()=>{if(animFirst(d)&&(!isDone(d)||relive===d))
    animView(d,()=>teaseView(d),isDone(d));else gameView(d)};
 }
@@ -1207,14 +1361,14 @@ function gameView(d,idx){
   <div id="gbox"></div><p class="ghint">${G.hint||''}</p>
   <div class="row" style="margin-top:14px"><button class="btn ghost" id="backBtn">Back</button><span id="devskip"></span></div>`);
  AUDIO.setMode('game');watchGame($('#gbox',w));
- prankLater('game',d,w,5000);
+ if(firstPass(d))prankLater('game',d,w,5000);
  $('#backBtn',w).onclick=()=>openDay(d);
  if(dev)$('#devskip',w).innerHTML='<button class="btn ghost" onclick="window.__win()">dev: win</button>';
  const won=()=>{
   if(mode!=='game')return;
   if(idx+1<list.length){try{sparkle(innerWidth/2,innerHeight*.42,16)}catch(e){}
    setTimeout(()=>gameView(d,idx+1),700);return}
-  mode='won';celebrate(d);
+  mode='won';FEEL.tap('win');celebrate(d);
   const fresh=!again;           /* no 'come back tomorrow' on an old day */
   setTimeout(()=>{relive=0;
    const onward=()=>{
@@ -1239,8 +1393,10 @@ function celebrate(d){
 /* the interruptions, grouped by what they are allowed to cover, and with a
    line under the box saying what the chosen one actually does */
 function fillPranks(cur){
- const sel=$('#edPK'),note=$('#edPKW');
+ const sel=$('#edPK');
  if(!sel)return;
+ /* the hint line is optional: losing it must not cost him the whole sheet */
+ const note=$('#edPKW')||{};
  const L=prankGroups();
  const LABEL={film:'while the film is playing',note:'while she is reading the note',
               game:'while she is playing the game'};
@@ -1294,7 +1450,9 @@ function messageView(d,fresh){
     <div class="msg">${dMsg(D)}</div>
   </div>
   ${FLOWERS[d]?giveFlower(d):''}
+  ${voiceCard(d)}
   ${movieCard(d)}
+  ${parallelCard(d)}
   ${baitCard(d)}
   ${afterCard(d)}
   ${replyBox(d)}
@@ -1306,12 +1464,14 @@ function messageView(d,fresh){
     ${isDone(d)?'<button class="btn ghost" id="reliveBtn">Live this day again ✦</button>':''}
   </div>`);
  AUDIO.setMode('read');
- prankLater('note',d,w,3400);
+ if(firstPass(d))prankLater('note',d,w,3400);
  const r=$('#replay',w);if(r)r.onclick=()=>gameView(d);
  const rw=$('#rewatch',w);if(rw)rw.onclick=()=>animView(d,()=>messageView(d,false),true);
  wireReply(w,d);
  const mg=$('#movieGo',w);
  if(mg)mg.onclick=()=>movieView(()=>messageView(d,false));
+ wireVoice(w,d);
+ wirePd(w,d);
  wireBait(w,d);
  const rl=$('#reliveBtn',w);if(rl)rl.onclick=()=>reliveDay(d);
  const ag=$('#afterGo',w);
@@ -1319,11 +1479,7 @@ function messageView(d,fresh){
   animView(d,()=>messageView(d,false),true,k)};
  $('#calOpen',w).onclick=openSheet;
 }
-const BAIT_DEFAULT=['bav jaldi che \ud83d\ude04',
- 'wait for tomorrow',
- 'no. tomorrow.',
- 'you can keep tapping. it will still be tomorrow.',
- 'okay fine \u2014 tomorrow, but earlier. \ud83c\udf38'];
+const BAIT_DEFAULT=["bav jaldi che 😄", "wait for tomorrow", "no. tomorrow.", "you can keep tapping. it will still be tomorrow.", "okay fine — tomorrow, but earlier. 🌸"];   /* lab/baitsets.py, same list the picker shows */
 function baitLines(d){
  const D=DAYS[d-1],raw=(D&&D.bt)||'';
  const out=raw.split('\n').map(s=>s.trim()).filter(Boolean);
@@ -1343,8 +1499,23 @@ function movieCard(d){
      movieDays().reduce((s,e)=>s+animDur(e.k),0)/60)} minutes.</p>
  </div>`;
 }
+function parallelCard(d){
+ const D=DAYS[d-1];
+ if(!D||!D.pd)return '';
+ return `<div class="card center stack" id="pdCard" style="margin-top:14px">
+   <div class="msg">${D.pz||PD_INTRO_DEF}</div>
+   <div><button class="btn pulse" id="pdGo">${D.pb||'Open it \u2726'}</button></div>
+   <p class="tease" style="margin-top:2px">It comes in four parts, across the
+     day. You can leave it and come back.</p>
+ </div>`;
+}
+function wirePd(w,d){
+ const b=$('#pdGo',w);
+ if(!b)return;
+ b.onclick=()=>{try{location.href='parallel-day.html'}catch(e){}};
+}
 function baitCard(d){
- if(d>=30||d!==curDay())return '';
+ if(d>=30||d!==curDay()||!firstPass(d))return '';
  return `<div class="card center stack" id="baitCard" style="margin-top:14px">
    <div><button class="btn ghost" id="baitGo">Open day ${d+1} \u2192</button></div>
    <p class="tease" id="baitSay" hidden style="margin-top:2px"></p>
@@ -1358,7 +1529,7 @@ function wireBait(w,d){
   say.hidden=false;
   say.textContent=lines[Math.min(i,lines.length-1)];
   card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');
-  AUDIO.fx('bad');
+  AUDIO.fx('bad');FEEL.tap('no');
   i++;
  };
 }
@@ -1982,7 +2153,20 @@ const AUDIO=(()=>{
  addEventListener('pointerdown',wake,{passive:true});
  addEventListener('keydown',wake,{passive:true});
 
- return{setMode,fx,setOn,paintBtn,birthdaySong,jazzWaltz,isOn:()=>on,wake};
+ /* pull the background right down while he is talking, and put it back
+    where it was afterwards -- his voice should not have to compete with a
+    piano he wrote himself */
+ let ducked=false;
+ function duck(v){
+  v=!!v;
+  if(v===ducked)return;
+  ducked=v;
+  if(!master)return;
+  try{master.gain.cancelScheduledValues(now())}catch(e){}
+  const to=v?0.10:(on?1:0);
+  try{master.gain.linearRampToValueAtTime(to,now()+(v?0.18:0.55))}catch(e){}
+ }
+ return{setMode,fx,setOn,paintBtn,birthdaySong,jazzWaltz,isOn:()=>on,wake,duck};
 })();
 
 /* ---- what the games are doing, without touching all 33 of them ---- */
@@ -2047,6 +2231,11 @@ function applyContent(c){
   if(typeof d.bt==='string'&&d.bt)D.bt=d.bt;
   if(typeof d.wn==='string'&&d.wn)D.wn=d.wn;
   if(typeof d.pk==='string'&&d.pk)D.pk=d.pk;
+  if(typeof d.vn==='string'&&d.vn)D.vn=d.vn;
+  if(typeof d.vz==='string'&&d.vz)D.vz=d.vz;
+  if(d.pd===true)D.pd=true;
+  if(typeof d.pz==='string'&&d.pz)D.pz=d.pz;
+  if(typeof d.pb==='string'&&d.pb)D.pb=d.pb;
   if(d.mv===true)D.mv=true;
   if(typeof d.mz==='string'&&d.mz)D.mz=d.mz;
   if(typeof d.mb==='string'&&d.mb)D.mb=d.mb;
@@ -2067,6 +2256,7 @@ function applyContent(c){
   if(f.k&&FL_COLORS[f.k])FLOWERS[k].k=f.k}});
 }
 const AFTER_DEFAULT=`<p>One more thing before you go.</p>`;
+const PD_INTRO_DEF=`<p>Today is not one of the normal ones.</p><p>Nothing bad happens in it. That is sort of the problem.</p>`;
 const TEASE_DEFAULT=`<p>Come back tomorrow and you’ll see what happens next.</p><p>I know you already know. You were there for all of it. You have every single spoiler.</p><p>Come anyway. 🌸</p>`;
 const CFG={giftPw:'SERENDIPITY'};
 const LS_DRAFT='zb30draft',LS_TOK='zb30gh',LS_REPO='zb30repo';
@@ -2096,7 +2286,7 @@ async function loadRemote(){
  return false;
 }
 function buildContent(){return{v:1,cfg:{giftPw:CFG.giftPw},games:GTXT,anims:ATXT,
- days:DAYS.map(d=>({t:d.t,m:d.m,n:d.n,g:d.g,a:d.a||'',af:!!d.af,tz:d.tz||'',a2:d.a2||'',az:d.az||'',ab:d.ab||'',bt:d.bt||'',wn:d.wn||'',pk:d.pk||'',mv:!!d.mv,mz:d.mz||'',mb:d.mb||''})),
+ days:DAYS.map(d=>({t:d.t,m:d.m,n:d.n,g:d.g,a:d.a||'',af:!!d.af,tz:d.tz||'',a2:d.a2||'',az:d.az||'',ab:d.ab||'',bt:d.bt||'',wn:d.wn||'',pk:d.pk||'',vn:d.vn||'',vz:d.vz||'',pd:!!d.pd,pz:d.pz||'',pb:d.pb||'',mv:!!d.mv,mz:d.mz||'',mb:d.mb||''})),
  flowers:Object.fromEntries(Object.keys(FLOWERS).map(k=>[k,{k:FLOWERS[k].k,line:FLOWERS[k].line}]))}}
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 function htmlToText(h){
@@ -2111,6 +2301,8 @@ const edsheet=$('#edsheet');let edDay=1;let edGames=['none'];
 function openEditor(d){
  if(pvSnap!=null){try{S=JSON.parse(pvSnap)}catch(e){}pvSnap=null;relive=0;
   const b=$('#pvbar');if(b)b.hidden=true}
+ /* opening it from closed starts on his writing; the arrows do not */
+ try{if(!edsheet.classList.contains('show'))edPaneCur='Day'}catch(e){}
  /* open it FIRST. A half-filled editor he can see and tell me about
     beats a perfect one that never appears. */
  try{edsheet.classList.add('show');edsheetOnScreen()}catch(e){}
@@ -2248,37 +2440,200 @@ function readGameFields(){
   if(!Object.keys(GTXT[k]).length)delete GTXT[k];
  });
 }
+
+/* ================= the button that will not open tomorrow =================
+
+   She always wants the next one now. So there is a button for it, it does not
+   work, and it tells her off in a different voice on different days. Each set
+   is a small escalation -- five or six taps and then it gives up on her.
+
+   These are sets, not a pool: a day picks one and keeps it, so the voice of a
+   given evening stays the same voice all the way down. The list itself comes
+   from lab/baitsets.py, which the build also reads when it wires the days --
+   one source, so the picker can never look at a day the build wrote and call
+   it 'my own lines'. */
+const BAIT_SETS={
+ classic:{name:"bav jaldi che",
+  lines:["bav jaldi che 😄", "wait for tomorrow", "no. tomorrow.", "you can keep tapping. it will still be tomorrow.", "okay fine — tomorrow, but earlier. 🌸"]},
+ gujarati:{name:"all in her language",
+  lines:["bav jaldi che 😄", "kaal sudhi wait kar.", "na. kaal.", "tu tapti reh. kaal j rehse.", "saru, kaal — pan vehla. 🌸"]},
+ queue:{name:"you are in a queue",
+  lines:["You are number 4,182 in the queue.", "You are number 4,181 in the queue.", "You are number 4,206 in the queue.", "Other people have joined the queue.", "It is just me. I am the queue.", "Tomorrow. 🌸"]},
+ loading:{name:"loading tomorrow",
+  lines:["Loading tomorrow… 2%", "Loading tomorrow… 61%", "Loading tomorrow… 99%", "Loading tomorrow… 3%", "Okay. It is not loading. It is tomorrow.", "Go to sleep. 🌙"]},
+ negotiate:{name:"she tries to negotiate",
+  lines:["No.", "Still no.", "What are you offering.", "That is not enough.", "Fine — but you still have to wait.", "Tomorrow. 🌸"]},
+ countdown:{name:"a countdown that cheats",
+  lines:["Opening in 5…", "Opening in 4…", "Opening in 3…", "Opening in 9…", "Opening in tomorrow…", "You knew. 🌸"]},
+ sympathy:{name:"fake sympathy",
+  lines:["I know. I know.", "It is hard, being you.", "Truly, nobody has ever waited like this.", "Somebody should write about it.", "Anyway. Tomorrow. 🌸"]},
+ denial:{name:"it pretends nothing happened",
+  lines:["…", "Sorry, were you tapping something?", "There is no button here.", "You are imagining the button.", "Goodnight. 🌸"]}
+};
+
+function baitSetOf(txt){
+ const want=String(txt||'').split('\n').map(s=>s.trim()).filter(Boolean).join('|');
+ if(!want)return '';
+ let hit='custom';
+ Object.keys(BAIT_SETS).forEach(k=>{
+  if(BAIT_SETS[k].lines.join('|')===want)hit=k;
+ });
+ return hit;
+}
+
+/* ---------------- which pane is showing ----------------
+   It is remembered while the sheet stays open, so stepping day to day with
+   the arrows keeps him on the pane he is working in rather than throwing
+   him back to the writing every time. Closing the sheet forgets it. */
+let edPaneCur='Day';
+function edPane(name){
+ edPaneCur=name;
+ ['Day','Gift','Bait','Voice'].forEach(n=>{
+  const p=$('#edPane'+n),b=$('#edTab'+n);
+  if(p)p.classList.toggle('on',n===name);
+  if(b)b.classList.toggle('on',n===name);
+ });
+ /* a tall pane left the sheet scrolled halfway down the previous one */
+ try{const bx=$('#edsheet .sheetbox');if(bx)bx.scrollTop=0}catch(e){}
+}
+
+/* ---------------- the gifts ----------------
+   A gift is any scene whose group starts with 'Gifts'. They come in four
+   kinds and the picker lists them in this order, because it is the order he
+   thinks in: the daft ones first, because they cost nothing and she will
+   like them most; then the food; then the afternoons; then what she keeps. */
+const isGift=k=>!!(ASCENES[k]&&/^Gifts/.test(ASCENES[k].grp||''));
+const GIFT_ORDER=['Gifts · lines','Gifts · to eat',
+                  'Gifts · to do','Gifts · to keep'];
+const GIFT_LABEL={
+ 'Gifts · lines':'Lines — daft, free, entirely for her',
+ 'Gifts · to eat':'Food — the things she actually likes',
+ 'Gifts · to do':'Afternoons — time rather than objects',
+ 'Gifts · to keep':'Things — she gets to keep these'
+};
+function paintGift(D){
+ const sel=$('#edGift');if(!sel)return;
+ /* a gift can sit in either slot, so read whichever one is holding one */
+ const cur=D.a2||(isGift(D.wn)?D.wn:'')||'';
+ const when=(!D.a2&&isGift(D.wn))?'wn':'a2';
+ /* the four gift kinds in his order, then everything else -- the slot
+    after the note was always general and still is */
+ const gs=animGroups();
+ const rank=g=>{const i=GIFT_ORDER.indexOf(g.t);return i<0?99:i};
+ const order=gs.slice().sort((a,b)=>rank(a)-rank(b));
+ sel.innerHTML='<option value="">nothing extra today</option>'+
+  order.map(g=>`<optgroup label="${GIFT_LABEL[g.t]||g.t}">`+
+   g.k.map(k=>`<option value="${k}"${k===cur?' selected':''}>${ASCENES[k].name}</option>`).join('')
+   +'</optgroup>').join('');
+ const w=$('#edGiftWhen');if(w)w.value=when;
+ const v=(id,val)=>{const e=$(id);if(e)e.value=val==null?'':val};
+ v('#edGiftZ',cardText(D.az||AFTER_DEFAULT));
+ v('#edGiftB',D.ab||'One more thing \u2726');
+ syncGift();
+}
+function syncGift(){
+ const sel=$('#edGift'),k=sel?sel.value:'';
+ const wrap=$('#edGiftW'),desc=$('#edGiftDesc');
+ if(wrap)wrap.hidden=!k;
+ if(desc)desc.textContent=k&&ASCENES[k]?(ASCENES[k].blurb||''):'';
+ const when=$('#edGiftWhen')?$('#edGiftWhen').value:'a2';
+ const aw=$('#edGiftAW');if(aw)aw.hidden=(when!=='a2');
+ /* the same gift twice is not two gifts */
+ const used=$('#edGiftUsed');
+ if(used){
+  const on=[];
+  DAYS.forEach((D,i)=>{if(i+1!==edDay&&k&&(D.a2===k||D.wn===k))on.push(i+1)});
+  used.textContent=on.length
+   ? 'Careful \u2014 she already gets this one on day '+on.join(', day ')+'.'
+   : (k?'She has not had this one yet.':'');
+ }
+}
+function readGift(){
+ const D=DAYS[edDay-1];
+ const g=id=>{const e=$(id);return e?e.value.trim():''};
+ const k=g('#edGift'), when=g('#edGiftWhen')||'a2';
+ /* this pane owns both slots, so it sets exactly one of them and
+    clears the other -- a gift cannot arrive twice in one evening */
+ if(!k){D.a2='';D.az='';D.ab='';if(isGift(D.wn))D.wn='';return}
+ if(when==='wn'){D.wn=k;D.a2='';D.az='';D.ab=''}
+ else{D.a2=k;D.az=edKeep(g('#edGiftZ'),AFTER_DEFAULT);
+  D.ab=(g('#edGiftB')==='One more thing ✦')?'':g('#edGiftB');
+  if(isGift(D.wn))D.wn=''}
+}
+
+/* ---------------- the ragebait ---------------- */
+function paintBait(D){
+ const sel=$('#edBTS'),box=$('#edBT'),note=$('#edBTSW');
+ if(!sel||!box)return;
+ if(edDay>=30){
+  sel.innerHTML='<option>\u2014 no tomorrow \u2014</option>';
+  sel.disabled=true;box.value='';box.disabled=true;
+  if(note)note.textContent='It is her birthday. There is nothing to wait for.';
+  return;
+ }
+ sel.disabled=false;box.disabled=false;
+ const now=D.bt||BAIT_DEFAULT.join('\n');
+ const cur=baitSetOf(now);
+ sel.innerHTML=Object.keys(BAIT_SETS).map(k=>
+   `<option value="${k}"${k===cur?' selected':''}>${BAIT_SETS[k].name}</option>`).join('')
+  +`<option value="custom"${cur==='custom'?' selected':''}>\u2014 my own lines \u2014</option>`;
+ box.value=now;
+ const say=()=>{
+  const k=sel.value;
+  if(k==='custom'){note.textContent='Whatever is in the box below.';return}
+  const on=[];
+  DAYS.forEach((D2,i)=>{if(i+1!==edDay&&baitSetOf(D2.bt||'')===k)on.push(i+1)});
+  note.textContent=(BAIT_SETS[k].lines.length+' lines, then it gives up.')
+   +(on.length?'  Already used on day '+on.join(', day ')+'.':'');
+ };
+ sel.onchange=()=>{
+  const k=sel.value;
+  if(k!=='custom')box.value=BAIT_SETS[k].lines.join('\n');
+  say();
+ };
+ /* typing her own lines quietly moves the picker to 'my own' */
+ box.oninput=()=>{const k=baitSetOf(box.value)||'custom';
+  if(sel.value!==k){sel.value=k;say()}};
+ say();
+}
+
 function paintExtras(D){
  const v=(id,val)=>{const e=$(id);if(e)e.value=val==null?'':val};
  v('#edAF',D.af?'1':'');
  v('#edTZ',cardText(D.tz||TEASE_DEFAULT));
- v('#edBT',(D.bt||baitLines(edDay).join('\n')));
  fillPranks(D.pk||'');
+ paintGift(D);
+ paintBait(D);
+ paintVoice(D);
  v('#edMV',D.mv?'1':'');
- v('#edAZ',cardText(D.az||AFTER_DEFAULT));
- v('#edAB',D.ab||'One more thing \u2726');
  v('#edMZ',cardText(D.mz||MOVIE_INTRO_DEF));
  v('#edMB',D.mb||'Watch the whole year \u2726');
  const o=movieText('open'),e2=movieText('end');
  v('#edMO1',o.a);v('#edMO2',o.b);v('#edME1',e2.a);v('#edME2',e2.b);
  /* rebound every time the sheet opens, rather than once at boot -- the
     boot order moved once already and silently took these with it */
- ['#edAF','#edA2','#edMV'].forEach(id=>{const e=$(id);if(e)e.onchange=syncExtras});
- /* the second film picker is the same registry as the first */
- const sel=$('#edA2');
- if(sel){
-  sel.innerHTML='<option value="">nothing after the note</option>'+
-   animGroups().map(g=>`<optgroup label="${g.t}">`+
-    g.k.map(k=>`<option value="${k}"${k===D.a2?' selected':''}>${ASCENES[k].name}</option>`).join('')
-    +'</optgroup>').join('');
- }
+ ['#edAF','#edMV'].forEach(id=>{const e=$(id);if(e)e.onchange=syncExtras});
+ ['#edGift','#edGiftWhen'].forEach(id=>{const e=$(id);if(e)e.onchange=syncGift});
+ const gt=$('#edGiftTry');
+ if(gt)gt.onclick=ev=>{
+  ev.preventDefault();
+  const k=$('#edGift')?$('#edGift').value:'';
+  if(!k){$('#edStat').textContent='Pick one first.';return}
+  readEditor();
+  edsheet.classList.remove('show');dev=true;
+  /* forceKey plays it without pinning it to the day underneath */
+  animView(edDay,()=>{openEditor(edDay);edsheet.classList.add('show');
+   edPane('Gift')},true,k);
+ };
+ ['#edTabDay','#edTabGift','#edTabBait','#edTabVoice'].forEach(id=>{const e=$(id);
+  if(e)e.onclick=ev=>{ev.preventDefault();edPane(e.dataset.pane)}});
+ edPane(edPaneCur);   /* stay where he was working */
  syncExtras();
 }
 /* only show the follow-up questions once the answer above needs them */
 function syncExtras(){
- const tz=$('#edTZW'),a2=$('#edA2W'),mv=$('#edMVW');
+ const tz=$('#edTZW'),mv=$('#edMVW');
  if(tz)tz.hidden=!($('#edAF')&&$('#edAF').value);
- if(a2)a2.hidden=!($('#edA2')&&$('#edA2').value);
  if(mv)mv.hidden=!($('#edMV')&&$('#edMV').value);
 }
 /* the little cards are not notes: textToHtml signs them with his name,
@@ -2299,19 +2654,132 @@ function cardText(h){
  x=x.split('&amp;').join('&').split('&lt;').join('<').split('&gt;').join('>');
  return x.split(NL).map(l=>l.trim()).join(NL).trim();
 }
+/* his words if he wrote any, nothing at all if the box still holds ours */
+function edKeep(v,dflt){
+ const a=String(v||'').trim(), b=cardText(dflt||'').trim();
+ return (!a||a===b)?'':cardHtml(a);
+}
+/* ---------------- the voice pane ---------------- */
+let vnRec=null, vnTake=null;      /* the recorder, and the take being judged */
+function vnSay(t,warn){
+ const e=$('#vnStat');if(!e)return;
+ e.innerHTML=t||'';
+ e.style.color=warn?'#f0bd7c':'';
+}
+function paintVoice(D){
+ const go=$('#vnGo');if(!go)return;
+ vnStopRec(true);
+ vnTake=null;
+ const prev=$('#vnPrev'),keep=$('#vnKeep'),scrap=$('#vnScrap'),del=$('#vnDel');
+ const line=$('#vnLine');
+ if(line)line.value=D.vz||'';
+ prev.hidden=true;prev.removeAttribute('src');
+ keep.hidden=true;scrap.hidden=true;
+ $('#vnLvl').style.width='0%';
+ $('#vnLen').textContent='0:00';
+ go.textContent='\u25cf Record';go.classList.remove('rec');go.disabled=false;
+ /* three states: nothing, something waiting to be published, something live */
+ const pend=vnPending()[edDay];
+ if(pend){
+  del.hidden=false;
+  const u=vnB64ToUrl(pend.b64,pend.mime);
+  if(u){prev.src=u;prev.hidden=false}
+  vnSay('<b>Recorded, not published yet.</b> '+vnClock(pend.sec)+', '
+        +Math.round(vnSize(pend.b64)/1024)+' KB. It goes up with the next Publish.');
+ }else if(D.vn){
+  del.hidden=false;
+  prev.src=D.vn;prev.hidden=false;
+  vnSay('<b>Live for her.</b> Recording again replaces it.');
+ }else{
+  del.hidden=true;
+  vnSay('Nothing on this day.');
+ }
+}
+function vnStopRec(silent){
+ if(vnRec){try{vnRec.cancel()}catch(e){}vnRec=null}
+ const go=$('#vnGo');
+ if(go&&!silent){go.textContent='\u25cf Record';go.classList.remove('rec')}
+}
+function readVoice(){
+ const D=DAYS[edDay-1],e=$('#vnLine');
+ if(e)D.vz=e.value.trim();
+}
+function wireVoicePane(){
+ const go=$('#vnGo');if(!go)return;
+ go.onclick=ev=>{
+  ev.preventDefault();
+  if(vnRec){vnRec.stop();vnRec=null;go.textContent='\u25cf Record';go.classList.remove('rec');return}
+  $('#vnKeep').hidden=true;$('#vnScrap').hidden=true;
+  $('#vnPrev').hidden=true;
+  vnSay('Listening\u2026 up to '+VOICE_MAX+' seconds. Tap again to stop.');
+  go.textContent='\u25a0 Stop';go.classList.add('rec');
+  vnRec=vnRecorder(
+   (sec,lvl)=>{
+    $('#vnLen').textContent=vnClock(sec);
+    $('#vnLvl').style.width=Math.min(100,Math.round(lvl*160))+'%';
+   },
+   (blob,mime,sec)=>{
+    vnRec=null;
+    go.textContent='\u25cf Record';go.classList.remove('rec');
+    $('#vnLvl').style.width='0%';
+    if(!blob||!blob.size){vnSay('That came out empty. Try again.',true);return}
+    vnBlobToB64(blob).then(b64=>{
+     vnTake={b64,mime,sec,ext:vnExt(mime)};
+     const p=$('#vnPrev');p.src=URL.createObjectURL(blob);p.hidden=false;
+     $('#vnKeep').hidden=false;$('#vnScrap').hidden=false;
+     vnSay('Listen to it first. '+vnClock(sec)+', about '
+           +Math.round(vnSize(b64)/1024)+' KB.');
+    }).catch(()=>vnSay('Could not read that recording back.',true));
+   },
+   msg=>{vnRec=null;go.textContent='\u25cf Record';go.classList.remove('rec');
+         vnSay(msg,true)}
+  );
+ };
+ $('#vnScrap').onclick=ev=>{
+  ev.preventDefault();vnTake=null;
+  $('#vnKeep').hidden=true;$('#vnScrap').hidden=true;$('#vnPrev').hidden=true;
+  vnSay('Gone. Nothing changed.');
+ };
+ $('#vnKeep').onclick=ev=>{
+  ev.preventDefault();
+  if(!vnTake)return;
+  const m=vnPending();
+  m[edDay]={b64:vnTake.b64,mime:vnTake.mime,sec:vnTake.sec,ext:vnTake.ext};
+  if(!vnSavePending(m)){
+   vnSay('This phone has no room left to hold it. Publish what you have '
+         +'first, then record again.',true);
+   return;
+  }
+  vnTake=null;
+  $('#vnKeep').hidden=true;$('#vnScrap').hidden=true;
+  paintVoice(DAYS[edDay-1]);
+  vnSay('<b>Kept.</b> It is safe on this phone. Publish to make it hers.');
+ };
+ $('#vnDel').onclick=ev=>{
+  ev.preventDefault();
+  vnDrop(edDay);
+  DAYS[edDay-1].vn='';
+  paintVoice(DAYS[edDay-1]);
+  vnSay('Removed here. Publish to take it off her copy too.');
+ };
+}
 function readExtras(){
  const D=DAYS[edDay-1];
  const g=id=>{const e=$(id);return e?e.value.trim():''};
  D.af=!!g('#edAF');
- D.a2=g('#edA2');
  D.mv=!!g('#edMV');
- D.tz=D.af?cardHtml(g('#edTZ')):'';
- D.az=D.a2?cardHtml(g('#edAZ')):'';
- D.ab=D.a2?g('#edAB'):'';
- D.mz=D.mv?cardHtml(g('#edMZ')):'';
- D.mb=D.mv?g('#edMB'):'';
+ /* Kept whether or not the day is showing it -- turning a toggle off must
+    never quietly bin a card he wrote. But a box he has not touched still
+    holds the built-in wording, and copying that into every day would fill
+    the published file with thirty copies of the same sentence, so an
+    untouched box saves as nothing and falls back at read time. */
+ D.tz=edKeep(g('#edTZ'),TEASE_DEFAULT);
+ D.mz=edKeep(g('#edMZ'),MOVIE_INTRO_DEF);
+ D.mb=(g('#edMB')==='Watch the whole year ✦')?'':g('#edMB');
  D.bt=g('#edBT');
  D.pk=g('#edPK');
+ readGift();
+ readVoice();
  /* the film's own two cards live with the animations, not with a day */
  const mv={openA:g('#edMO1'),openB:g('#edMO2'),endA:g('#edME1'),endB:g('#edME2')};
  if(Object.keys(mv).some(k=>mv[k]))ATXT.__movie=mv;else delete ATXT.__movie;
@@ -2354,11 +2822,48 @@ function saveDraft(){
  catch(e){$('#edStat').textContent='Could not save the draft here.'}
  if(mode==='msg'&&shown===edDay)messageView(edDay,false);
 }
+/* Each note is its own file in the repo. They are uploaded one at a
+   time, and only dropped from his phone once GitHub has confirmed the
+   write -- a note that vanished from here but never arrived there would
+   be gone for good. */
+async function vnUpload(repo,tok,st){
+ const pend=vnPending();
+ const days=Object.keys(pend).map(Number).sort((a,b)=>a-b);
+ if(!days.length)return;
+ const H={Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'};
+ for(let i=0;i<days.length;i++){
+  const d=days[i], v=pend[d];
+  const path=vnPath(d,v.ext||'webm');
+  st.textContent='Sending the voice note for day '+d
+                +(days.length>1?' ('+(i+1)+' of '+days.length+')':'')+'\u2026';
+  const url='https://api.github.com/repos/'+repo.owner+'/'+repo.repo+'/contents/'+path;
+  let sha=null;
+  const r0=await fetch(url+'?t='+Date.now(),{headers:H,cache:'no-store'});
+  if(r0.ok){try{sha=(await r0.json()).sha}catch(e){}}
+  else if(r0.status===401||r0.status===403)throw new Error('key rejected \u2014 make a new one');
+  const r=await fetch(url,{method:'PUT',
+   headers:Object.assign({'Content-Type':'application/json'},H),
+   body:JSON.stringify({message:'voice note, day '+d,content:v.b64,sha:sha||undefined})});
+  if(!r.ok){let m=r.status;try{m=(await r.json()).message||m}catch(e){}throw new Error(m)}
+  /* it is really there now, so the day can point at it and the phone can
+     let go of its copy. the stamp is only to beat her browser's cache. */
+  DAYS[d-1].vn=path+'?v='+Date.now().toString(36);
+  vnDrop(d);
+ }
+}
 async function publishSite(){
  readEditor();
  const st=$('#edStat'),json=JSON.stringify(buildContent(),null,1);
  const repo=ghRepo(),tok=ghToken();
  $('#edPub').disabled=true;
+ /* the voice notes go first: if one of them fails, content.json must
+    not already be live pointing at a file that is not there */
+ if(repo&&tok){
+  try{ await vnUpload(repo,tok,st) }
+  catch(e){ st.textContent='Could not send the voice note: '
+            +(e&&e.message?e.message:'failed')+'. Nothing was published.';
+            $('#edPub').disabled=false; return }
+ }
  try{
   if(repo&&tok){
    st.textContent='Saving to '+repo.owner+'/'+repo.repo+'…';
@@ -2383,6 +2888,7 @@ async function publishSite(){
  }catch(e){st.textContent='Could not publish: '+(e&&e.message?e.message:'failed')}
  $('#edPub').disabled=false;
 }
+wireVoicePane();
 $('#edPlay').onclick=()=>previewDay(edDay);
 $('#pvEnd').onclick=()=>endPreview(true);
 $('#edSetup').onclick=()=>{
@@ -2404,7 +2910,7 @@ $('#edWhere').onclick=()=>{
  const r=ghRepo();
  $('#edStat').textContent=r?('Saves to '+r.owner+'/'+r.repo+'/content.json · key '+(ghToken()?'saved ✓':'missing ✗')):'No repo detected. Open the site from its GitHub Pages link, or set username/repo in setup.';
 };
-$('#edClose').onclick=()=>edsheet.classList.remove('show');
+$('#edClose').onclick=()=>{vnStopRec();edsheet.classList.remove('show')};
 $('#edSave').onclick=saveDraft;
 $('#edPub').onclick=publishSite;
 $('#edPrev').onclick=()=>{readEditor();openEditor(edDay-1)};
@@ -3065,6 +3571,310 @@ function prankGroups(){
 
 /* a door, so the editor can list these and a test can fire one on demand */
 try{window.__pk={PRANKS,pranksFor,runPrank,prankGroups}}catch(e){}
+try{window.__once={pass:()=>fresh1,first:d=>firstPass(d),
+ open:d=>openDay(d),again:d=>reliveDay(d),done:d=>isDone(d),
+ day:()=>DAYS,reset(){S.done={};S.unlocked={};fresh1=0;relive=0},
+ read:()=>readEditor(),edit:d=>openEditor(d),
+ baitOf:t=>baitSetOf(t),sets:()=>BAIT_SETS,today:()=>curDay()}}catch(e){}
+/* and a lazy one for the scenes and the day wiring: lazy because this file is
+   injected before either of them exists, and a snapshot taken here would be
+   empty or throw */
+try{window.__a=()=>({ASCENES,DAYS,aRng,apal,aSeg,aLerp,aEase})}catch(e){}
+
+/* ================= voice notes =================
+
+   A day can carry thirty seconds of him actually speaking.
+
+   Four things had to be true before this was worth building:
+
+     · it must never stand between her and what he wrote. The player sits
+       UNDER the letter, it never autoplays (no browser would let it anyway),
+       and if the file is missing or the network is out the card simply is
+       not there. She never sees a broken thing.
+
+     · it must not live inside content.json. A minute of speech is about
+       60 KB; thirty of them would turn the file she downloads on every
+       single visit into three megabytes. Each note is its own file in the
+       repo, and the day only carries its path.
+
+     · he records on a phone, at night, and iOS and Android disagree about
+       what a recording is. The recorder asks the browser what it can make
+       rather than assuming webm, and the extension follows the answer.
+
+     · a recording he has not published yet must survive him closing the
+       tab, because he will record at 1am and publish in the morning.
+
+   One thing he should know and cannot be protected from: the repo is
+   public. A voice file in it is downloadable by anyone who has the URL.
+   The editor says so, once, where he records.                          */
+
+const VOICE_LS='zb30voice';      /* unpublished recordings, base64, on his phone */
+const VOICE_MAX=90;              /* seconds. long enough to say something real */
+
+/* what this browser can actually produce, in the order we would prefer */
+function vnPick(){
+ const TRY=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/aac',
+            'audio/ogg;codecs=opus','audio/mpeg'];
+ try{
+  if(typeof MediaRecorder==='undefined')return null;
+  for(const m of TRY)if(MediaRecorder.isTypeSupported(m))return m;
+  return '';                      /* let the browser choose for itself */
+ }catch(e){return null}
+}
+function vnExt(mime){
+ const m=String(mime||'');
+ if(m.indexOf('mp4')>=0||m.indexOf('aac')>=0)return 'm4a';
+ if(m.indexOf('ogg')>=0)return 'ogg';
+ if(m.indexOf('mpeg')>=0)return 'mp3';
+ return 'webm';
+}
+const vnPath=(d,ext)=>'voice/day'+String(d).padStart(2,'0')+'.'+ext;
+
+/* the ones he has recorded but not yet published, kept on his phone so a
+   reload at one in the morning does not lose the take */
+function vnPending(){
+ try{return JSON.parse(localStorage.getItem(VOICE_LS)||'{}')||{}}catch(e){return {}}
+}
+function vnSavePending(map){
+ try{localStorage.setItem(VOICE_LS,JSON.stringify(map));return true}
+ catch(e){return false}    /* out of room: the caller says so out loud */
+}
+function vnDrop(d){
+ const m=vnPending();
+ if(m[d]){delete m[d];vnSavePending(m)}
+}
+
+function vnBlobToB64(blob){
+ return new Promise((res,rej)=>{
+  const r=new FileReader();
+  r.onload=()=>{const s=String(r.result||'');const i=s.indexOf(',');res(i<0?'':s.slice(i+1))};
+  r.onerror=()=>rej(new Error('could not read the recording'));
+  r.readAsDataURL(blob);
+ });
+}
+function vnB64ToUrl(b64,mime){
+ try{
+  const bin=atob(b64);
+  const by=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)by[i]=bin.charCodeAt(i);
+  return URL.createObjectURL(new Blob([by],{type:mime||'audio/webm'}));
+ }catch(e){return ''}
+}
+const vnSize=b64=>Math.round(b64.length*0.75);
+function vnClock(sec){
+ const s=Math.max(0,Math.round(sec));
+ return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+}
+
+/* ---------------------------------------------------------------- the take */
+/* One recorder at a time, with a live level so he can see it is hearing him.
+   Everything it owns is handed back by stop(), including the microphone --
+   a page that keeps the mic open puts a red dot on his phone all night. */
+function vnRecorder(onTick,onDone,onFail){
+ let rec=null,stream=null,chunks=[],t0=0,timer=0,actx=null,an=null,raf=0;
+ const mime=vnPick();
+ if(mime===null){onFail('This browser cannot record.');return null}
+
+ navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})
+  .then(st=>{
+   stream=st;
+   try{rec=new MediaRecorder(st,mime?{mimeType:mime}:undefined)}
+   catch(e){rec=new MediaRecorder(st)}
+   rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+   rec.onstop=()=>{
+    const type=(rec&&rec.mimeType)||mime||'audio/webm';
+    const blob=new Blob(chunks,{type});
+    kill();
+    onDone(blob,type,(Date.now()-t0)/1000);
+   };
+   /* a level meter, so a dead microphone is obvious before he talks for a
+      minute into nothing */
+   try{
+    actx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=actx.createMediaStreamSource(st);
+    an=actx.createAnalyser();an.fftSize=512;src.connect(an);
+   }catch(e){}
+   const buf=an?new Uint8Array(an.frequencyBinCount):null;
+   const loop=()=>{
+    raf=requestAnimationFrame(loop);
+    let lvl=0;
+    if(an&&buf){
+     an.getByteTimeDomainData(buf);
+     for(let i=0;i<buf.length;i++)lvl=Math.max(lvl,Math.abs(buf[i]-128)/128);
+    }
+    onTick((Date.now()-t0)/1000,lvl);
+   };
+   t0=Date.now();
+   rec.start();
+   loop();
+   timer=setTimeout(()=>{try{rec.stop()}catch(e){}},VOICE_MAX*1000);
+  })
+  .catch(e=>onFail(
+   (e&&e.name==='NotAllowedError')
+    ? 'The microphone was blocked. Allow it for this site and try again.'
+    : 'No microphone here.'));
+
+ function kill(){
+  if(raf)cancelAnimationFrame(raf);raf=0;
+  if(timer)clearTimeout(timer);timer=0;
+  try{if(actx)actx.close()}catch(e){}
+  try{if(stream)stream.getTracks().forEach(tr=>tr.stop())}catch(e){}
+  stream=null;
+ }
+ return {
+  stop(){try{if(rec&&rec.state!=='inactive')rec.stop();else kill()}catch(e){kill()}},
+  cancel(){try{if(rec)rec.onstop=null;if(rec&&rec.state!=='inactive')rec.stop()}catch(e){}kill()}
+ };
+}
+
+/* --------------------------------------------------------- what she sees */
+/* A play button, a running time, and thirty bars that only move while it is
+   actually playing. The bars are drawn from the file name rather than from
+   the audio: reading the real waveform means decoding the whole file before
+   she can press play, and she should not wait for a picture. */
+function vnBars(seed,n){
+ let s=0;for(let i=0;i<String(seed).length;i++)s=(s*31+String(seed).charCodeAt(i))%9973;
+ const out=[];
+ for(let i=0;i<n;i++){
+  s=(s*9301+49297)%233280;
+  const r=s/233280;
+  /* fuller in the middle, like someone getting going and then trailing off */
+  const shape=0.45+0.55*Math.sin(Math.PI*(i+0.5)/n);
+  out.push(0.22+0.78*r*shape);
+ }
+ return out;
+}
+
+function voiceCard(d){
+ const D=DAYS[d-1];
+ const src=D&&D.vn;
+ if(!src)return '';
+ const bars=vnBars(src,30).map(v=>
+   `<i style="--h:${Math.round(v*100)}%"></i>`).join('');
+ return `<div class="card vncard" id="vnCard" style="margin-top:14px">
+   <div class="vnrow">
+     <button class="vnplay" id="vnPlay" aria-label="Play the voice note">
+       <svg viewBox="0 0 24 24" class="vnicon"><path d="M8 5l11 7-11 7z"/></svg>
+     </button>
+     <div class="vnwave" id="vnWave">${bars}</div>
+     <span class="vntime" id="vnTime">0:00</span>
+   </div>
+   <p class="tease vnlab">${D.vz||'He said it out loud instead.'}</p>
+ </div>`;
+}
+
+function wireVoice(w,d){
+ const card=$('#vnCard',w);if(!card)return;
+ const D=DAYS[d-1], src=D&&D.vn;
+ const btn=$('#vnPlay',w), wave=$('#vnWave',w), time=$('#vnTime',w);
+ const au=new Audio();
+ au.preload='metadata';
+ au.src=src;
+ let dead=false;
+ /* if the file is not there she never learns there was supposed to be one */
+ au.addEventListener('error',()=>{dead=true;try{card.remove()}catch(e){}});
+ au.addEventListener('loadedmetadata',()=>{
+  if(isFinite(au.duration)&&au.duration>0)time.textContent=vnClock(au.duration);
+ });
+ au.addEventListener('timeupdate',()=>{
+  time.textContent=vnClock(au.currentTime);
+  const p=(au.duration&&isFinite(au.duration))?au.currentTime/au.duration:0;
+  card.style.setProperty('--vnp',(p*100).toFixed(1)+'%');
+ });
+ const icon=on=>{
+  btn.innerHTML=on
+   ? '<svg viewBox="0 0 24 24" class="vnicon"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
+   : '<svg viewBox="0 0 24 24" class="vnicon"><path d="M8 5l11 7-11 7z"/></svg>';
+ };
+ au.addEventListener('play',()=>{card.classList.add('on');icon(true)});
+ au.addEventListener('pause',()=>{card.classList.remove('on');icon(false)});
+ au.addEventListener('ended',()=>{
+  card.classList.remove('on');icon(false);
+  au.currentTime=0;card.style.setProperty('--vnp','0%');
+  time.textContent=vnClock(au.duration||0);
+ });
+ btn.onclick=()=>{
+  if(dead)return;
+  if(au.paused){
+   /* his voice and the background music must not talk over each other */
+   try{AUDIO.duck(true)}catch(e){}
+   au.play().catch(()=>{dead=true;try{card.remove()}catch(e){}});
+  }else{
+   au.pause();
+   try{AUDIO.duck(false)}catch(e){}
+  }
+ };
+ au.addEventListener('pause',()=>{try{AUDIO.duck(false)}catch(e){}});
+ /* leaving the day stops him mid-sentence rather than following her about */
+ const old=cleanup;
+ cleanup=()=>{try{au.pause()}catch(e){}try{AUDIO.duck(false)}catch(e){}
+              if(old)try{old()}catch(e){}};
+}
+
+/* ================= how it feels in her hand =================
+
+   Three small things that do not change a single flow she already has.
+
+   1. HAPTICS. The envelope tearing, winning, a heart arriving, the moment at
+      8:45 -- each gets its own pattern, short enough that it reads as the
+      thing rather than as a phone buzzing. It follows the sound toggle: if
+      she has turned the music off she has asked for quiet, and a pocket
+      full of vibration is not quiet. Android honours navigator.vibrate;
+      iOS Safari ignores it entirely, which is fine -- nothing here depends
+      on it, it is only ever a bonus on top of something visible.
+
+   2. THE SCREEN STAYS AWAKE while a film is playing. Some of them run for
+      eighty seconds without a touch, which is exactly long enough for a
+      phone to dim and then lock in the middle of one.
+
+   3. THE FILM WAITS IF SHE LOOKS AWAY. If a message arrives and she leaves
+      the tab, the film stops where it is rather than playing to an empty
+      screen. She was given thirty of these, one a day; she should not miss
+      the middle of one because somebody texted her.                      */
+
+const FEEL=(()=>{
+ const PAT={
+  open  :[9,38,15],            /* the seal giving way */
+  win   :[12,55,12,55,26],     /* three little knocks */
+  heart :[16,90,24],           /* thump, gap, thump */
+  nudge :[7],                  /* an interruption landing */
+  no    :[18,50,18],           /* the button that will not open tomorrow */
+  moment:[30,70,30,70,60,140,120]   /* 8:45 */
+ };
+ let quiet=false;
+ try{
+  quiet=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+ }catch(e){}
+ const can=()=>{
+  try{return !quiet && !!navigator.vibrate && AUDIO.isOn()}catch(e){return false}
+ };
+ function tap(kind){
+  if(!can())return;
+  try{navigator.vibrate(PAT[kind]||PAT.nudge)}catch(e){}
+ }
+
+ /* ---- the screen, kept awake ---- */
+ let lock=null,want=0;
+ async function hold(on){
+  want=on?want+1:Math.max(0,want-1);
+  try{
+   if(want>0&&!lock&&navigator.wakeLock){
+    lock=await navigator.wakeLock.request('screen');
+    lock.addEventListener('release',()=>{lock=null});
+   }else if(!want&&lock){
+    const l=lock;lock=null;await l.release();
+   }
+  }catch(e){lock=null}
+ }
+ /* a lock is dropped when the tab goes away, so take it again on return */
+ try{
+  document.addEventListener('visibilitychange',()=>{
+   if(!document.hidden&&want>0&&!lock)hold(true).then(()=>{want=Math.max(1,want-1)});
+  });
+ }catch(e){}
+
+ return {tap,hold,quiet:()=>quiet};
+})();
 
 function animView(d,onDone,replay,forceKey){
  const k=(forceKey&&ASCENES[forceKey])?forceKey:animFor(d);
@@ -3081,11 +3891,18 @@ function animView(d,onDone,replay,forceKey){
  /* A scene that paints its own pale ground cannot use the clock's ink: at
     night that ink is nearly white, and white on cream is not text. Such a
     scene says so, and gets dark letters and a pale scrim instead. */
- wrap.dataset.tod=sc.light?'day':todKey();
- wrap.style.setProperty('--aink',sc.light?'#4a3142':pal.ink);
+ /* A scene that paints its own ground has to say which kind, or it gets the
+    clock's ink: pale letters on a cream field at night, or dark letters on a
+    midnight field in the morning. Either way, unreadable. */
+ wrap.dataset.tod=sc.light?'day':sc.dark?'late':todKey();
+ wrap.style.setProperty('--aink',
+   sc.light?'#4a3142':sc.dark?'#ffe4f0':pal.ink);
  const c=cv.getContext('2d');
  let W=0,H=0,raf=0,t0=0,last=0,t=0,ended=false;
  const A={pal,rng:aRng(d*31+7),day:d,key:k,words};
+ /* eighty seconds with no touch is long enough for a phone to lock */
+ FEEL.hold(true);let held=true;
+ const letgo=()=>{if(held){held=false;FEEL.hold(false)}};
  /* a scene that needs her to do something holds the ending open and
     finishes itself, instead of the clock finishing it */
  A.hold=!!sc.hold;
@@ -3114,7 +3931,7 @@ function animView(d,onDone,replay,forceKey){
  let shownTo=-1;
  /* only the day's own film gets interrupted: not the bouquet she has
     just earned, and not a rewatch -- a joke told twice is a bug */
- const filmPranks=(forceKey||replay)?[]:pranksFor('film',d);
+ const filmPranks=(forceKey||replay||!firstPass(d))?[]:pranksFor('film',d);
  let prankAt=filmPranks.length?0:-1;
 
  /* time lost to an interruption, given back rather than charged to her */
@@ -3128,7 +3945,9 @@ function animView(d,onDone,replay,forceKey){
   const dt=Math.min(.05,raw/1000);last=n;
   /* while something is sitting on top of the film, the film waits: she should
      not have to watch an advert AND miss the bit underneath it */
-  const covered=!!wrap.querySelector('.pkon');
+  /* an interruption, or her going to answer a message: either way the
+     film stops where it is rather than playing to nobody */
+  const covered=!!wrap.querySelector('.pkon')||document.hidden;
   if(covered)frozen+=raw;else t+=dt;
   /* a holding scene sits at the end of its timeline until it says otherwise */
   let P=Math.min(1,(n-t0-frozen)/1000/dur);
@@ -3150,7 +3969,7 @@ function animView(d,onDone,replay,forceKey){
   /* the interruption, if this day has one */
   if(prankAt>=0&&P>=.34+prankAt*.28){
    const k=filmPranks[prankAt];prankAt=prankAt+1<filmPranks.length?prankAt+1:-1;
-   runPrank(k,wrap);
+   FEEL.tap('nudge');runPrank(k,wrap);
   }
   if(P>=1&&!ended&&!A.hold){ended=true;finish();return}
   raf=requestAnimationFrame(frame);
@@ -3159,12 +3978,13 @@ function animView(d,onDone,replay,forceKey){
  let soundOff=null;
  const endSound=()=>{if(soundOff){try{soundOff()}catch(e){}soundOff=null}};
  function finish(){
+  letgo();
   endSound();
   if(raf)cancelAnimationFrame(raf);raf=0;
   if(!replay){addMark(d,k);flowerMoment();}
   setTimeout(()=>{if(mode==='anim')onDone()},replay?420:900);
  }
- const stop=()=>{endSound();if(raf)cancelAnimationFrame(raf);raf=0;ASTOP=null};
+ const stop=()=>{letgo();endSound();if(raf)cancelAnimationFrame(raf);raf=0;ASTOP=null};
  ASTOP=stop;cleanup=stop;
 
  /* a scene that takes taps gets them in its own coordinates */
@@ -3265,8 +4085,10 @@ function movieView(onDone,fromDay){
  const pal=apal();
  wrap.style.setProperty('--aink',pal.ink);
  /* the film re-reads this for every scene it plays */
- const groundFor=s=>{wrap.dataset.tod=s.light?'day':todKey();
-  wrap.style.setProperty('--aink',s.light?'#4a3142':pal.ink)};
+ const groundFor=s=>{
+  wrap.dataset.tod=s.light?'day':s.dark?'late':todKey();
+  wrap.style.setProperty('--aink',
+    s.light?'#4a3142':s.dark?'#ffe4f0':pal.ink)};
  const c=cv.getContext('2d');
  let W=0,H=0,raf=0,i=-1,sc=null,A=null,dur=0,t=0,last=0,t0=0,words=[],cues=[],outs=[],shownTo=-1;
  let ended=false,titleT=0;
@@ -3425,10 +4247,10 @@ const APAPER='#fffaf4';
 /* ---------- 1 · the rubber band ---------- */
 ASCENES.band={
  name:'The rubber band',grp:'Ours',dur:13,
- blurb:'One wrist, then the other. She gave it to you, not the other way round.',
- def:{words:['You didn\'t make it a moment.',
-             'You just took it off your wrist and handed it over, mid-sentence.',
-             'I have kept it like it was one.']},
+ blurb:'A small black thing, bought on the way, handed over without ceremony.',
+ def:{words:['13th June, and I got you one more thing.',
+             'A black rubber band. That is the whole gift.',
+             'You wore it out of there. That is the whole story.']},
  fields:[{f:'words',l:'Lines that float over it',h:'One per line.'}],
  init(A,W,H){A.done=false},
  /* a forearm coming in from the edge of frame: sleeve, arm, a simple hand.
@@ -4858,7 +5680,7 @@ ASCENES.april22={
    The bird is not early because it wants to eat her. It is early because it
    wants to be there first. That is the whole animation.                      */
 ASCENES.worm={
- name:'If you were a worm',grp:'Ours',dur:34,
+ name:'If you were a worm',grp:'Gifts · lines',dur:34,
  blurb:'The earliest bird. Waiting since before dawn, and not for the reason you think.',
  solo:true,
  /* [arrives, leaves] -- against the dark, the dawn, and the ones who turn
@@ -6590,7 +7412,7 @@ function bqLily(c,x,y,r,open,tilt){
 }
 
 ASCENES.posy={
- name:'Roses and tulips',grp:'Ours',dur:14,
+ name:'Roses and tulips',grp:'Gifts · to keep',dur:14,
  blurb:'What she gets the moment she solves both words.',
  light:true,   /* pale ground: dark letters, pale scrim */
  solo:true,
@@ -6705,6 +7527,3361 @@ ASCENES.posy={
   bqLily(c,s*.5,s*.42,s*.15,1,0);
   bqRose(c,s*.5+s*.26,s*.58,s*.15,1,.3);
   c.fillStyle='#e8b4c8';aRR(c,s*.40,s*.74,s*.20,s*.13,s*.03);c.fill();
+ }
+};
+
+/* ================= days 10-13 =================
+   Straight after 29 May: the texting, the long way home, the pretending at
+   work, and the day he was too tired to go in and went in anyway. */
+
+/* a desk with a monitor on it, seen straight on */
+function aDesk(c,x,y,s,lit){
+ c.save();c.translate(x,y);c.scale(s,s);
+ c.fillStyle='#8a6f92';
+ aRR(c,-30,4,60,5,2);c.fill();
+ c.fillStyle='#7a6182';
+ c.fillRect(-24,9,5,17);c.fillRect(19,9,5,17);
+ c.fillStyle='#3a3446';
+ aRR(c,-17,-20,34,22,2);c.fill();
+ c.fillStyle=lit?'#cfe6f5':'#5b5164';
+ aRR(c,-15,-18,30,18,1.5);c.fill();
+ c.fillStyle='#3a3446';
+ c.fillRect(-3,2,6,4);aRR(c,-9,6,18,2.5,1);c.fill();
+ c.restore();
+}
+
+/* an ice cream, one scoop, slightly melting */
+function aCone(c,x,y,s,a,drip){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle='#d8a874';
+ c.beginPath();c.moveTo(-7,0);c.lineTo(7,0);c.lineTo(0,20);c.closePath();c.fill();
+ c.strokeStyle='rgba(150,110,70,.5)';c.lineWidth=.9;
+ [-3,0,3].forEach(d=>{c.beginPath();c.moveTo(-6+d,3);c.lineTo(2+d,14);c.stroke()});
+ c.fillStyle='#ffd9e2';
+ c.beginPath();c.arc(0,-6,9.5,0,7);c.fill();
+ c.fillStyle='#ffeaf0';
+ c.beginPath();c.arc(-3,-9,4,0,7);c.fill();
+ if(drip>0){
+  c.fillStyle='#ffd9e2';
+  c.beginPath();
+  c.moveTo(6,-2);c.quadraticCurveTo(8,4+drip*7,5,5+drip*9);
+  c.quadraticCurveTo(3,3+drip*5,4,-2);c.closePath();c.fill();
+ }
+ c.restore();
+}
+
+/* a tree, for the road that is not a city road */
+function aTree(c,x,y,h,a){
+ c.save();c.globalAlpha=a==null?1:a;
+ c.strokeStyle='#2f2a3a';c.lineWidth=h*.10;c.lineCap='round';
+ c.beginPath();c.moveTo(x,y);c.lineTo(x,y-h*.52);c.stroke();
+ c.fillStyle='#2b4438';
+ c.beginPath();c.ellipse(x,y-h*.72,h*.30,h*.34,0,0,7);c.fill();
+ c.beginPath();c.ellipse(x-h*.20,y-h*.58,h*.20,h*.22,0,0,7);c.fill();
+ c.beginPath();c.ellipse(x+h*.20,y-h*.58,h*.20,h*.22,0,0,7);c.fill();
+ c.restore();
+}
+
+
+/* ------------------------------------------------ 10 · the first weeks */
+ASCENES.weeks={
+ name:'The first weeks',grp:'Ours',dur:38,
+ blurb:'Nine hours together, and then half the night on the phone anyway.',
+ dark:true,    /* it paints its own midnight: pale letters, dark scrim */
+ solo:true,
+ cues:[[.04,.13],[.17,.27],[.31,.41],[.45,.56],[.60,.71],[.80,2]],
+ def:{
+  words:['Nothing changed. Except all of it did.',
+         'We had just spent the whole day in the same room.',
+         'It made no difference at all.',
+         'Half twelve. One. Half one.',
+         'Neither of us ever said goodnight first.',
+         'I have never been that tired and that pleased about it.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){
+  A.bgA='#1b1426';A.bgB='#2f1f3a';
+  A.msg=[];for(let i=0;i<7;i++)A.msg.push({s:R(),w:.5+R()*.5,side:i%2?1:-1});
+ },
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.36;
+  const env=(a,b,c2,d)=>aSeg(P,a,b)*(1-aSeg(P,c2,d));
+
+  /* two phones, face up in the dark, a long way apart */
+  const on1=aSeg(P,.02,.10), on2=aSeg(P,.14,.24);
+  const glow=(x,y,k)=>{
+   if(k<=0)return;
+   const g=c.createRadialGradient(x,y,0,x,y,S*.30);
+   g.addColorStop(0,'rgba(180,210,240,'+(.22*k)+')');
+   g.addColorStop(1,'rgba(180,210,240,0)');
+   c.fillStyle=g;c.beginPath();c.arc(x,y,S*.30,0,7);c.fill();
+  };
+  glow(W*.24,mid,on1);glow(W*.76,mid,on2);
+  n9Phone(c,W*.24,mid,S*.17,on1);
+  n9Phone(c,W*.76,mid,S*.17,on2);
+
+  /* messages crossing, faster and faster, then slowing right down */
+  const rate=aLerp(.30,.70,aSeg(P,.20,.50))*(1-aSeg(P,.74,.92)*.75);
+  const talk=env(.22,.30,.88,.96);
+  if(talk>0){
+   A.msg.forEach((m,i)=>{
+    const u=((t*rate*.5+m.s)%1);
+    const a2=Math.sin(u*Math.PI);
+    if(a2<=.03)return;
+    const x=aLerp(W*.24,W*.76,m.side>0?u:1-u);
+    const y=mid-S*.12-Math.sin(u*Math.PI)*S*.10-(i%3)*S*.018;
+    n9Bub(c,x,y,S*.10*m.w+S*.045,S*.040,a2*talk*.9,m.side);
+   });
+  }
+
+  /* the clock, going round further than either of them meant it to */
+  const cl=env(.30,.38,.84,.92);
+  if(cl>0){
+   c.globalAlpha=cl;
+   /* 11:40 at the start, and gone two by the end */
+   const hrs=aLerp(11.7,14.3,aSeg(P,.34,.84));
+   n9Clock(c,W/2,mid+S*.26,S*.070,hrs,t,'#e8dff0');
+   c.globalAlpha=1;
+  }
+
+  /* and eventually both screens go out, a few minutes apart */
+  const off=aSeg(P,.90,.99);
+  if(off>0){
+   c.globalAlpha=off*.9;
+   c.fillStyle=A.bgB;
+   c.fillRect(0,0,W,H);
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){
+  c.fillStyle='#2a2733';
+  aRR(c,s*.10,s*.30,s*.32,s*.44,s*.05);c.fill();
+  aRR(c,s*.58,s*.30,s*.32,s*.44,s*.05);c.fill();
+  c.fillStyle='#cfe6f5';
+  aRR(c,s*.14,s*.35,s*.24,s*.34,s*.03);c.fill();
+  aRR(c,s*.62,s*.35,s*.24,s*.34,s*.03);c.fill();
+  c.fillStyle='#e8729a';
+  c.beginPath();c.arc(s*.5,s*.22,s*.07,0,7);c.fill();
+ }
+};
+
+
+/* ------------------------------------------------------ 11 · the rounds */
+ASCENES.rounds={
+ name:'The long way',grp:'Ours',dur:54,
+ blurb:'Six o’clock, and a road through Aarey with nobody else on it.',
+ dark:true,    /* dusk into night, whatever hour she opens it */
+ solo:true,
+ cues:[[.04,.14],[.20,.30],[.38,.50],[.56,.68],[.76,2]],
+ def:{
+  words:['Six o’clock, and neither of us in any hurry.',
+         'Some days it was ice cream.',
+         'Some days it was Aarey, which is not on the way to anywhere.',
+         'The road was dark and there was nobody on it.',
+         'And then your gate. Eventually. Always eventually.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){
+  A.bgA='#f6c98f';A.bgB='#6b4a72';
+  A.tree=[];for(let i=0;i<8;i++)A.tree.push({x:i/8,h:.7+R()*.6});
+  A.lamp=[];for(let i=0;i<7;i++)A.lamp.push({x:i/7});
+ },
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), gy=H*.56;
+  const env=(a,b,c2,d)=>aSeg(P,a,b)*(1-aSeg(P,c2,d));
+  const R9=ASCENES.ride;
+  const ss=S*.0086, rr=S*.0046;
+
+  /* --- ice cream, standing about outside the office --- */
+  const a1=env(.01,.05,.30,.36);
+  if(a1>0){
+   c.globalAlpha=a1;
+   c.fillStyle='#4a3b52';c.fillRect(0,gy,W,H-gy);
+   const fy=gy-S*.03, fs=S*.0050;
+   pdFig(c,W*.36,fy+Math.sin(t*.9)*S*.003,fs,'m',{});
+   pdFig(c,W*.62,fy+Math.sin(t*.8+1)*S*.003,fs,'z',{});
+   const eat=aSeg(P,.08,.28);
+   aCone(c,W*.29,fy-S*.055,S*.0042,a1,eat);
+   aCone(c,W*.69,fy-S*.055,S*.0042,a1,eat*.6);
+   c.globalAlpha=1;
+  }
+
+  /* --- the road that is not on the way to anywhere --- */
+  const a2=env(.33,.39,.80,.86);
+  if(a2>0){
+   c.globalAlpha=a2;
+   const roll=1-aSeg(P,.70,.80);
+   /* trees instead of street lamps: this is the long way round */
+   c.fillStyle='#3a2f45';c.fillRect(0,gy,W,H-gy);
+   A.tree.forEach(p=>{
+    const u=((p.x - t*roll*.10)%1+1)%1;
+    aTree(c,u*W*1.3-W*.15,gy+S*.01,S*.30*p.h,a2*.9);
+   });
+   c.strokeStyle='rgba(255,236,200,.35)';c.lineWidth=S*.007;
+   c.setLineDash([S*.05,S*.07]);
+   c.lineDashOffset=-(t*roll*S*.6)%(S*.12);
+   c.beginPath();c.moveTo(0,gy+(H-gy)*.34);c.lineTo(W,gy+(H-gy)*.34);c.stroke();
+   c.setLineDash([]);
+   const sx=W*.48;
+   R9.scoot(c,sx,gy+S*.02,ss,t,roll>.04,true);
+   R9.rider(c,sx+9*ss,gy+S*.02-19*ss-23*rr,rr,'z',t,roll>.04);
+   R9.rider(c,sx-7*ss,gy+S*.02-19*ss-23*rr,rr,'m',t,false);
+   c.globalAlpha=1;
+  }
+
+  /* --- her gate, arrived at later than strictly necessary --- */
+  const a3=aSeg(P,.82,.88);
+  if(a3>0){
+   c.globalAlpha=a3;
+   c.fillStyle='#3a2f45';c.fillRect(0,gy,W,H-gy);
+   c.fillStyle='#8a6f92';
+   aRR(c,W*.06,gy-S*.42,W*.24,S*.44,S*.01);c.fill();
+   c.fillStyle='#ffe0a8';
+   [0,1,2].forEach(r=>[0,1].forEach(col=>{
+    c.globalAlpha=a3*(.45+.3*Math.sin(t*.8+r+col*2));
+    aRR(c,W*.10+col*W*.09,gy-S*.36+r*S*.115,W*.05,S*.065,S*.005);c.fill();
+   }));
+   c.globalAlpha=a3;
+   const sx=W*.58, by=gy+S*.02;
+   R9.scoot(c,sx,by,ss,t,false,false);
+   R9.rider(c,sx-7*ss,by-19*ss-23*rr,rr,'m',t,false);
+   R9.rider(c,W*.30,by-23*rr,rr,'z',t,false);
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){
+  aTree(c,s*.22,s*.82,s*.46,1);
+  aTree(c,s*.80,s*.84,s*.38,1);
+  c.fillStyle='#4a6fa5';
+  aRR(c,s*.36,s*.62,s*.30,s*.12,s*.05);c.fill();
+  c.fillStyle='#2b2630';
+  c.beginPath();c.arc(s*.42,s*.76,s*.07,0,7);c.fill();
+  c.beginPath();c.arc(s*.62,s*.76,s*.07,0,7);c.fill();
+ }
+};
+
+
+/* ----------------------------------------------- 12 · the office secret */
+ASCENES.secret={
+ name:'The office secret',grp:'Ours',dur:56,
+ blurb:'Two desks apart, straight faces, and a whole day of talking anyway.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ cues:[[.04,.13],[.18,.28],[.34,.45],[.52,.63],[.70,.80],[.86,2]],
+ def:{
+  words:['At work we were extremely professional.',
+         'Two desks apart. Nothing to see here.',
+         'Straight faces the moment anybody walked past.',
+         'And then a whole day of talking anyway.',
+         'I think everybody knew.',
+         'Nobody ever said it out loud. That was the best part.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){
+  A.bgA='#fdf1e6';A.bgB='#f2d2dc';
+  A.chat=[];for(let i=0;i<6;i++)A.chat.push({s:R(),w:.5+R()*.5,side:i%2?1:-1});
+ },
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.38;
+  const fy=mid+S*.10, fs=S*.0048;
+
+  /* somebody walks past twice; both of them go completely blank */
+  const pass1=aSeg(P,.30,.46), pass2=aSeg(P,.72,.86);
+  const walking=(pass1>0&&pass1<1)||(pass2>0&&pass2<1);
+  const straight=walking?1:0;
+
+  /* people first, desks second: the desk has to sit in front of them or they
+     read as standing in a room with some furniture behind */
+  pdFig(c,W*.26,fy+Math.sin(t*.9)*S*.003,fs,'m',
+        {flat:straight>0,flip:false});
+  pdFig(c,W*.74,fy+Math.sin(t*.8+1)*S*.003,fs,'z',
+        {flat:straight>0,flip:true});
+  aDesk(c,W*.26,fy+S*.085,S*.0044,1);
+  aDesk(c,W*.74,fy+S*.085,S*.0044,1);
+
+  /* and it is Rahul bhai who keeps walking past, because of course it is */
+  [pass1,pass2].forEach(pp=>{
+   if(pp<=0||pp>=1)return;
+   const x=aLerp(-W*.16,W*1.16,aEase(pp));
+   spRahul(c,x,fy+S*.03+Math.sin(t*.7)*S*.003,fs*1.02);
+  });
+
+  /* and the talking, which stops dead whenever anyone is looking */
+  const talk=aSeg(P,.10,.18)*(1-straight)*(1-aSeg(P,.90,.98));
+  if(talk>0){
+   A.chat.forEach((b,i)=>{
+    const u=((t*.40+b.s)%1);
+    const a2=Math.sin(u*Math.PI);
+    if(a2<=.03)return;
+    const x=aLerp(W*.32,W*.68,b.side>0?1-u:u);
+    const y=fy-S*.16-Math.sin(u*Math.PI)*S*.06-(i%3)*S*.015;
+    n9Bub(c,x,y,S*.095*b.w+S*.045,S*.040,a2*talk*.92,b.side);
+   });
+  }
+ },
+ mark(c,s){
+  aDesk(c,s*.28,s*.60,s*.0052*96,1);
+  aDesk(c,s*.74,s*.60,s*.0052*96,1);
+  c.fillStyle='#e8729a';
+  c.beginPath();c.arc(s*.5,s*.30,s*.08,0,7);c.fill();
+ }
+};
+
+
+/* --------------------------------------------------- 13 · the day off */
+ASCENES.eid={
+ name:'Bakra Eid',grp:'Ours',dur:56,
+ blurb:'He had the whole day off, and spent the end of it at his desk.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ cues:[[.04,.13],[.18,.28],[.34,.45],[.52,.63],[.70,.81],[.87,2]],
+ def:{
+  words:['Bakra Eid. I had the day off.',
+         'Bombay in the morning. Done by three.',
+         'I could barely keep my eyes open.',
+         'I went in anyway. For a few hours.',
+         'You worked out straight away that I had not come in for the work.',
+         'You told me later how happy that made you.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){
+  A.bgA='#ffeede';A.bgB='#f3cfd8';
+  A.lamp=[];for(let i=0;i<7;i++)A.lamp.push({x:i/7});
+ },
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.36;
+  const env=(a,b,c2,d)=>aSeg(P,a,b)*(1-aSeg(P,c2,d));
+  const R9=ASCENES.ride;
+  const ss=S*.0080, rr=S*.0044;
+
+  /* --- the road back, and a clock that already says three --- */
+  const a1=env(.01,.05,.46,.52);
+  if(a1>0){
+   c.globalAlpha=a1;
+   const gy=H*.60;
+   c.fillStyle='#4a3b52';c.fillRect(0,gy,W,H-gy);
+   c.strokeStyle='rgba(255,236,200,.35)';c.lineWidth=S*.007;
+   c.setLineDash([S*.05,S*.07]);
+   c.lineDashOffset=-(t*S*.55)%(S*.12);
+   c.beginPath();c.moveTo(0,gy+(H-gy)*.34);c.lineTo(W,gy+(H-gy)*.34);c.stroke();
+   c.setLineDash([]);
+   n9Clock(c,W*.22,mid-S*.16,S*.075,3+aSeg(P,.10,.42)*.4,t);
+   /* him, and the eyes going --- the whole day is in how tired he is */
+   const sleepy=aSeg(P,.24,.44);
+   const sx=W*.56, by=gy+S*.02;
+   R9.scoot(c,sx,by,ss,t,true,false);
+   R9.rider(c,sx-7*ss,by-19*ss-23*rr+sleepy*S*.012,rr,'m',t,false,
+            {flat:sleepy>.3});
+   if(sleepy>.35){
+    /* three small z's, because he very nearly did not make it in */
+    c.globalAlpha=a1*aSeg(P,.30,.46);
+    c.fillStyle='#8a7392';
+    c.font='700 '+(S*.052)+'px Lora, Georgia, serif';
+    [0,1,2].forEach(i=>{
+     const u=((t*.30+i*.33)%1);
+     c.globalAlpha=a1*Math.sin(u*Math.PI)*.8;
+     c.fillText('z',sx+S*.055+i*S*.028,by-S*.19-u*S*.09);
+    });
+    c.globalAlpha=a1;
+   }
+   c.globalAlpha=1;
+  }
+
+  /* --- the office door, at an hour nobody expected him --- */
+  const a2=env(.49,.55,1.1,1.2);
+  if(a2>0){
+   c.globalAlpha=a2;
+   const fy=mid+S*.17, fs=S*.0050;
+   /* she is at her desk, where she has been since ten */
+   aDesk(c,W*.70,fy+S*.055,S*.0044,1);
+   const seen=aSeg(P,.68,.80);
+   pdFig(c,W*.70,fy+Math.sin(t*.8+1)*S*.003,fs,'z',{flip:true,flat:seen<.4});
+   /* and he comes through the door he did not have to come through */
+   const walk=aEase(aSeg(P,.52,.68));
+   pdFig(c,aLerp(-W*.18,W*.38,walk),fy+Math.sin(t*.95)*S*.0035,fs,'m',{});
+   if(seen>0){
+    /* clear of her head -- on it, it reads as a hat */
+    n9Heart(c,W*.80,fy-S*.25-seen*S*.04,S*.05*seen,seen,'#ff9fbb');
+   }
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){
+  c.fillStyle='#f3cfd8';c.fillRect(0,0,s,s);
+  aDesk(c,s*.66,s*.62,s*.0050*96,1);
+  c.fillStyle='#5c6b9c';
+  aRR(c,s*.16,s*.44,s*.20,s*.34,s*.06);c.fill();
+  c.fillStyle='#e8729a';
+  c.beginPath();c.arc(s*.56,s*.26,s*.09,0,7);c.fill();
+ }
+};
+
+/* ================= days 19-23 =================
+   The end of the internship: the telling-off, the cake nobody was allowed to
+   have, the frame that should have gone up two years ago, and the last ride. */
+
+/* a small stack of playing cards, fanned */
+function aCards(c,x,y,s,a,fan){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ [-2,-1,0,1,2].forEach((i,n)=>{
+  c.save();c.rotate(i*.16*fan);c.translate(0,-Math.abs(i)*1.6*fan);
+  c.fillStyle=n%2?'#fff6f0':'#ffeef4';
+  aRR(c,-7,-11,14,22,2);c.fill();
+  c.strokeStyle='rgba(120,90,120,.4)';c.lineWidth=.8;
+  aRR(c,-7,-11,14,22,2);c.stroke();
+  c.fillStyle='#c4406f';
+  c.beginPath();c.arc(0,-4,2.2,0,7);c.fill();
+  c.restore();
+ });
+ c.restore();
+}
+
+/* her, drawn with more care than the little figures get -- this one is going
+   in a frame and has to be worth looking at */
+function aPortrait(c,x,y,s,a){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ /* the backdrop of the photo itself */
+ const g=c.createLinearGradient(0,-40,0,40);
+ g.addColorStop(0,'#ffe9d8');g.addColorStop(1,'#f7c9d6');
+ c.fillStyle=g;c.fillRect(-34,-42,68,84);
+ /* shoulders, in the pink shirt */
+ c.fillStyle='#e8729a';
+ c.beginPath();
+ c.moveTo(-30,42);c.quadraticCurveTo(-27,14,-12,8);
+ c.lineTo(12,8);c.quadraticCurveTo(27,14,30,42);
+ c.closePath();c.fill();
+ c.fillStyle='#f28fb0';
+ c.beginPath();c.moveTo(-9,8);c.lineTo(9,8);c.lineTo(0,19);c.closePath();c.fill();
+ /* neck and face */
+ c.fillStyle='#d9a583';
+ aRR(c,-5,-4,10,12,3);c.fill();
+ c.beginPath();c.ellipse(0,-14,15,17,0,0,7);c.fill();
+ /* hair: behind first, then the crown over it */
+ c.fillStyle='#2f2129';
+ c.beginPath();c.ellipse(-15.5,-11,6.5,17,.12,0,7);c.fill();
+ c.beginPath();c.ellipse(15.5,-11,6.5,17,-.12,0,7);c.fill();
+ c.beginPath();c.arc(0,-16,15.6,Math.PI,0);c.fill();
+ c.beginPath();c.ellipse(0,-27,15.6,7,0,0,7);c.fill();
+ /* eyes, with a light in them */
+ c.fillStyle='#2f2129';
+ [-5.4,5.4].forEach(dx=>{
+  c.beginPath();c.ellipse(dx,-15,2.4,2.7,0,0,7);c.fill();
+ });
+ c.fillStyle='#fff';
+ [-4.6,6.2].forEach(dx=>{
+  c.beginPath();c.arc(dx,-16,.9,0,7);c.fill();
+ });
+ /* brows, a little raised, because she is pleased and pretending not to be */
+ c.strokeStyle='#2f2129';c.lineWidth=1.3;c.lineCap='round';
+ [-5.4,5.4].forEach(dx=>{
+  c.beginPath();
+  c.moveTo(dx-3.4,-20.4);c.quadraticCurveTo(dx,-21.8,dx+3.4,-20.2);c.stroke();
+ });
+ /* and the smile */
+ c.strokeStyle='#8e4a55';c.lineWidth=1.5;
+ c.beginPath();c.arc(0,-11,5.6,0.24,Math.PI-0.24);c.stroke();
+ c.fillStyle='rgba(232,114,154,.22)';
+ [-9.5,9.5].forEach(dx=>{
+  c.beginPath();c.ellipse(dx,-9.5,3.4,2.2,0,0,7);c.fill();
+ });
+ c.restore();
+}
+
+/* the frame it goes in */
+function aFrame(c,x,y,s,a,tilt){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.rotate(tilt||0);c.scale(s,s);
+ /* taller than the picture, so the words have a mount to sit on rather
+    than the photograph */
+ c.fillStyle='rgba(60,30,50,.20)';
+ aRR(c,-45,-58,92,140,3);c.fill();
+ c.fillStyle='#8a5a3a';
+ aRR(c,-44,-60,88,138,3);c.fill();
+ c.fillStyle='#a87a52';
+ aRR(c,-41,-57,82,132,2);c.fill();
+ c.fillStyle='#fffaf4';
+ c.fillRect(-36,-52,72,122);
+ c.restore();
+}
+
+
+/* ------------------------------------------------- 19 · Monopoly Deal */
+ASCENES.monopoly={
+ name:'Monopoly Deal',grp:'Ours',dur:52,
+ blurb:'A quiet day, a card game at the desks, and a partner with good timing.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ cues:[[.04,.13],[.18,.30],[.36,.45],[.51,.61],[.68,.79],[.85,2]],
+ def:{
+  words:['There was no work that day.',
+         'So we played Monopoly Deal at our desks, which is not a thing you are supposed to do.',
+         'The partner saw.',
+         'I got called in. You didn’t.',
+         'You felt worse about that than I did.',
+         'I remember thinking: she is still here. It is fine.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fdf3e8';A.bgB='#f0d4dc'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.38;
+  const fy=mid+S*.10, fs=S*.0048;
+
+  /* the game, until it is noticed */
+  const play=1-aSeg(P,.34,.42);
+  const seen=aSeg(P,.34,.44);
+  const gone=aSeg(P,.47,.56)*(1-aSeg(P,.64,.72));   /* he is away for a bit */
+  const back=aSeg(P,.66,.74);
+
+  /* her: there the whole way through, which is the point of the day */
+  pdFig(c,W*.66,fy+Math.sin(t*.8+1)*S*.003,fs,'z',
+        {flip:true,flat:seen>.4&&back<.5,sad:back>=.5});
+  /* him: at his desk, then not, then back */
+  if(gone<.5||back>0){
+   const dip=back>0?aLerp(S*.02,0,aEase(back)):0;
+   pdFig(c,W*.34,fy+dip+Math.sin(t*.9)*S*.003,fs,'m',
+         {flat:seen>.4,sad:back>=.5});
+  }
+  aDesk(c,W*.34,fy+S*.085,S*.0044,1);
+  aDesk(c,W*.66,fy+S*.085,S*.0044,1);
+
+  /* the cards, on the desk between them, put away in a hurry */
+  aCards(c,W*.50,fy+S*.02,S*.0040,play*aSeg(P,.03,.12),aLerp(0,1,aSeg(P,.06,.20)));
+
+  /* the partner, who does not need to say anything */
+  const look=aSeg(P,.32,.40)*(1-aSeg(P,.46,.54));
+  if(look>0){
+   c.globalAlpha=look;
+   spRahul(c,W*.94,fy+S*.03,fs*1.06);
+   c.globalAlpha=1;
+  }
+
+  /* and afterwards, one small thing on his side of the desk */
+  if(back>.55){
+   const h=aSeg(P,.80,.94);
+   if(h>0)n9Heart(c,W*.50,fy-S*.16-h*S*.03,S*.042*h,h*.9,'#ff9fbb');
+  }
+ },
+ mark(c,s){
+  aCards(c,s*.5,s*.5,s*.0062*96,1,1);
+ }
+};
+
+
+/* ------------------------------------------------------ 20 · 13th June */
+ASCENES.lastday={
+ name:'13th June',grp:'Ours',dur:54,
+ blurb:'No farewell, said the policy. There was a cake anyway.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ cues:[[.04,.13],[.18,.28],[.35,.44],[.50,.61],[.68,.79],[.85,2]],
+ def:{
+  words:['13th June. Your last day.',
+         'Company policy: no farewell, no cake cutting.',
+         'There was a cake.',
+         'You were not walking out of there as though you had not mattered.',
+         'You cut it. You knew exactly who had arranged it.',
+         'Best rule I have ever broken.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fff2e4';A.bgB='#f4d2db'},
+
+ /* a cake, with one candle and a slice coming out of it */
+ cake(c,x,y,s,a,cut,lit){
+  if(a<=0)return;
+  c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+  c.fillStyle='#e8d3c4';
+  c.beginPath();c.ellipse(0,20,42,9,0,0,7);c.fill();
+  c.fillStyle='#fff0f4';
+  aRR(c,-36,-14,72,34,4);c.fill();
+  c.fillStyle='#f7c9d6';
+  c.beginPath();c.ellipse(0,-14,36,9,0,0,7);c.fill();
+  c.fillStyle='#e8729a';
+  [-24,-8,8,24].forEach(dx=>{
+   c.beginPath();c.arc(dx,-15,4.6,Math.PI,0);c.fill();
+  });
+  /* the slice, lifted out and to one side */
+  if(cut>0){
+   c.save();
+   c.translate(aLerp(0,30,aEase(cut)),aLerp(0,-12,aEase(cut)));
+   c.rotate(aLerp(0,.22,aEase(cut)));
+   c.fillStyle='#fff0f4';
+   c.beginPath();c.moveTo(0,-14);c.lineTo(13,-14);c.lineTo(13,20);c.lineTo(0,20);
+   c.closePath();c.fill();
+   c.fillStyle='#f7c9d6';
+   c.beginPath();c.ellipse(6.5,-14,6.5,3.2,0,0,7);c.fill();
+   c.restore();
+   /* the gap it left */
+   c.fillStyle='#e9c9b8';
+   c.beginPath();c.moveTo(0,-11);c.lineTo(13,-11);c.lineTo(13,20);c.lineTo(0,20);
+   c.closePath();c.fill();
+  }
+  /* one candle, because she was one of one */
+  c.fillStyle='#f6f2ea';
+  c.fillRect(-2,-30,4,16);
+  if(lit>0){
+   c.globalAlpha=a*lit;
+   /* the highlight has to be small, or the flame reads as a ring */
+   const fl=5.4+Math.sin(performance.now()/160)*.8;
+   c.fillStyle='#ffb03a';
+   c.beginPath();c.ellipse(0,-34,3.2,fl,0,0,7);c.fill();
+   c.fillStyle='#ffe6a0';
+   c.beginPath();c.ellipse(0,-33.4,1.5,fl*.52,0,0,7);c.fill();
+   c.fillStyle='#fffdf2';
+   c.beginPath();c.ellipse(0,-33,.7,fl*.24,0,0,7);c.fill();
+   c.globalAlpha=a;
+  }
+  c.restore();
+ },
+
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.36;
+  const env=(a,b,c2,d)=>aSeg(P,a,b)*(1-aSeg(P,c2,d));
+
+  /* --- the policy, in writing --- */
+  const a1=env(.01,.05,.30,.36);
+  if(a1>0){
+   c.globalAlpha=a1;
+   c.fillStyle='#fffaf4';
+   aRR(c,W/2-S*.15,mid-S*.19,S*.30,S*.38,S*.012);c.fill();
+   c.strokeStyle='rgba(120,100,120,.30)';c.lineWidth=1;
+   aRR(c,W/2-S*.15,mid-S*.19,S*.30,S*.38,S*.012);c.stroke();
+   c.fillStyle='#8a7392';
+   [0,1,2,3,4].forEach(i=>{
+    const w=[.20,.22,.14,.21,.11][i];
+    c.fillRect(W/2-S*.11,mid-S*.13+i*S*.055,S*w,S*.017);
+   });
+   /* and a red line straight through the middle of it */
+   const cross=aSeg(P,.14,.28);
+   if(cross>0){
+    c.strokeStyle='#d1495b';c.lineWidth=S*.014;c.lineCap='round';
+    c.beginPath();
+    c.moveTo(W/2-S*.13,mid-S*.15);
+    c.lineTo(W/2-S*.13+aLerp(0,S*.26,aEase(cross)),
+             mid-S*.15+aLerp(0,S*.30,aEase(cross)));
+    c.stroke();
+   }
+   c.globalAlpha=1;
+  }
+
+  /* --- the cake that was not supposed to exist --- */
+  const a2=env(.33,.39,1.1,1.2);
+  if(a2>0){
+   c.globalAlpha=a2;
+   const cy=mid+S*.10;
+   const rise=aEase(aSeg(P,.36,.48));
+   this.cake(c,W/2,cy+aLerp(S*.20,0,rise),S*.0042,a2,
+             aSeg(P,.66,.80),aSeg(P,.44,.54)*(1-aSeg(P,.60,.68)));
+   const fy=cy+S*.20, fs=S*.0046;
+   /* her, and him, and two or three people who came over anyway */
+   const crowd=aSeg(P,.50,.62);
+   if(crowd>0){
+    c.globalAlpha=a2*crowd*.85;
+    pdFig(c,W*.16,fy+Math.sin(t*.7)*S*.003,fs*.9,'m',{flat:true});
+    spRahul(c,W*.88,fy+Math.sin(t*.65+2)*S*.003,fs*.92);
+    c.globalAlpha=a2;
+   }
+   pdFig(c,W*.62,fy+Math.sin(t*.8+1)*S*.003,fs,'z',{});
+   pdFig(c,W*.38,fy+Math.sin(t*.9)*S*.003,fs,'m',{});
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){
+  ASCENES.lastday.cake(c,s*.5,s*.56,s*.0090,1,.5,1);
+ }
+};
+
+
+/* ------------------------------------------- 21 · Intern of the Year */
+ASCENES.intern={
+ name:'Intern of the Year',grp:'Ours',dur:50,
+ blurb:'The one thing she asked for and never got. Two years late.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ cues:[[.04,.14],[.20,.31],[.37,.46],[.54,.61],[.76,2]],
+ def:{
+  words:['You wanted one thing out of that office that you never got.',
+         'A picture on the wall above your desk. Intern of the Year.',
+         'Nobody ever put it up.',
+         'So.',
+         'Late, and on the wrong wall. It counts.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fff4e8';A.bgB='#f3d3dc'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.36;
+
+  /* the wall, and her desk under it, empty now */
+  const wall=aSeg(P,.01,.08);
+  if(wall>0){
+   c.globalAlpha=wall*.5;
+   c.fillStyle='#e9d6dd';
+   c.fillRect(0,mid+S*.30,W,S*.02);
+   c.globalAlpha=1;
+   aDesk(c,W/2,mid+S*.40,S*.0050,0);
+  }
+
+  /* the frame goes up the wall, overshoots a little, settles */
+  const up=aEase(aSeg(P,.36,.56));
+  if(up>0){
+   const y=aLerp(mid+S*.34,mid-S*.02,up);
+   /* straightened on the second attempt, the way anything hung by hand is */
+   const tilt=aLerp(.10,0,aEase(aSeg(P,.56,.68)));
+   aFrame(c,W/2,y,S*.0030,up,tilt);
+   const face=aSeg(P,.58,.72);
+   c.save();
+   c.translate(W/2,y);c.rotate(tilt);
+   aPortrait(c,0,-S*.026,S*.0028,face);
+   /* the words that were the whole point */
+   const words=aSeg(P,.68,.80);
+   if(words>0){
+    c.globalAlpha=words;
+    c.textAlign='center';
+    c.fillStyle='#8a5a3a';
+    c.font='700 '+(S*.028)+'px "Playfair Display", Georgia, serif';
+    c.fillText('INTERN OF THE YEAR',0,S*.150);
+    c.fillStyle='#a87a52';
+    c.font='italic '+(S*.024)+'px Lora, Georgia, serif';
+    c.fillText('Zahabiya',0,S*.186);
+    c.globalAlpha=1;
+   }
+   c.restore();
+   /* one small shine across the glass, once it is up */
+   const sh=aSeg(P,.80,.92);
+   if(sh>0&&sh<1){
+    c.save();c.globalAlpha=(1-Math.abs(sh*2-1))*.35;
+    c.translate(W/2,y);c.rotate(tilt-.5);
+    c.fillStyle='#fff';
+    c.fillRect(aLerp(-S*.18,S*.12,sh),-S*.26,S*.035,S*.52);
+    c.restore();
+   }
+  }
+ },
+ mark(c,s){
+  aFrame(c,s*.5,s*.42,s*.0062,1,0);
+  aPortrait(c,s*.5,s*.36,s*.0058,1);
+ }
+};
+
+
+/* ------------------------------------------------- 23 · the last ride */
+ASCENES.lastride={
+ name:'The last ride',grp:'Ours',dur:58,
+ blurb:'Aarey, a long silence, and the best bad joke he has ever made.',
+ dark:true,    /* it paints its own night: pale letters, dark scrim */
+ solo:true,
+ cues:[[.04,.13],[.19,.30],[.36,.47],[.55,.66],[.72,.82],[.88,2]],
+ def:{
+  words:['After the burgers we took the long way one more time.',
+         'We sat in Aarey and neither of us said anything for a while.',
+         'I knew it was the last time I would be dropping you home.',
+         'Then you explained yoga sir, and your diminishing marginal utility.',
+         '“Mara sathe kivare DMU thase?”',
+         'You laughed the whole rest of the way. I can still hear it.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){
+  A.bgA='#1d1630';A.bgB='#3a2647';
+  A.tree=[];for(let i=0;i<9;i++)A.tree.push({x:i/9,h:.7+R()*.6});
+  A.star=[];for(let i=0;i<26;i++)A.star.push({x:R(),y:R()*.5,s:R()});
+ },
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), gy=H*.58;
+  const env=(a,b,c2,d)=>aSeg(P,a,b)*(1-aSeg(P,c2,d));
+  const R9=ASCENES.ride;
+  const ss=S*.0084, rr=S*.0045;
+
+  /* stars, because in Aarey you can actually see them */
+  A.star.forEach(s2=>{
+   const tw=.35+.35*Math.sin(t*1.2+s2.s*9);
+   c.globalAlpha=tw*aSeg(P,.02,.16);
+   c.fillStyle='#fff3e0';
+   c.beginPath();c.arc(s2.x*W,s2.y*H*.9,S*.004*(.5+s2.s),0,7);c.fill();
+  });
+  c.globalAlpha=1;
+
+  c.fillStyle='#241b33';c.fillRect(0,gy,W,H-gy);
+
+  /* --- parked, and nobody saying anything --- */
+  const a1=env(.01,.06,.50,.56);
+  if(a1>0){
+   c.globalAlpha=a1;
+   A.tree.forEach(p=>aTree(c,p.x*W*1.15-W*.06,gy+S*.01,S*.30*p.h,a1*.85));
+   const sx=W*.50, by=gy+S*.02;
+   R9.scoot(c,sx,by,ss,t,false,true);
+   R9.rider(c,sx+9*ss,by-19*ss-23*rr,rr,'z',t,false);
+   R9.rider(c,sx-7*ss,by-19*ss-23*rr,rr,'m',t,false);
+   c.globalAlpha=1;
+  }
+
+  /* --- and then the ride back, and the joke --- */
+  const a2=aSeg(P,.53,.59);
+  if(a2>0){
+   c.globalAlpha=a2;
+   const roll=1;
+   A.tree.forEach(p=>{
+    const u=((p.x - t*.13)%1+1)%1;
+    aTree(c,u*W*1.3-W*.15,gy+S*.01,S*.28*p.h,a2*.8);
+   });
+   c.strokeStyle='rgba(255,236,200,.30)';c.lineWidth=S*.007;
+   c.setLineDash([S*.05,S*.07]);
+   c.lineDashOffset=-(t*S*.62)%(S*.12);
+   c.beginPath();c.moveTo(0,gy+(H-gy)*.36);c.lineTo(W,gy+(H-gy)*.36);c.stroke();
+   c.setLineDash([]);
+   const sx=W*.46, by=gy+S*.02;
+   /* she is laughing, so she is bouncing */
+   const lol=aSeg(P,.80,.90);
+   const bounce=lol>0?Math.sin(t*7)*S*.006*lol:0;
+   R9.scoot(c,sx,by,ss,t,true,true);
+   R9.rider(c,sx+9*ss,by-19*ss-23*rr+bounce,rr,'z',t,true);
+   R9.rider(c,sx-7*ss,by-19*ss-23*rr,rr,'m',t,false);
+   /* the joke itself, in a bubble, because it deserves to be on screen */
+   const joke=aSeg(P,.72,.78)*(1-aSeg(P,.94,.99));
+   if(joke>0){
+    n9Bub(c,W*.50,gy-S*.30,S*.26,S*.058,joke,-1);
+    c.globalAlpha=joke;
+    c.textAlign='center';
+    c.fillStyle='#4a3142';
+    c.font='600 '+(S*.034)+'px Lora, Georgia, serif';
+    c.fillText('DMU',W*.50,gy-S*.288);
+    c.globalAlpha=a2;
+   }
+   /* and her laughing it off, in little bursts */
+   if(lol>0){
+    for(let i=0;i<5;i++){
+     const u=((t*.6+i*.2)%1);
+     c.globalAlpha=a2*Math.sin(u*Math.PI)*.8*lol;
+     c.fillStyle='#ffd9e2';
+     c.font='700 '+(S*.030)+'px Lora, Georgia, serif';
+     c.fillText('ha',sx+S*.10+i*S*.035,by-S*.26-u*S*.10);
+    }
+   }
+   c.globalAlpha=1;
+  }
+  c.textAlign='start';
+ },
+ mark(c,s){
+  aTree(c,s*.24,s*.86,s*.44,1);
+  aTree(c,s*.78,s*.88,s*.36,1);
+  c.fillStyle='#fff3e0';
+  [[.5,.16],[.66,.26],[.36,.28],[.58,.10]].forEach(([x,y])=>{
+   c.beginPath();c.arc(s*x,s*y,s*.022,0,7);c.fill();
+  });
+ }
+};
+
+/* ================= days 14-15 =================
+   The two things he made her in the morning: the coffee he made every time he
+   could, and the brownies she asked for as a joke. */
+
+/* a tall glass of cold coffee, ice and all */
+function aColdCoffee(c,x,y,s,a,fill,ice){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ /* the coffee, poured to whatever level it is at */
+ const top=aLerp(26,-24,fill);
+ if(fill>0){
+  c.fillStyle='#7a4a34';
+  c.beginPath();
+  c.moveTo(-13,26);c.lineTo(13,26);
+  c.lineTo(15,top);c.lineTo(-15,top);
+  c.closePath();c.fill();
+  /* the pale band at the top, which is the bit she likes */
+  c.fillStyle='#c79a78';
+  c.beginPath();
+  c.moveTo(-15,top);c.lineTo(15,top);c.lineTo(15,top+7);c.lineTo(-15,top+7);
+  c.closePath();c.fill();
+ }
+ /* ice, bobbing */
+ if(ice>0&&fill>.4){
+  c.globalAlpha=a*ice*.55;
+  c.fillStyle='#e8f4fb';
+  [[-6,-14,.3],[5,-9,-.4],[-2,-18,.15]].forEach(([dx,dy,r],i)=>{
+   c.save();c.translate(dx,dy+Math.sin(performance.now()/700+i)*1.4);c.rotate(r);
+   aRR(c,-5,-4,10,8,2);c.fill();c.restore();
+  });
+  c.globalAlpha=a;
+ }
+ /* the glass over the top of it */
+ c.fillStyle='rgba(226,238,245,.30)';
+ c.beginPath();
+ c.moveTo(-15,-30);c.lineTo(15,-30);c.lineTo(13,28);c.lineTo(-13,28);
+ c.closePath();c.fill();
+ c.strokeStyle='rgba(190,210,225,.85)';c.lineWidth=1.6;
+ c.beginPath();
+ c.moveTo(-15,-30);c.lineTo(-13,28);c.lineTo(13,28);c.lineTo(15,-30);
+ c.stroke();
+ c.fillStyle='rgba(255,255,255,.40)';
+ aRR(c,-11,-25,3.4,46,1.6);c.fill();
+ c.restore();
+}
+
+/* one lychee, and the pink-brown shell it comes in */
+function aLychee(c,x,y,s,a,peeled){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ if(peeled<1){
+  c.globalAlpha=a*(1-peeled);
+  c.fillStyle='#d4566a';
+  c.beginPath();c.arc(0,0,11,0,7);c.fill();
+  c.fillStyle='#b8404f';
+  for(let i=0;i<14;i++){
+   const an=i/14*6.28, r=7.5;
+   c.beginPath();c.arc(Math.cos(an)*r,Math.sin(an)*r,1.7,0,7);c.fill();
+  }
+  c.fillStyle='#8a6f4a';
+  c.fillRect(-1.2,-13,2.4,3.4);
+ }
+ if(peeled>0){
+  c.globalAlpha=a*peeled;
+  c.fillStyle='#fdf4ee';
+  c.beginPath();c.arc(0,0,9,0,7);c.fill();
+  c.fillStyle='rgba(215,185,170,.5)';
+  c.beginPath();c.arc(2.4,2,3.2,0,7);c.fill();
+ }
+ c.restore();
+}
+
+/* a baking tray of brownies, cut into squares */
+function aTray(c,x,y,s,a,cut){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle='#9aa0ad';
+ aRR(c,-38,-24,76,48,4);c.fill();
+ c.fillStyle='#4a2a20';
+ aRR(c,-33,-19,66,38,2);c.fill();
+ c.fillStyle='#5c3527';
+ aRR(c,-33,-19,66,7,2);c.fill();
+ if(cut>0){
+  c.strokeStyle='#8a5a3a';c.lineWidth=1.6;
+  const n=Math.floor(cut*5);
+  for(let i=1;i<=Math.min(n,2);i++){
+   c.beginPath();c.moveTo(-33,-19+i*12.6);c.lineTo(33,-19+i*12.6);c.stroke();
+  }
+  for(let i=1;i<=Math.min(Math.max(n-2,0),3);i++){
+   c.beginPath();c.moveTo(-33+i*16.5,-19);c.lineTo(-33+i*16.5,19);c.stroke();
+  }
+ }
+ c.restore();
+}
+
+/* a folded letter, the sort you hand over rather than send */
+function aLetter(c,x,y,s,a,open){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle='rgba(60,30,50,.14)';
+ aRR(c,-25,-17,52,36,2);c.fill();
+ c.fillStyle='#fffaf0';
+ aRR(c,-26,-19,52,36,2);c.fill();
+ c.strokeStyle='rgba(150,120,140,.35)';c.lineWidth=.9;
+ const rows=open>.5?6:3;
+ for(let i=0;i<rows;i++){
+  const w=[38,42,30,40,26,34][i]*(open>.5?1:.8);
+  c.beginPath();c.moveTo(-20,-12+i*5.4);c.lineTo(-20+w,-12+i*5.4);c.stroke();
+ }
+ c.restore();
+}
+
+
+/* ------------------------------------------- 14 · cold coffee and lychee */
+ASCENES.coffee={
+ name:'Cold coffee and lychee',grp:'Ours',dur:48,
+ blurb:'Made at home, before anything else, and carried in.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ cues:[[.04,.13],[.18,.27],[.33,.44],[.50,.59],[.65,.75],[.81,2]],
+ def:{
+  words:['You like cold coffee and you like lychee.',
+         'Not a difficult brief.',
+         'I made the coffee at home, in the morning, before anything else.',
+         'It takes five minutes and I liked doing it.',
+         'Lychee whenever I could find them.',
+         'You never once asked. You never had to.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fff6ea';A.bgB='#f4d6dc'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.36;
+  const env=(a,b,c2,d)=>aSeg(P,a,b)*(1-aSeg(P,c2,d));
+
+  /* --- the kitchen, early, nobody else awake --- */
+  const a1=env(.01,.05,.50,.56);
+  if(a1>0){
+   c.globalAlpha=a1;
+   /* the counter */
+   c.fillStyle='#e0cbd4';
+   c.fillRect(0,mid+S*.16,W,S*.03);
+   /* pouring: the glass fills while he stands there doing nothing else */
+   const pour=aSeg(P,.12,.42);
+   if(pour<1&&pour>0){
+    /* something to pour FROM -- a stream out of nowhere reads as a bug */
+    c.save();
+    c.translate(W*.44,mid-S*.21);c.rotate(.42);
+    c.fillStyle='#cfd8de';
+    aRR(c,-S*.055,-S*.045,S*.10,S*.085,S*.012);c.fill();
+    c.fillStyle='#b9c4cc';
+    aRR(c,-S*.055,-S*.045,S*.10,S*.016,S*.008);c.fill();
+    c.strokeStyle='#b9c4cc';c.lineWidth=S*.011;
+    c.beginPath();c.arc(S*.062,0,S*.026,-1.1,1.1);c.stroke();
+    c.restore();
+    c.strokeStyle='#7a4a34';c.lineWidth=S*.010;c.lineCap='round';
+    c.beginPath();
+    c.moveTo(W*.485,mid-S*.185);
+    c.quadraticCurveTo(W*.50,mid-S*.12,W*.50,mid+S*.04+pour*S*.04);
+    c.stroke();
+   }
+   aColdCoffee(c,W*.50,mid+S*.07,S*.0034,a1,pour,aSeg(P,.36,.50));
+   pdFig(c,W*.26,mid+S*.10+Math.sin(t*.7)*S*.003,S*.0046,'m',{});
+   c.globalAlpha=1;
+  }
+
+  /* --- and it turns up on her desk, with lychee --- */
+  const a2=env(.53,.58,1.1,1.2);
+  if(a2>0){
+   c.globalAlpha=a2;
+   const dy=mid+S*.14;
+   aDesk(c,W*.50,dy+S*.12,S*.0050,1);
+   const land=aEase(aSeg(P,.56,.68));
+   aColdCoffee(c,W*.36,aLerp(dy-S*.30,dy-S*.02,land),S*.0032,a2*land,1,1);
+   /* two lychee, one of them already opened */
+   const ly=aSeg(P,.66,.78);
+   aLychee(c,W*.60,dy-S*.01,S*.0034,a2*ly,0);
+   aLychee(c,W*.68,dy+S*.02,S*.0034,a2*ly,aSeg(P,.80,.92));
+   /* her, arriving at ten to find it already there */
+   const her=aSeg(P,.70,.82);
+   if(her>0){
+    c.globalAlpha=a2*her;
+    pdFig(c,W*.78,dy-S*.02+Math.sin(t*.8)*S*.003,S*.0046,'z',{flip:true});
+    c.globalAlpha=a2;
+   }
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){
+  aColdCoffee(c,s*.38,s*.52,s*.0070,1,1,1);
+  aLychee(c,s*.68,s*.66,s*.0072,1,0);
+  aLychee(c,s*.80,s*.74,s*.0060,1,1);
+ }
+};
+
+
+/* ------------------------------------------------- 15 · the brownies */
+ASCENES.brownies={
+ name:'The brownies',grp:'Ours',dur:56,
+ blurb:'She asked as a joke. He got up early and made them.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ cues:[[.03,.11],[.15,.24],[.28,.37],[.42,.51],[.55,.66],[.70,.82],[.87,2]],
+ def:{
+  words:['3rd June. You told me to bake you brownies.',
+         'You were joking. I chose not to notice.',
+         'I made them that morning, before work.',
+         'And then I handed you a letter instead.',
+         'It apologised, at some length, for not getting you brownies.',
+         '“Did you really think I wouldn’t get you something you asked for?”',
+         'Then the brownies.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fff3e6';A.bgB='#f2d0d9'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.36;
+  const env=(a,b,c2,d)=>aSeg(P,a,b)*(1-aSeg(P,c2,d));
+
+  /* --- the morning, and an oven --- */
+  const a1=env(.01,.05,.38,.44);
+  if(a1>0){
+   c.globalAlpha=a1;
+   c.fillStyle='#e0cbd4';
+   c.fillRect(0,mid+S*.18,W,S*.03);
+   /* the tray goes in, and comes out cut into squares */
+   const baked=aSeg(P,.14,.30);
+   aTray(c,W*.52,mid+S*.06,S*.0040,a1,aSeg(P,.26,.38));
+   /* heat, coming off it, once it is out */
+   if(baked>.5){
+    for(let i=0;i<3;i++){
+     const u=((t*.4+i*.33)%1);
+     c.globalAlpha=a1*Math.sin(u*Math.PI)*.35;
+     c.strokeStyle='#c9a98f';c.lineWidth=S*.006;c.lineCap='round';
+     c.beginPath();
+     const x=W*.52+(i-1)*S*.055;
+     c.moveTo(x,mid-S*.01-u*S*.04);
+     c.quadraticCurveTo(x+S*.014,mid-S*.05-u*S*.04,x,mid-S*.09-u*S*.04);
+     c.stroke();
+    }
+    c.globalAlpha=a1;
+   }
+   pdFig(c,W*.24,mid+S*.11+Math.sin(t*.7)*S*.003,S*.0046,'m',{});
+   c.globalAlpha=1;
+  }
+
+  /* --- the office, and the wrong thing handed over first --- */
+  const a2=env(.41,.47,1.1,1.2);
+  if(a2>0){
+   c.globalAlpha=a2;
+   const fy=mid+S*.16, fs=S*.0048;
+   /* reading it: the face goes down, and then comes back up */
+   const reading=aSeg(P,.52,.60)*(1-aSeg(P,.76,.84));
+   const twist=aSeg(P,.76,.86);
+   pdFig(c,W*.30,fy+Math.sin(t*.9)*S*.003,fs,'m',{flat:reading>.5&&twist<.3});
+   pdFig(c,W*.70,fy+Math.sin(t*.8+1)*S*.003,fs,'z',
+         {flip:true,sad:reading>.5&&twist<.3});
+   /* the letter crosses over first */
+   const pass=aEase(aSeg(P,.47,.56));
+   if(pass>0&&twist<.6){
+    aLetter(c,aLerp(W*.36,W*.56,pass),fy-S*.02-Math.sin(pass*Math.PI)*S*.05,
+            S*.0028,a2*(1-twist),reading);
+   }
+   /* and then the tray, which was behind his back the whole time */
+   const give=aEase(aSeg(P,.80,.90));
+   if(give>0){
+    /* held out between them at chest height -- any higher and it lands on
+       her face, which is the one thing worth seeing here */
+    aTray(c,aLerp(W*.32,W*.51,give),fy+S*.01-Math.sin(give*Math.PI)*S*.03,
+          S*.0032,a2*give,1);
+    const joy=aSeg(P,.88,.97);
+    if(joy>0)n9Heart(c,W*.78,fy-S*.18-joy*S*.03,S*.046*joy,joy,'#ff9fbb');
+   }
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){
+  aTray(c,s*.5,s*.46,s*.0092,1,1);
+  aLetter(c,s*.5,s*.76,s*.0052,1,1);
+ }
+};
+
+/* ================= days 16-18 =================
+   The website she couldn't refuse, the beach, and his waras. */
+
+/* a browser window, with whatever you want put inside it */
+function aWin(c,x,y,w,h,a,body){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;
+ c.fillStyle='rgba(60,30,50,.16)';
+ aRR(c,x-w/2+h*.02,y-h/2+h*.03,w,h,h*.06);c.fill();
+ c.fillStyle='#fffaf4';
+ aRR(c,x-w/2,y-h/2,w,h,h*.06);c.fill();
+ c.fillStyle='#ecdde6';
+ aRR(c,x-w/2,y-h/2,w,h*.16,h*.06);c.fill();
+ c.fillRect(x-w/2,y-h/2+h*.10,w,h*.06);
+ ['#e0737f','#e8bd72','#7fb3a5'].forEach((col,i)=>{
+  c.fillStyle=col;
+  c.beginPath();c.arc(x-w/2+h*.09+i*h*.09,y-h/2+h*.08,h*.026,0,7);c.fill();
+ });
+ if(body)body(x,y-h/2+h*.16,w,h*.84);
+ c.restore();
+}
+
+/* a tin with a cake in it, lid coming off */
+function aTin(c,x,y,s,a,open){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ /* the tin */
+ c.fillStyle='#c9a24a';
+ aRR(c,-30,-10,60,30,4);c.fill();
+ c.fillStyle='#b08c3a';
+ aRR(c,-30,-10,60,6,3);c.fill();
+ /* what is in it */
+ if(open>.2){
+  c.globalAlpha=a*aSeg(open,.2,.6);
+  c.fillStyle='#5c3527';
+  aRR(c,-25,-8,50,16,2);c.fill();
+  c.fillStyle='#fff0f4';
+  [-16,0,16].forEach(dx=>{
+   c.beginPath();c.arc(dx,-7,4.4,Math.PI,0);c.fill();
+  });
+  c.globalAlpha=a;
+ }
+ /* the lid, lifted off and tilted */
+ c.save();
+ c.translate(aLerp(0,26,aEase(open)),aLerp(-12,-34,aEase(open)));
+ c.rotate(aLerp(0,-.42,aEase(open)));
+ c.fillStyle='#d8b35c';
+ aRR(c,-32,-6,64,11,3);c.fill();
+ c.fillStyle='#e8c974';
+ aRR(c,-32,-6,64,4,2);c.fill();
+ c.restore();
+ c.restore();
+}
+
+
+/* --------------------------------------------------- 16 · the website */
+ASCENES.website={
+ name:'4th June',grp:'Ours',dur:52,
+ blurb:'She refused everything he offered, so he built it instead.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ cues:[[.03,.12],[.16,.26],[.30,.41],[.45,.53],[.58,.70],[.76,2]],
+ def:{
+  words:['4th June. I was at the client’s office all day.',
+         'You were at ours, missing me, which you did not put in those words.',
+         'What do you want to eat. Should I bring you flowers. Let me get you something.',
+         'No. No. No.',
+         'So I built you a small website and put all of it in there instead.',
+         'You could not refuse a website.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fdf2e8';A.bgB='#f1d2dc'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.36;
+  const env=(a,b,c2,d)=>aSeg(P,a,b)*(1-aSeg(P,c2,d));
+
+  /* two rooms, a long way apart, with a line down the middle */
+  const split=aSeg(P,.02,.10)*(1-aSeg(P,.70,.80));
+  if(split>0){
+   c.globalAlpha=split*.35;
+   c.strokeStyle='#c9a9bd';c.lineWidth=S*.004;
+   c.setLineDash([S*.02,S*.03]);
+   c.beginPath();c.moveTo(W/2,H*.10);c.lineTo(W/2,H*.62);c.stroke();
+   c.setLineDash([]);
+   c.globalAlpha=1;
+  }
+
+  const fy=mid+S*.14, fs=S*.0046;
+  const here=aSeg(P,.02,.10);
+  if(here>0){
+   c.globalAlpha=here;
+   pdFig(c,W*.24,fy+Math.sin(t*.9)*S*.003,fs,'m',{});
+   aDesk(c,W*.24,fy+S*.085,S*.0042,1);
+   pdFig(c,W*.76,fy+Math.sin(t*.8+1)*S*.003,fs,'z',
+         {flip:true,sad:aSeg(P,.14,.24)>.5&&P<.56});
+   aDesk(c,W*.76,fy+S*.085,S*.0042,1);
+   c.globalAlpha=1;
+  }
+
+  /* he offers things. she says no to all of them. */
+  const ask=env(.28,.34,.54,.60);
+  if(ask>0){
+   const items=['🍔','🌷','🧋'];
+   c.textAlign='center';
+   items.forEach((ch,i)=>{
+    const u=aSeg(P,.30+i*.05,.42+i*.05);
+    if(u<=0)return;
+    const gone=aSeg(P,.40+i*.05,.50+i*.05);
+    c.globalAlpha=ask*(1-gone);
+    c.font=(S*.055)+'px serif';
+    c.fillText(ch,aLerp(W*.32,W*.62,aEase(u)),fy-S*.13-i*S*.045);
+   });
+   /* and three small refusals coming the other way */
+   [0,1,2].forEach(i=>{
+    const u=aSeg(P,.42+i*.045,.54+i*.045);
+    if(u<=0)return;
+    c.globalAlpha=ask*u*(1-aSeg(P,.58,.66));
+    c.fillStyle='#c4406f';
+    c.font='600 '+(S*.040)+'px Lora, Georgia, serif';
+    c.fillText('no',aLerp(W*.68,W*.42,aEase(u)),fy-S*.07-i*S*.045);
+   });
+   c.globalAlpha=1;c.textAlign='start';
+  }
+
+  /* so he builds it, and it turns up on her screen instead */
+  const made=aSeg(P,.58,.72);
+  if(made>0){
+   aWin(c,W/2,mid+S*.02,S*.46,S*.30,made,(bx,by,bw,bh)=>{
+    c.textAlign='center';
+    c.fillStyle='#8a5a3a';
+    c.font='600 '+(bh*.20)+'px "Playfair Display", Georgia, serif';
+    c.fillText('for you',bx,by+bh*.30);
+    c.font=(bh*.30)+'px serif';
+    const show=aSeg(P,.66,.80);
+    c.globalAlpha=made*show;
+    c.fillText('🍔  🌷  🧋',bx,by+bh*.72);
+    c.globalAlpha=made;
+    c.textAlign='start';
+   });
+   const joy=aSeg(P,.80,.92);
+   if(joy>0)n9Heart(c,W*.80,mid-S*.16-joy*S*.03,S*.05*joy,joy,'#ff9fbb');
+  }
+ },
+ mark(c,s){
+  aWin(c,s*.5,s*.46,s*.66,s*.44,1,(bx,by,bw,bh)=>{
+   c.textAlign='center';c.fillStyle='#e8729a';
+   c.font='600 '+(bh*.34)+'px "Playfair Display", Georgia, serif';
+   c.fillText('for you',bx,by+bh*.62);c.textAlign='start';
+  });
+ }
+};
+
+
+/* ------------------------------------------------------ 17 · the beach */
+ASCENES.beach={
+ name:'6th June',grp:'Ours',dur:80,
+ blurb:'Coffee, flowers, a note — and an hour of not managing to say it.',
+ dark:true,    /* dusk into dark: pale letters, dark scrim */
+ solo:true,
+ cues:[[.02,.10],[.13,.22],[.26,.35],[.39,.48],[.52,.61],[.65,.73],[.77,.86],[.90,2]],
+ def:{
+  words:['6th June. The first time we went to the beach.',
+         'I had made you coffee. I had flowers. I had a note.',
+         'The note already said it. I wanted to say it out loud.',
+         'I sat there for an hour and did not manage it.',
+         'We left. And then somewhere on the way home, I said it.',
+         'You went red and said absolutely nothing at all.',
+         'You said it back that night, over text.',
+         'It took until September to hear it in your voice.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){
+  A.bgA='#f2a878';A.bgB='#2f2247';
+  A.wave=[];for(let i=0;i<5;i++)A.wave.push({y:i/5,s:R()});
+  A.lamp=[];for(let i=0;i<7;i++)A.lamp.push({x:i/7});
+ },
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H);
+  const env=(a,b,c2,d)=>aSeg(P,a,b)*(1-aSeg(P,c2,d));
+  const R9=ASCENES.ride;
+
+  /* ---- the beach, and the sun going down over the whole first half ---- */
+  const a1=env(.00,.04,.60,.66);
+  if(a1>0){
+   c.globalAlpha=a1;
+   const hz=H*.40;
+   /* the sun, dropping */
+   const sun=aLerp(hz-S*.18,hz+S*.01,aSeg(P,.04,.58));
+   c.fillStyle='#ffd08a';
+   c.beginPath();c.arc(W*.70,sun,S*.070,0,7);c.fill();
+   /* the sea */
+   c.fillStyle='#4a4a6e';c.fillRect(0,hz,W,H-hz);
+   A.wave.forEach((w,i2)=>{
+    const y=hz+S*.03+w.y*S*.20;
+    c.strokeStyle='rgba(255,220,190,'+(.30-w.y*.18)+')';
+    c.lineWidth=S*.006;
+    c.beginPath();
+    for(let x=0;x<=W;x+=S*.04){
+     const yy=y+Math.sin(x/S*5+t*1.1+i2)*S*.008;
+     x?c.lineTo(x,yy):c.moveTo(x,yy);
+    }
+    c.stroke();
+   });
+   /* the sand, high enough that the two of them are not under the words */
+   c.fillStyle='#c9a17e';c.fillRect(0,H*.60,W,H*.40);
+   const sy=H*.64, fs=S*.0046;
+   pdFig(c,W*.42,sy+Math.sin(t*.6)*S*.002,fs,'m',{});
+   pdFig(c,W*.60,sy+Math.sin(t*.55+1)*S*.002,fs,'z',{flip:true});
+
+   /* what he brought, put down on the sand beside them rather than in
+      front of their faces */
+   const g1=aSeg(P,.14,.22), g2=aSeg(P,.20,.28), g3=aSeg(P,.28,.36);
+   if(g1>0){
+    c.globalAlpha=a1*g1;
+    aColdCoffee(c,W*.24,sy+S*.05,S*.0026,1,1,1);
+    c.globalAlpha=a1;
+   }
+   if(g2>0){
+    c.globalAlpha=a1*g2;
+    bqRose(c,W*.80,sy+S*.02,S*.044,1,-.18);
+    bqTulip(c,W*.88,sy+S*.03,S*.042,1,.16);
+    c.globalAlpha=a1;
+   }
+   /* on the sand in front, not across their chests */
+   if(g3>0)aLetter(c,W*.50,sy+S*.115,S*.0026,a1*g3,aSeg(P,.34,.44));
+
+   /* and the thing he could not get out: a bubble that starts and stops */
+   const tryin=env(.40,.44,.56,.60);
+   if(tryin>0){
+    const u=((t*.5)%1);
+    c.globalAlpha=a1*tryin*Math.sin(u*Math.PI)*.85;
+    n9Bub(c,W*.36,H*.50-u*S*.03,S*.16,S*.05,1,-1);
+    c.globalAlpha=1;
+   }
+   c.globalAlpha=1;
+  }
+
+  /* ---- the road home, where it finally came out ---- */
+  const a2=env(.62,.68,1.1,1.2);
+  if(a2>0){
+   c.globalAlpha=a2;
+   const gy=H*.62;
+   R9.street(c,W,H,gy,t,1,A);
+   const ss=S*.0084, rr=S*.0045, by=gy+S*.02, sx=W*.46;
+   R9.scoot(c,sx,by,ss,t,true,true);
+   R9.rider(c,sx+9*ss,by-19*ss-23*rr,rr,'z',t,true);
+   R9.rider(c,sx-7*ss,by-19*ss-23*rr,rr,'m',t,false);
+   /* three words, out loud at last */
+   const said=aSeg(P,.70,.76)*(1-aSeg(P,.88,.94));
+   if(said>0){
+    c.globalAlpha=a2*said;
+    n9Bub(c,W*.44,gy-S*.30,S*.30,S*.062,1,-1);
+    c.textAlign='center';
+    c.fillStyle='#4a3142';
+    c.font='600 '+(S*.032)+'px Lora, Georgia, serif';
+    c.fillText('I love you',W*.44,gy-S*.287);
+    c.textAlign='start';
+    c.globalAlpha=a2;
+   }
+   /* and nothing at all coming back -- an empty bubble, on her side */
+   const quiet=aSeg(P,.78,.84)*(1-aSeg(P,.90,.96));
+   if(quiet>0){
+    c.globalAlpha=a2*quiet;
+    n9Bub(c,W*.72,gy-S*.22,S*.13,S*.048,1,1);
+    c.globalAlpha=a2;
+   }
+   c.globalAlpha=1;
+  }
+
+  /* ---- and that night, on a phone ---- */
+  const a3=aSeg(P,.90,.96);
+  if(a3>0){
+   c.globalAlpha=a3;
+   c.fillStyle='#1d1630';c.fillRect(0,0,W,H);
+   n9Phone(c,W/2,H*.40,S*.20,1);
+   c.globalAlpha=a3*aSeg(P,.93,.99);
+   n9Bub(c,W/2,H*.40-S*.02,S*.22,S*.055,1,1);
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){
+  c.fillStyle='#4a4a6e';c.fillRect(0,s*.52,s,s*.48);
+  c.fillStyle='#ffd08a';
+  c.beginPath();c.arc(s*.68,s*.48,s*.13,0,7);c.fill();
+  c.fillStyle='#c9a17e';c.fillRect(0,s*.80,s,s*.20);
+  bqRose(c,s*.28,s*.60,s*.13,1,-.2);
+ }
+};
+
+
+/* -------------------------------------------------------- 18 · waras */
+ASCENES.waras={
+ name:'10th June',grp:'Ours',dur:46,
+ blurb:'His waras. She remembered, and she got there first.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ cues:[[.04,.14],[.19,.30],[.35,.46],[.51,.63],[.70,2]],
+ def:{
+  words:['10th June. My waras.',
+         'You remembered. I had mentioned it once.',
+         'A cake tin, and a letter.',
+         'The first one you ever wrote me.',
+         'And you got there before anybody else did.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fff4e6';A.bgB='#f3d1da'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.38;
+  const fy=mid+S*.14, fs=S*.0048;
+
+  aDesk(c,W*.34,fy+S*.085,S*.0044,1);
+  pdFig(c,W*.34,fy+Math.sin(t*.9)*S*.003,fs,'m',{});
+
+  /* she comes over, holding both of them */
+  const come=aEase(aSeg(P,.10,.26));
+  if(come>0){
+   pdFig(c,aLerp(W*1.16,W*.68,come),fy+Math.sin(t*.8+1)*S*.003,fs,'z',{flip:true});
+  }
+
+  /* the tin, put down and opened */
+  const tin=aSeg(P,.30,.42);
+  if(tin>0)aTin(c,W*.52,fy+S*.01,S*.0034,tin,aSeg(P,.42,.56));
+
+  /* and the letter, which is the part he kept */
+  const let1=aSeg(P,.54,.66);
+  if(let1>0){
+   aLetter(c,aLerp(W*.62,W*.44,aEase(let1)),
+           fy-S*.10-Math.sin(let1*Math.PI)*S*.04,
+           S*.0030,let1,aSeg(P,.64,.76));
+  }
+  const joy=aSeg(P,.74,.88);
+  if(joy>0)n9Heart(c,W*.24,fy-S*.17-joy*S*.03,S*.05*joy,joy,'#ff9fbb');
+ },
+ mark(c,s){
+  aTin(c,s*.46,s*.60,s*.0090,1,1);
+  aLetter(c,s*.58,s*.30,s*.0046,1,1);
+ }
+};
+
+/* ================= days 22 and 25 =================
+   10 July, and 12 September. A crocheted Spider-Man, and a stamp for the
+   front of her books. */
+
+/* a small crocheted Spider-Man: made of yarn, so nothing about him is
+   quite straight, which is the whole appeal */
+function aWebMan(c,x,y,s,a,wonk){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.rotate((wonk||0)*.06);
+ /* legs and arms, four of them, all a bit different */
+ c.strokeStyle='#3f5fa8';c.lineWidth=5.4;c.lineCap='round';
+ [[-1,1],[1,1]].forEach(([sx])=>{
+  c.beginPath();c.moveTo(sx*7,14);c.lineTo(sx*13,26);c.stroke();
+ });
+ c.strokeStyle='#c8443f';c.lineWidth=5;
+ [[-1],[1]].forEach(([sx])=>{
+  c.beginPath();c.moveTo(sx*9,0);c.lineTo(sx*19,7);c.stroke();
+ });
+ /* body: red top, blue bottom, the join a little crooked */
+ c.fillStyle='#c8443f';
+ aRR(c,-11,-8,22,16,7);c.fill();
+ c.fillStyle='#3f5fa8';
+ aRR(c,-10,4,20,12,5);c.fill();
+ /* the stitched look: short strokes across him */
+ c.strokeStyle='rgba(255,255,255,.18)';c.lineWidth=1.1;
+ for(let i=0;i<5;i++){
+  c.beginPath();c.moveTo(-9,-6+i*4.4);c.lineTo(9,-6+i*4.4);c.stroke();
+ }
+ /* head */
+ c.fillStyle='#c8443f';
+ c.beginPath();c.arc(0,-19,12.5,0,7);c.fill();
+ /* the web, drawn on rather than woven, because it is a little toy */
+ c.strokeStyle='rgba(40,20,30,.45)';c.lineWidth=.9;
+ for(let i=0;i<5;i++){
+  const an=-Math.PI+ i*Math.PI/4;
+  c.beginPath();c.moveTo(0,-19);
+  c.lineTo(Math.cos(an)*11.5,-19+Math.sin(an)*11.5);c.stroke();
+ }
+ [5,9].forEach(r=>{
+  c.beginPath();c.arc(0,-19,r,Math.PI,0);c.stroke();
+ });
+ /* and the eyes, which are the whole face */
+ c.fillStyle='#fffdf6';
+ [[-4.6,.28],[4.6,-.28]].forEach(([dx,rot])=>{
+  c.save();c.translate(dx,-19.5);c.rotate(rot);
+  c.beginPath();c.ellipse(0,0,4.6,3.4,0,0,7);c.fill();
+  c.restore();
+ });
+ c.strokeStyle='rgba(40,20,30,.5)';c.lineWidth=.9;
+ [[-4.6,.28],[4.6,-.28]].forEach(([dx,rot])=>{
+  c.save();c.translate(dx,-19.5);c.rotate(rot);
+  c.beginPath();c.ellipse(0,0,4.6,3.4,0,0,7);c.stroke();
+  c.restore();
+ });
+ c.restore();
+}
+
+/* a ball of wool with the thread still running out of it */
+function aYarn(c,x,y,s,a,pull){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle='#c8443f';
+ c.beginPath();c.arc(0,0,15,0,7);c.fill();
+ c.strokeStyle='rgba(255,255,255,.22)';c.lineWidth=1.6;
+ [-.7,-.2,.3,.8].forEach(k=>{
+  c.beginPath();c.ellipse(0,0,15,15*Math.abs(k),k,0,7);c.stroke();
+ });
+ if(pull>0){
+  c.strokeStyle='#c8443f';c.lineWidth=1.8;c.lineCap='round';
+  c.beginPath();
+  c.moveTo(13,-5);
+  c.quadraticCurveTo(30,-16-pull*8,46+pull*26,-4);
+  c.stroke();
+ }
+ c.restore();
+}
+
+/* a small stack of books, seen from the side */
+function aBooks(c,x,y,s,a,n){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ const cols=['#7c5b8f','#3f6f7a','#b05a52','#5a6f9c'];
+ for(let i=0;i<(n||4);i++){
+  const w=52-Math.abs(i-1.5)*5, h=10;
+  c.fillStyle=cols[i%cols.length];
+  aRR(c,-w/2+(i%2?3:-3),-i*11,w,h,2);c.fill();
+  c.fillStyle='rgba(255,255,255,.22)';
+  aRR(c,-w/2+(i%2?3:-3),-i*11,w,2.4,1);c.fill();
+ }
+ c.restore();
+}
+
+/* the stamp itself, and the mark it leaves */
+function aStamp(c,x,y,s,a,press){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y+press*s*14);c.scale(s,s);
+ c.fillStyle='#8a5a3a';
+ aRR(c,-13,-26,26,13,3);c.fill();
+ c.fillStyle='#a87a52';
+ aRR(c,-5,-15,10,9,2);c.fill();
+ c.fillStyle='#4a3a42';
+ aRR(c,-15,-7,30,10,2);c.fill();
+ c.restore();
+}
+function aStampMark(c,x,y,s,a,name){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a*.9;c.translate(x,y);c.scale(s,s);
+ c.strokeStyle='#5a6f9c';c.lineWidth=1.6;
+ aRR(c,-30,-13,60,26,3);c.stroke();
+ c.fillStyle='#5a6f9c';
+ c.textAlign='center';
+ c.font='600 6.4px Lora, Georgia, serif';
+ c.fillText('THIS BOOK BELONGS TO',0,-3);
+ c.font='italic 9.4px Lora, Georgia, serif';
+ c.fillText(name||'Zahabiya',0,8);
+ c.textAlign='start';
+ c.restore();
+}
+
+
+/* --------------------------------------------------- 22 · 10 July */
+ASCENES.spiderman={
+ name:'10th July',grp:'Ours',dur:44,
+ blurb:'A Spider-Man somebody made by hand, one stitch at a time.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ cues:[[.04,.13],[.18,.28],[.34,.46],[.52,.63],[.70,2]],
+ def:{
+  words:['10th July.',
+         'I found you a Spider-Man.',
+         'Crocheted. Somebody made him by hand, one stitch at a time.',
+         'He is slightly wonky. That is the best thing about him.',
+         'He has been yours ever since.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fff3ea';A.bgB='#f4d0d8'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.38;
+  const env=(a,b,c2,d)=>aSeg(P,a,b)*(1-aSeg(P,c2,d));
+
+  /* --- wool, and a thread being pulled out of it --- */
+  const a1=env(.01,.05,.34,.40);
+  if(a1>0){
+   c.globalAlpha=a1;
+   aYarn(c,W*.30,mid,S*.0042,a1,aSeg(P,.10,.32));
+   c.globalAlpha=1;
+  }
+
+  /* --- and then him, stitch by stitch --- */
+  const a2=env(.30,.38,1.1,1.2);
+  if(a2>0){
+   c.globalAlpha=a2;
+   const built=aSeg(P,.32,.52);
+   const wob=Math.sin(t*1.4)*.5;
+   /* handed over, and kept */
+   const give=aEase(aSeg(P,.62,.76));
+   const fy=mid+S*.20, fs=S*.0046;
+   if(give>0){
+    c.globalAlpha=a2*give;
+    pdFig(c,W*.24,fy+Math.sin(t*.9)*S*.003,fs,'m',{});
+    pdFig(c,W*.72,fy+Math.sin(t*.8+1)*S*.003,fs,'z',{flip:true});
+    c.globalAlpha=a2;
+    const joy=aSeg(P,.78,.90);
+    if(joy>0)n9Heart(c,W*.88,fy-S*.19-joy*S*.03,S*.046*joy,joy,'#ff9fbb');
+   }
+   /* he crosses over rather than hovering in mid-air between them */
+   aWebMan(c,aLerp(W*.40,W*.66,give),
+           aLerp(mid-S*.02,fy-S*.09,give),
+           S*.0050*aEase(built),a2*built,wob);
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){aWebMan(c,s*.5,s*.60,s*.0110,1,.4)}
+};
+
+
+/* ---------------------------------------------- 25 · 12 September */
+ASCENES.stamp={
+ name:'12th September',grp:'Ours',dur:44,
+ blurb:'A stamp for the front of her books, because she actually reads them.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ cues:[[.04,.13],[.18,.29],[.35,.46],[.52,.63],[.70,2]],
+ def:{
+  words:['12th September.',
+         'You are a person who reads. Properly reads.',
+         'So I got you a stamp for the front of them.',
+         'Now every one of them says whose it is.',
+         'Including the ones you have not bought yet.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fdf2e8';A.bgB='#eed3da'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.40;
+  const env=(a,b,c2,d)=>aSeg(P,a,b)*(1-aSeg(P,c2,d));
+
+  /* the books, stacking up */
+  const a1=aSeg(P,.02,.10);
+  if(a1>0){
+   const n=1+Math.floor(aSeg(P,.04,.26)*4);
+   aBooks(c,W*.26,mid+S*.14,S*.0042,a1,n);
+  }
+
+  /* one of them open, and the stamp coming down on it */
+  const a2=env(.30,.36,1.1,1.2);
+  if(a2>0){
+   c.globalAlpha=a2;
+   /* the page */
+   c.fillStyle='#fffaf2';
+   aRR(c,W*.44,mid-S*.14,S*.34,S*.30,S*.010);c.fill();
+   c.strokeStyle='rgba(150,120,140,.25)';c.lineWidth=1;
+   aRR(c,W*.44,mid-S*.14,S*.34,S*.30,S*.010);c.stroke();
+   /* the stamp, lifted and brought down twice */
+   const press=Math.max(aSeg(P,.42,.50)*(1-aSeg(P,.52,.58)),
+                        aSeg(P,.62,.68)*(1-aSeg(P,.70,.76)));
+   const here=aSeg(P,.36,.44);
+   if(here>0)aStamp(c,W*.61,mid-S*.10,S*.0044,a2*here,press);
+   /* and what it leaves behind */
+   aStampMark(c,W*.61,mid+S*.03,S*.0042,a2*aSeg(P,.54,.64));
+   c.globalAlpha=1;
+  }
+
+  /* her, pleased about a rubber stamp, which is very much her */
+  const her=aSeg(P,.74,.86);
+  if(her>0){
+   c.globalAlpha=her;
+   pdFig(c,W*.22,mid+S*.26+Math.sin(t*.8)*S*.003,S*.0046,'z',{});
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){
+  aBooks(c,s*.34,s*.78,s*.0072,1,4);
+  aStampMark(c,s*.62,s*.40,s*.0074,1);
+ }
+};
+
+/* ================= the gifts: things to eat =================
+
+   Not memories, and not promises either.
+
+   The first version of these read like a menu he would cook from one day —
+   "name the day", "pick a Sunday", "say when". He was right that it was
+   wrong. A thing you will do later is not a gift; it is a plan, and she
+   already knows he makes plans.
+
+   So the tense moved. Each of these is handed over NOW, through the only
+   channel he has tonight, because the real one is not available to him: the
+   chips are already in front of her, the lid is already coming off the pot,
+   the tray is already on the bed. None of them says the quiet part — that
+   he is not in the room — and every one of them means it.
+
+   Nothing here schedules anything. If a line ends with a date, it is wrong.
+
+   They are grouped for the editor by what kind of gift they are: to eat, to
+   do, to keep, and the daft ones that are only a line. Any of them can hang
+   off any day, after the note or the instant she wins.  */
+
+
+/* ---- the shared kitchen ---- */
+
+/* steam, which almost everything here needs */
+function gSteam(c,x,y,s,a,t,n,col){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a*.5;c.translate(x,y);c.scale(s,s);
+ /* white steam on a cream ground is no steam at all */
+ c.strokeStyle=col||'#b4a6b6';c.lineWidth=2.6;c.lineCap='round';
+ for(let i=0;i<(n||3);i++){
+  const dx=(i-((n||3)-1)/2)*13, ph=t*1.1+i*1.7;
+  c.globalAlpha=a*(.60-i*.09);
+  c.lineWidth=2.0-i*.25;
+  c.beginPath();
+  c.moveTo(dx,0);
+  c.bezierCurveTo(dx+Math.sin(ph)*11,-8,dx-Math.sin(ph)*11,-15,dx+Math.sin(ph+1)*8,-22);
+  c.stroke();
+ }
+ c.restore();
+}
+
+/* a bowl, seen from slightly above, with whatever is in it */
+function gBowl(c,x,y,s,a,fill,col,col2){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ /* what is in it, drawn first so the rim sits over it */
+ if(fill>0){
+  c.save();
+  c.beginPath();c.ellipse(0,-2,25,9.5,0,0,7);c.clip();
+  c.fillStyle=col||'#c98a4a';
+  c.fillRect(-26,-12,52,24);
+  if(col2){
+   c.fillStyle=col2;
+   for(let i=0;i<7;i++){
+    const an=i/7*6.28;
+    c.beginPath();c.ellipse(Math.cos(an)*13,-2+Math.sin(an)*5,4.2,2.6,an,0,7);c.fill();
+   }
+  }
+  c.restore();
+ }
+ /* the bowl */
+ c.fillStyle='#fbf3ea';
+ c.beginPath();
+ c.moveTo(-27,-2);
+ c.bezierCurveTo(-25,18,-14,25,0,25);
+ c.bezierCurveTo(14,25,25,18,27,-2);
+ c.closePath();c.fill();
+ c.fillStyle='rgba(120,95,110,.10)';
+ c.beginPath();
+ c.moveTo(6,-2);c.bezierCurveTo(9,18,16,22,27,-2);c.closePath();c.fill();
+ /* the rim */
+ c.strokeStyle='#e5d3cf';c.lineWidth=2.4;
+ c.beginPath();c.ellipse(0,-2,27,10,0,0,7);c.stroke();
+ c.restore();
+}
+
+/* a spoon, angled into whatever is beside it */
+function gSpoon(c,x,y,s,a,rot){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);c.rotate(rot||0);
+ c.strokeStyle='#c3ccd6';c.lineWidth=3.4;c.lineCap='round';
+ c.beginPath();c.moveTo(0,0);c.lineTo(0,26);c.stroke();
+ c.fillStyle='#d6dee6';
+ c.beginPath();c.ellipse(0,-5,6.4,8.6,0,0,7);c.fill();
+ c.fillStyle='rgba(255,255,255,.55)';
+ c.beginPath();c.ellipse(-1.8,-6.5,2.6,4.2,0,0,7);c.fill();
+ c.restore();
+}
+
+/* the red carton, and however many chips are standing in it */
+function gFries(c,x,y,s,a,n,t){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ const N=Math.max(0,Math.round(n));
+ /* the chips, behind the front of the carton */
+ for(let i=0;i<N;i++){
+  const r=((i*37)%11)/11;
+  const dx=-13+ (i%6)*5.2 + (i>5?2.4:0);
+  const h=20+r*13, lean=(r-.5)*.34;
+  c.save();c.translate(dx,-8);c.rotate(lean+Math.sin(t*.7+i)*.012);
+  c.fillStyle=i%3===0?'#f0bd60':'#e8ad4e';
+  aRR(c,-2.3,-h,4.6,h+6,1.6);c.fill();
+  c.fillStyle='rgba(255,255,255,.28)';
+  aRR(c,-2.3,-h,1.6,h*.5,1);c.fill();
+  c.restore();
+ }
+ /* the carton */
+ c.fillStyle='#d1483f';
+ c.beginPath();
+ c.moveTo(-17,-10);c.lineTo(17,-10);c.lineTo(12,22);c.lineTo(-12,22);
+ c.closePath();c.fill();
+ c.fillStyle='#b83a33';
+ c.beginPath();
+ c.moveTo(6,-10);c.lineTo(17,-10);c.lineTo(12,22);c.lineTo(4,22);
+ c.closePath();c.fill();
+ /* the pale band across it */
+ c.fillStyle='#fbf1e4';
+ c.beginPath();
+ c.moveTo(-15.5,-1);c.lineTo(15.5,-1);c.lineTo(14.5,6);c.lineTo(-14.5,6);
+ c.closePath();c.fill();
+ c.restore();
+}
+
+/* salt, falling */
+function gSalt(c,x,y,s,a,k,rng){
+ if(a<=0||k<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle='#a99cae';
+ for(let i=0;i<22;i++){
+  const r=((i*53)%17)/17, r2=((i*29)%13)/13;
+  const fall=((k*1.4+r)%1);
+  c.globalAlpha=a*(1-fall)*.9;
+  c.beginPath();c.arc((r2-.5)*24,fall*40,1.3,0,7);c.fill();
+ }
+ c.restore();
+}
+
+/* one cupped hand, round the side of something warm */
+function gHand(c,x,y,s,a,flip){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(flip?-s:s,s);
+ c.fillStyle='#d9a583';
+ c.beginPath();
+ c.moveTo(0,-9);
+ c.bezierCurveTo(9,-10,13,-3,12,4);
+ c.bezierCurveTo(11,11,4,14,-2,13);
+ c.bezierCurveTo(-8,12,-10,4,-9,-2);
+ c.closePath();c.fill();
+ /* three knuckles, which is all a hand needs to read as one */
+ c.strokeStyle='rgba(150,100,80,.42)';c.lineWidth=1.1;c.lineCap='round';
+ [-3,1,5].forEach(dy=>{c.beginPath();c.moveTo(2,dy);c.lineTo(10,dy+1);c.stroke()});
+ c.restore();
+}
+
+/* the pot, with the lid coming off it */
+function gPot(c,x,y,s,a,lift,t){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ /* what is under the lid, once the lid is off it */
+ if(lift>.08){
+  c.save();
+  c.beginPath();c.ellipse(0,-16,25,8,0,0,7);c.clip();
+  /* rice, and the layer under the rice */
+  c.fillStyle='#f3e6cf';c.fillRect(-26,-24,52,20);
+  c.fillStyle='#e8a44a';
+  for(let i=0;i<9;i++){
+   const an=i/9*6.28;
+   c.beginPath();c.ellipse(Math.cos(an)*14,-16+Math.sin(an)*4,4,2.4,an,0,7);c.fill();
+  }
+  c.fillStyle='#b8543a';
+  [[-9,-17],[7,-15],[-1,-19]].forEach(([dx,dy])=>{
+   c.beginPath();c.ellipse(dx,dy,5.4,3.4,.3,0,7);c.fill();
+  });
+  c.restore();
+  gSteam(c,0,-20,1,a*Math.min(1,(lift-.08)*3),t,3);
+ }
+ /* the pot */
+ c.fillStyle='#8f9aa6';
+ c.beginPath();
+ c.moveTo(-25,-16);
+ c.bezierCurveTo(-27,14,-16,22,0,22);
+ c.bezierCurveTo(16,22,27,14,25,-16);
+ c.closePath();c.fill();
+ c.fillStyle='rgba(255,255,255,.14)';
+ c.beginPath();
+ c.moveTo(-25,-16);c.bezierCurveTo(-26,10,-18,19,-9,21);
+ c.lineTo(-13,-16);c.closePath();c.fill();
+ c.strokeStyle='#76818d';c.lineWidth=2.2;
+ c.beginPath();c.ellipse(0,-16,25,8,0,0,7);c.stroke();
+ /* handles */
+ c.strokeStyle='#5f6874';c.lineWidth=4;c.lineCap='round';
+ [[-25,-1],[25,-1]].forEach(([hx])=>{
+  c.beginPath();c.arc(hx,-1,6,hx<0?Math.PI*.5:-Math.PI*.5,hx<0?Math.PI*1.5:Math.PI*.5);c.stroke();
+ });
+ /* the lid, lifted */
+ c.save();
+ c.translate(0,-18-lift*24);c.rotate(-lift*.20);
+ c.globalAlpha=a;
+ c.fillStyle='#a3aeb9';
+ c.beginPath();c.ellipse(0,0,26,8.4,0,0,7);c.fill();
+ c.fillStyle='#8f9aa6';
+ c.beginPath();c.ellipse(0,-2.4,26,8.4,0,0,7);c.fill();
+ c.fillStyle='#5f6874';
+ c.beginPath();c.ellipse(0,-9,4.6,3.2,0,0,7);c.fill();
+ c.fillRect(-1.6,-9,3.2,5);
+ c.restore();
+ c.restore();
+}
+
+/* one piece of naan, torn at the edge */
+function gNaan(c,x,y,s,a,rot){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);c.rotate(rot||0);
+ c.fillStyle='#e9cf9e';
+ c.beginPath();
+ c.moveTo(-20,-2);
+ c.bezierCurveTo(-22,-14,-6,-19,4,-16);
+ c.bezierCurveTo(18,-13,23,-2,19,7);
+ c.bezierCurveTo(14,16,-4,18,-13,12);
+ c.bezierCurveTo(-19,8,-19,3,-20,-2);
+ c.closePath();c.fill();
+ c.fillStyle='#cdae79';
+ [[-7,-6,3.4],[6,-3,2.6],[-1,6,2.2],[11,3,1.9],[-12,2,1.7]].forEach(([dx,dy,r])=>{
+  c.beginPath();c.arc(dx,dy,r,0,7);c.fill();
+ });
+ c.restore();
+}
+
+/* an avocado: whole, then halved, then the stone thumbed out */
+function gAvo(c,x,y,s,a,cut,out){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ const body=(px,flesh)=>{
+  c.save();c.translate(px,0);
+  c.fillStyle='#3f5e33';
+  c.beginPath();
+  c.moveTo(0,-26);
+  c.bezierCurveTo(11,-24,16,-8,16,4);
+  c.bezierCurveTo(16,18,8,26,0,26);
+  c.bezierCurveTo(-8,26,-16,18,-16,4);
+  c.bezierCurveTo(-16,-8,-11,-24,0,-26);
+  c.closePath();c.fill();
+  c.fillStyle='rgba(255,255,255,.13)';
+  c.beginPath();c.ellipse(-6,0,6,15,-.12,0,7);c.fill();
+  if(!flesh){
+   c.fillStyle='#5d4a2e';
+   c.beginPath();c.ellipse(0,-27,2.6,2.2,0,0,7);c.fill();
+  }
+  if(flesh){
+   c.fillStyle='#c9d96a';
+   c.beginPath();
+   c.moveTo(0,-22);
+   c.bezierCurveTo(9,-20,13,-7,13,4);
+   c.bezierCurveTo(13,16,7,22,0,22);
+   c.bezierCurveTo(-7,22,-13,16,-13,4);
+   c.bezierCurveTo(-13,-7,-9,-20,0,-22);
+   c.closePath();c.fill();
+   c.fillStyle='#e3eca0';
+   c.beginPath();c.ellipse(-3,2,5,9,0,0,7);c.fill();
+  }
+  c.restore();
+ };
+ if(cut<=0){body(0,false)}
+ else{
+  const gap=cut*15;
+  body(-gap,true);
+  body(gap,true);
+  /* the stone, in the right half until it is thumbed out */
+  const sx=aLerp(gap,gap+34,out), sy=aLerp(2,-6,out)-out*(1-out)*26;
+  c.save();c.translate(sx,sy);c.rotate(out*2.1);
+  c.fillStyle='#8a5c33';
+  c.beginPath();c.ellipse(0,0,7.4,8.2,0,0,7);c.fill();
+  c.fillStyle='rgba(255,255,255,.22)';
+  c.beginPath();c.ellipse(-2,-2.6,2.6,3,0,0,7);c.fill();
+  c.restore();
+ }
+ c.restore();
+}
+
+/* a slice of toast, for the avocado to land on */
+function gToast(c,x,y,s,a,spread){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle='#d9ad6e';
+ c.beginPath();
+ c.moveTo(-22,-12);
+ c.bezierCurveTo(-24,-20,-14,-22,0,-22);
+ c.bezierCurveTo(14,-22,24,-20,22,-12);
+ c.lineTo(20,14);
+ c.bezierCurveTo(20,19,-20,19,-20,14);
+ c.closePath();c.fill();
+ c.fillStyle='#f0d5a4';
+ aRR(c,-17,-16,34,26,6);c.fill();
+ if(spread>0){
+  c.save();c.globalAlpha=a*Math.min(1,spread*1.4);
+  c.fillStyle='#b6cc63';
+  c.beginPath();c.ellipse(0,-3,15*Math.min(1,spread),10*Math.min(1,spread),0,0,7);c.fill();
+  c.fillStyle='rgba(60,90,40,.25)';
+  for(let i=0;i<5;i++){
+   const an=i/5*6.28;
+   c.beginPath();c.arc(Math.cos(an)*7*spread,-3+Math.sin(an)*4*spread,1.4,0,7);c.fill();
+  }
+  c.restore();
+ }
+ c.restore();
+}
+
+/* a tray with legs, the kind breakfast arrives on */
+function gTray(c,x,y,s,a){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle='#9a6f4c';
+ aRR(c,-52,-6,104,11,4);c.fill();
+ c.fillStyle='#b98c63';
+ aRR(c,-52,-9,104,6,3);c.fill();
+ c.fillStyle='#8a6243';
+ aRR(c,-42,5,7,16,3);c.fill();
+ aRR(c,35,5,7,16,3);c.fill();
+ c.restore();
+}
+
+/* two people under one blanket, which is the whole gift */
+function gNest(c,x,y,s,a,t){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ const br=Math.sin(t*.55)*1.2;
+ /* the sofa */
+ c.fillStyle='#8f6f86';
+ aRR(c,-58,-6,116,30,10);c.fill();
+ c.fillStyle='#7d5f74';
+ aRR(c,-58,-22,116,20,9);c.fill();
+ aRR(c,-64,-20,12,40,6);c.fill();
+ aRR(c,52,-20,12,40,6);c.fill();
+ /* the two of them, shoulders only */
+ c.fillStyle='#d9a583';
+ c.beginPath();c.arc(-13,-30+br,10,0,7);c.fill();
+ c.fillStyle='#c08a63';
+ c.beginPath();c.arc(11,-27-br,10,0,7);c.fill();
+ c.fillStyle='#2f2129';
+ c.beginPath();c.arc(-13,-32+br,11,Math.PI,0);c.fill();
+ c.beginPath();c.ellipse(-23,-25+br,4,9,.2,0,7);c.fill();
+ c.beginPath();c.arc(11,-30-br,10.5,Math.PI,-0.1);c.fill();
+ /* eyes, shut */
+ c.strokeStyle='#2f2129';c.lineWidth=1.4;c.lineCap='round';
+ [[-16.5,-30+br],[-9.5,-30+br],[7.5,-27-br],[14.5,-27-br]].forEach(([ex,ey])=>{
+  c.beginPath();c.arc(ex,ey,2.2,.25,Math.PI-.25);c.stroke();
+ });
+ /* the blanket over both of them */
+ c.fillStyle='#c98aa8';
+ c.beginPath();
+ c.moveTo(-34,-18+br*.4);
+ c.bezierCurveTo(-24,-26,24,-24,34,-16);
+ c.lineTo(36,12);c.lineTo(-36,12);
+ c.closePath();c.fill();
+ c.strokeStyle='rgba(255,255,255,.22)';c.lineWidth=1.4;
+ [-20,-4,12].forEach(dx=>{
+  c.beginPath();c.moveTo(dx,-20);c.lineTo(dx+3,10);c.stroke();
+ });
+ c.restore();
+}
+
+
+
+/* --------------------------------------------------------------- fries */
+ASCENES.fries={
+ name:'The chips',grp:'Gifts · to eat',dur:34,
+ blurb:'A whole carton of them, and he does not take any.',
+ light:true,solo:true,
+ cues:[[.03,.15],[.20,.33],[.38,.52],[.57,.72],[.77,2]],
+ def:{words:['Chips.',
+             'A whole carton. Not a shared one.',
+             'Extra salt. They always forget. I never do.',
+             'Wherever you are reading this, they are in front of you.',
+             'And I am not taking a single one. 🍟']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fff4e6';A.bgB='#f7d3cf'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.44;
+  const up=aEase(aSeg(P,.01,.16));
+  const n=Math.round(aSeg(P,.10,.34)*11);
+  gFries(c,W*.5,mid+aLerp(S*.10,0,up),S*.0072*aLerp(.86,1,up),up,n,t);
+  /* salt, once it is standing there */
+  gSalt(c,W*.5,mid-S*.22,S*.0072,aSeg(P,.36,.44)*(1-aSeg(P,.62,.70)),
+        aSeg(P,.36,.70)*3,A.rng);
+  /* one hand pushing it across, and staying empty */
+  const give=aEase(aSeg(P,.60,.76));
+  if(give>0){
+   c.globalAlpha=give;
+   pdFig(c,aLerp(W*.02,W*.17,give),mid+S*.34,S*.0044,'m',{reach:true});
+   c.globalAlpha=1;
+  }
+  const her=aSeg(P,.74,.88);
+  if(her>0){
+   c.globalAlpha=her;
+   pdFig(c,W*.83,mid+S*.34+Math.sin(t*.8)*S*.003,S*.0046,'z',{flip:true});
+   const joy=aSeg(P,.82,.94);
+   if(joy>0)n9Heart(c,W*.93,mid+S*.10-joy*S*.03,S*.042*joy,joy,'#ff9fbb');
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){gFries(c,s*.5,s*.66,s*.0130,1,9,0)}
+};
+
+
+/* ---------------------------------------------------------------- soup */
+ASCENES.soup={
+ name:'The soup',grp:'Gifts · to eat',dur:34,
+ blurb:'A bowl, held in two hands, on a day that has gone badly.',
+ light:true,solo:true,
+ cues:[[.03,.15],[.20,.34],[.39,.54],[.59,.74],[.79,2]],
+ def:{words:['Soup.',
+             'Hot, in a bowl you hold with both hands.',
+             'For the evenings that went badly and I only heard about after.',
+             'Nobody is going to make you explain the day first.',
+             'Both hands. It is already warm. 🥣']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fdf1e2';A.bgB='#f0cfd6'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.36;
+  const in1=aEase(aSeg(P,.01,.16));
+  const fill=aSeg(P,.16,.40);
+  gBowl(c,W*.5,mid,S*.0082*aLerp(.9,1,in1),in1,fill,'#d98b3f','#e8c46a');
+  gSteam(c,W*.5,mid-S*.055,S*.0082,aSeg(P,.26,.44)*(1-aSeg(P,.86,.96)),t,3);
+  const sp=aSeg(P,.44,.56)*(1-aSeg(P,.58,.66));
+  if(sp>0)gSpoon(c,W*.66,mid-S*.02,S*.0072,sp,.42);
+  /* both hands round it -- the point of soup is the holding */
+  const hold=aEase(aSeg(P,.58,.74));
+  if(hold>0){
+   gHand(c,W*.5-S*.205*aLerp(1.3,1,hold),mid+S*.020,S*.0074,hold,false);
+   gHand(c,W*.5+S*.205*aLerp(1.3,1,hold),mid+S*.020,S*.0074,hold,true);
+  }
+  const her=aSeg(P,.76,.90);
+  if(her>0){
+   c.globalAlpha=her;
+   pdFig(c,W*.5,mid+S*.40+Math.sin(t*.7)*S*.003,S*.0046,'z',{});
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){gBowl(c,s*.5,s*.56,s*.0140,1,1,'#d98b3f','#e8c46a')}
+};
+
+
+/* ------------------------------------------------------------- biryani */
+ASCENES.biryani={
+ name:'The biryani',grp:'Gifts · to eat',dur:40,
+ blurb:'The lid comes off a pot. It is the good kind.',
+ light:true,solo:true,
+ cues:[[.03,.14],[.19,.31],[.36,.50],[.55,.68],[.73,.86],[.90,2]],
+ def:{words:['Biryani.',
+             'A pot, sealed, so none of it got out on the way to you.',
+             'The proper kind. Not the sad office kind.',
+             'The top layer and the bottom layer. Both yours.',
+             'Nobody is making you share this one.',
+             'Go on. Lift it. 🍚']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fff2e0';A.bgB='#f2cdc4'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.44;
+  const in1=aEase(aSeg(P,.01,.15));
+  const lift=aEase(aSeg(P,.30,.52));
+  gPot(c,W*.5,mid,S*.0082*aLerp(.9,1,in1),in1,lift,t);
+  /* two plates arriving, one each */
+  const pl=aEase(aSeg(P,.58,.74));
+  if(pl>0){
+   c.globalAlpha=pl;
+   [[-1,W*.36],[1,W*.64]].forEach(([sg,px])=>{
+    c.save();c.translate(px,mid+S*.30);
+    c.fillStyle='#fbf3ea';
+    c.beginPath();c.ellipse(0,0,S*.082,S*.031,0,0,7);c.fill();
+    c.strokeStyle='#e0cdc8';c.lineWidth=2;
+    c.beginPath();c.ellipse(0,0,S*.082,S*.031,0,0,7);c.stroke();
+    c.beginPath();c.ellipse(0,0,S*.058,S*.021,0,0,7);c.stroke();
+    c.fillStyle='#e8c46a';
+    c.beginPath();c.ellipse(0,-S*.004,S*.052,S*.019,0,0,7);c.fill();
+    c.fillStyle='#b8543a';
+    [[sg*.018,-.007],[-sg*.012,.004]].forEach(([ox,oy])=>{
+     c.beginPath();c.ellipse(ox*S,oy*S,S*.015,S*.008,.3,0,7);c.fill();
+    });
+    c.restore();
+   });
+   c.globalAlpha=1;
+  }
+  const two=aSeg(P,.76,.90);
+  if(two>0){
+   c.globalAlpha=two;
+   pdFig(c,W*.13,mid+S*.36+Math.sin(t*.8)*S*.003,S*.0044,'m',{});
+   pdFig(c,W*.87,mid+S*.36+Math.sin(t*.7+1)*S*.003,S*.0046,'z',{flip:true});
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){gPot(c,s*.5,s*.58,s*.0130,1,.55,0)}
+};
+
+
+/* -------------------------------------------------------------- nihari */
+ASCENES.nihari={
+ name:'The nihari',grp:'Gifts · to eat',dur:36,
+ blurb:'Breakfast, the heavy kind, and the whole morning cleared for it.',
+ light:true,solo:true,
+ cues:[[.03,.15],[.20,.33],[.38,.52],[.57,.72],[.77,2]],
+ def:{words:['Nihari.',
+             'Which means an early morning, and somebody already up.',
+             'Naan, torn, not cut. I know.',
+             'And nothing at all after it — the whole morning, empty on purpose.',
+             'It is on the table. 🍲']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fdefdc';A.bgB='#eecfc2'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.38;
+  /* a low sun, because this one is about the hour */
+  const sun=aSeg(P,.00,.12);
+  if(sun>0){
+   c.globalAlpha=sun*.55;
+   c.fillStyle='#f6c86a';
+   c.beginPath();c.arc(W*.80,H*.16,S*.105,0,7);c.fill();
+   c.globalAlpha=1;
+  }
+  const in1=aEase(aSeg(P,.02,.17));
+  gBowl(c,W*.44,mid,S*.0082*aLerp(.9,1,in1),in1,aSeg(P,.16,.40),'#a8532c','#d08a4a');
+  gSteam(c,W*.44,mid-S*.055,S*.0082,aSeg(P,.24,.44)*(1-aSeg(P,.86,.96)),t,3);
+  const nn=aEase(aSeg(P,.42,.58));
+  if(nn>0){
+   gNaan(c,W*.80,mid+S*.14,S*.0076*aLerp(.8,1,nn),nn,-.14);
+   /* torn, not cut: one piece lifted clear of the rest */
+   const tear=aSeg(P,.58,.72);
+   if(tear>0)gNaan(c,W*.80+tear*S*.06,mid+S*.14-tear*S*.20,S*.0038,tear*.95,.62);
+  }
+  const her=aSeg(P,.74,.90);
+  if(her>0){
+   c.globalAlpha=her;
+   pdFig(c,W*.22,mid+S*.40+Math.sin(t*.7)*S*.003,S*.0046,'z',{});
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){gBowl(c,s*.42,s*.58,s*.0110,1,1,'#a8532c','#d08a4a');gNaan(c,s*.74,s*.60,s*.0090,1,-.2)}
+};
+
+
+/* ------------------------------------------------------------- avocado */
+ASCENES.avocado={
+ name:'The avocado',grp:'Gifts · to eat',dur:34,
+ blurb:'One that is actually ripe, which is the hard part.',
+ light:true,solo:true,
+ cues:[[.03,.15],[.20,.34],[.39,.54],[.59,.74],[.79,2]],
+ def:{words:['An avocado.',
+             'Ripe. Actually ripe, today, which nobody ever manages.',
+             'Do you know how much of the world had to cooperate for that.',
+             'On toast. Too much salt. Lemon.',
+             'Breakfast is handled and you did none of it. 🥑']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#f3f7e4';A.bgB='#e7d4dd'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.34;
+  const in1=aEase(aSeg(P,.01,.15));
+  const cut=aEase(aSeg(P,.26,.44));
+  const out=aEase(aSeg(P,.48,.62));
+  /* the toast arrives underneath, and the halves come down onto it */
+  const tst=aEase(aSeg(P,.62,.74));
+  if(tst>0)gToast(c,W*.5,mid+S*.26,S*.0092*aLerp(.85,1,tst),tst,aSeg(P,.74,.88));
+  const slide=aEase(aSeg(P,.66,.80));
+  gAvo(c,W*.5,mid+slide*S*.24,
+       S*.0072*aLerp(.9,1,in1)*aLerp(1,.55,slide),
+       in1*(1-aSeg(P,.70,.79)),cut,out);
+  const her=aSeg(P,.84,.94);
+  if(her>0){
+   c.globalAlpha=her;
+   pdFig(c,W*.82,mid+S*.44+Math.sin(t*.8)*S*.003,S*.0046,'z',{flip:true});
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){gAvo(c,s*.5,s*.56,s*.0120,1,1,.6)}
+};
+
+
+/* ----------------------------------------------------------- breakfast */
+ASCENES.breakfast={
+ name:'Breakfast in bed',grp:'Gifts · to do',dur:38,
+ blurb:'The whole tray, brought to her, with nothing asked in return.',
+ light:true,solo:true,
+ cues:[[.09,.21],[.25,.38],[.43,.56],[.60,.74],[.79,2]],
+ def:{words:['Breakfast.',
+             'Brought to you, while you are still horizontal.',
+             'Eggs, toast, the coffee made properly. Avocado if it behaved.',
+             'You are not getting up to help. That is the whole gift.',
+             'It is already on the tray. ☕']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fff5e8';A.bgB='#eed2da'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), bed=H*.70, tray=H*.44;
+  /* the bed first, and low, so the tray has somewhere to arrive */
+  const her=aEase(aSeg(P,.02,.20));
+  if(her>0){
+   c.globalAlpha=her;
+   /* pillow */
+   c.fillStyle='#f3e6ee';
+   aRR(c,W*.10,bed-S*.10,W*.34,S*.10,S*.028);c.fill();
+   /* her, on her side, still horizontal */
+   c.fillStyle='#d9a583';
+   c.beginPath();c.arc(W*.28,bed-S*.055,S*.055,0,7);c.fill();
+   c.fillStyle='#2f2129';
+   c.beginPath();c.arc(W*.28,bed-S*.068,S*.060,Math.PI,.15);c.fill();
+   c.beginPath();c.ellipse(W*.28-S*.055,bed-S*.020,S*.020,S*.048,.16,0,7);c.fill();
+   c.strokeStyle='#2f2129';c.lineWidth=1.8;c.lineCap='round';
+   c.beginPath();c.arc(W*.305,bed-S*.058,S*.014,.25,Math.PI-.25);c.stroke();
+   c.beginPath();c.arc(W*.245,bed-S*.058,S*.014,.25,Math.PI-.25);c.stroke();
+   /* the duvet over everything below the shoulders */
+   c.fillStyle='#c98aa8';
+   aRR(c,W*.02,bed-S*.010,W*.96,S*.15,S*.020);c.fill();
+   c.fillStyle='rgba(255,255,255,.16)';
+   aRR(c,W*.02,bed-S*.010,W*.96,S*.022,S*.010);c.fill();
+   c.globalAlpha=1;
+  }
+  /* and then the tray, carried in from the side and set down over her */
+  const come=aEase(aSeg(P,.10,.34));
+  if(come>0){
+   const x=aLerp(W*-.28,W*.52,come), ty=tray+Math.sin(t*.6)*S*.004*(1-come);
+   c.globalAlpha=come;
+   gTray(c,x,ty,S*.0090,1);
+   /* what is on it: everything stands ON the tray, not through it */
+   const top=ty-S*.022;
+   gBowl(c,x-S*.17,top-25*S*.0030,S*.0030,aSeg(P,.26,.44),1,'#f0d488','#e8a44a');
+   gToast(c,x-S*.02,top-19*S*.0036,S*.0036,aSeg(P,.32,.50),aSeg(P,.44,.62)*.9);
+   const cup=aSeg(P,.38,.56);
+   if(cup>0){
+    c.save();c.globalAlpha=come*cup;c.translate(x+S*.15,top);
+    c.fillStyle='#fbf3ea';
+    aRR(c,-S*.030,-S*.048,S*.060,S*.048,S*.008);c.fill();
+    c.fillStyle='#6b4633';
+    c.beginPath();c.ellipse(0,-S*.044,S*.026,S*.008,0,0,7);c.fill();
+    c.strokeStyle='#fbf3ea';c.lineWidth=S*.008;
+    c.beginPath();c.arc(S*.036,-S*.026,S*.014,-1.25,1.25);c.stroke();
+    c.restore();
+    gSteam(c,x+S*.15,top-S*.058,S*.0034,come*cup*.9,t,2,'#bfa8a0');
+   }
+   c.globalAlpha=1;
+  }
+  const joy=aSeg(P,.80,.94);
+  if(joy>0)n9Heart(c,W*.82,bed-S*.22-joy*S*.03,S*.046*joy,joy,'#ff9fbb');
+ },
+ mark(c,s){gTray(c,s*.5,s*.66,s*.0084,1);gToast(c,s*.5,s*.50,s*.0060,1,.7)}
+};
+
+
+/* ----------------------------------------------------------------- nap */
+ASCENES.nap={
+ name:'An afternoon with nothing in it',grp:'Gifts · to do',dur:36,
+ blurb:'One blanket, two people, and no plan whatsoever.',
+ light:true,solo:true,
+ cues:[[.03,.16],[.21,.35],[.40,.55],[.60,.75],[.80,2]],
+ def:{words:['An afternoon.',
+             'Nothing in it. Nothing planned, nothing to reach, nobody expecting you.',
+             'One blanket. You get most of it, which is what happens anyway.',
+             'Cuddles. You put that on the list yourself.',
+             'Phones face down. 🌙']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#f6ecf4';A.bgB='#e0cbe0'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.56;
+  const in1=aEase(aSeg(P,.01,.20));
+  gNest(c,W*.5,mid,S*.0072*aLerp(.9,1,in1),in1,t);
+  /* the two phones, going face down */
+  const ph=aSeg(P,.60,.78);
+  if(ph>0){
+   c.globalAlpha=ph;
+   [[-1,W*.14],[1,W*.86]].forEach(([sg,px])=>{
+    c.save();c.translate(px,mid+S*.20);
+    c.rotate(sg*aLerp(-.2,1.45,aSeg(P,.66,.80)));
+    c.fillStyle='#3a3340';
+    aRR(c,-S*.024,-S*.044,S*.048,S*.088,S*.010);c.fill();
+    c.fillStyle='rgba(255,255,255,'+(0.22*(1-aSeg(P,.66,.80)))+')';
+    aRR(c,-S*.019,-S*.038,S*.038,S*.070,S*.007);c.fill();
+    c.restore();
+   });
+   c.globalAlpha=1;
+  }
+  /* a slow, quiet z or two */
+  const zz=aSeg(P,.74,.94);
+  if(zz>0){
+   c.save();c.globalAlpha=zz;
+   c.fillStyle='#8a6f8a';c.textAlign='center';
+   [0,1,2].forEach(i=>{
+    const k=((t*.18+i*.33)%1);
+    c.globalAlpha=zz*.75*(1-k);
+    c.font='italic '+(S*(.046+i*.016))+'px Lora, Georgia, serif';
+    c.fillText('z',W*.68+i*S*.040,mid-S*.26-k*S*.16);
+   });
+   c.textAlign='start';c.restore();
+  }
+ },
+ mark(c,s){gNest(c,s*.5,s*.62,s*.0070,1,0)}
+};
+
+/* ================= the gifts: lines, and things to do =================
+
+   Two families in one file.
+
+   The daft ones first. A pick-up line is a gift in the same way a bad joke
+   told well is a gift: it costs nothing, it is entirely for her, and the
+   worse it is the more obvious it is that somebody sat and thought about it.
+   Each one gets a picture that takes the joke completely seriously, which is
+   the only way this register works -- the drawing must not wink.
+
+   Then the ones that are afternoons rather than objects. Same rule as the
+   food: nothing here is scheduled, nothing here is promised. It is happening
+   on the screen in front of her, tonight, because that is the channel he
+   has. Not one line says so.  */
+
+
+/* ---------------------------------------------------------------------
+   the shared props
+   --------------------------------------------------------------------- */
+
+/* a periodic-table tile, for the worst line in the file */
+function h7Tile(c,x,y,s,a,num,sym,nm,col){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle=col||'#f6ead8';
+ aRR(c,-24,-24,48,48,5);c.fill();
+ c.strokeStyle='rgba(90,60,80,.45)';c.lineWidth=1.6;
+ aRR(c,-24,-24,48,48,5);c.stroke();
+ c.fillStyle='#4a3142';c.textAlign='left';
+ c.font='600 7px Lora, Georgia, serif';
+ c.fillText(String(num),-19,-14);
+ c.textAlign='center';
+ c.font='600 22px Lora, Georgia, serif';
+ c.fillText(sym,0,7);
+ c.font='6.4px Lora, Georgia, serif';
+ c.fillText(nm,0,18);
+ c.textAlign='start';
+ c.restore();
+}
+
+/* a tall beaker with a level in it */
+function h7Beaker(c,x,y,s,a,fill,col){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ const top=aLerp(34,-32,fill);
+ if(fill>0){
+  c.fillStyle=col||'#6fb3d8';
+  c.beginPath();
+  c.moveTo(-19,34);c.lineTo(19,34);c.lineTo(19,top);c.lineTo(-19,top);
+  c.closePath();c.fill();
+  c.fillStyle='rgba(255,255,255,.30)';
+  c.beginPath();c.ellipse(0,top,19,3.6,0,0,7);c.fill();
+ }
+ c.strokeStyle='rgba(180,200,215,.9)';c.lineWidth=2.2;
+ c.beginPath();
+ c.moveTo(-19,-38);c.lineTo(-19,34);
+ c.quadraticCurveTo(-19,39,-13,39);
+ c.lineTo(13,39);c.quadraticCurveTo(19,39,19,34);
+ c.lineTo(19,-38);
+ c.stroke();
+ /* the little measuring ticks, because it is a biology joke */
+ c.strokeStyle='rgba(180,200,215,.55)';c.lineWidth=1.2;
+ for(let i=0;i<5;i++){
+  const yy=28-i*14;
+  c.beginPath();c.moveTo(11,yy);c.lineTo(19,yy);c.stroke();
+ }
+ c.fillStyle='rgba(255,255,255,.35)';
+ aRR(c,-15,-32,3.2,60,1.6);c.fill();
+ c.restore();
+}
+
+/* one small astronaut, drifting, on a tether */
+function h7Astro(c,x,y,s,a,t){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.rotate(Math.sin(t*.4)*.14);
+ /* the tether, going off to somewhere unseen */
+ c.strokeStyle='rgba(255,240,248,.35)';c.lineWidth=1.6;c.lineCap='round';
+ c.beginPath();c.moveTo(-8,10);
+ c.quadraticCurveTo(-42,26+Math.sin(t*.6)*6,-84,14);c.stroke();
+ /* backpack */
+ c.fillStyle='#cfd6e2';
+ aRR(c,-16,-12,10,24,4);c.fill();
+ /* limbs */
+ c.strokeStyle='#eef2f7';c.lineWidth=7.5;c.lineCap='round';
+ c.beginPath();c.moveTo(-4,4);c.lineTo(-12,22+Math.sin(t*.7)*2);c.stroke();
+ c.beginPath();c.moveTo(6,4);c.lineTo(16,20-Math.sin(t*.7)*2);c.stroke();
+ c.beginPath();c.moveTo(-3,-4);c.lineTo(-17,-14+Math.sin(t*.5)*3);c.stroke();
+ c.beginPath();c.moveTo(6,-4);c.lineTo(20,-10-Math.sin(t*.5)*3);c.stroke();
+ /* body */
+ c.fillStyle='#f4f7fb';
+ aRR(c,-10,-14,20,26,9);c.fill();
+ c.fillStyle='#d9e1ec';
+ aRR(c,-8,2,16,5,2.5);c.fill();
+ /* helmet, and the visor she is behind */
+ c.fillStyle='#f4f7fb';
+ c.beginPath();c.arc(0,-22,13,0,7);c.fill();
+ c.fillStyle='#2a3350';
+ c.beginPath();c.ellipse(1,-22,9.4,7.6,0,0,7);c.fill();
+ c.fillStyle='rgba(255,255,255,.34)';
+ c.beginPath();c.ellipse(-3,-25,3.6,2.4,-.4,0,7);c.fill();
+ c.restore();
+}
+
+/* a keyboard, with some of the keys lit */
+function h7Keys(c,x,y,s,a,lit,t){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle='#2b2733';
+ aRR(c,-62,-22,124,44,6);c.fill();
+ const ROWS=['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];
+ ROWS.forEach((row,r)=>{
+  const w=9.2, x0=-(row.length*w)/2+w/2;
+  for(let i=0;i<row.length;i++){
+   const ch=row[i], on=(lit||'').indexOf(ch)>=0;
+   const kx=x0+i*w, ky=-13+r*11;
+   c.fillStyle=on?'#e8729a':'#44404f';
+   aRR(c,kx-3.9,ky-4.2,7.8,8.4,1.8);c.fill();
+   if(on){
+    c.globalAlpha=a*(.30+.20*Math.sin(t*2+i));
+    c.fillStyle='#ff9fbb';
+    aRR(c,kx-5.4,ky-5.7,10.8,11.4,2.6);c.fill();
+    c.globalAlpha=a;
+   }
+   c.fillStyle=on?'#fff':'rgba(240,232,244,.62)';
+   c.textAlign='center';c.font='600 5.2px Lora, Georgia, serif';
+   c.fillText(ch,kx,ky+2);
+  }
+ });
+ c.fillStyle='#44404f';
+ aRR(c,-22,10,44,7,2);c.fill();
+ c.textAlign='start';
+ c.restore();
+}
+
+/* a ruled ledger page, entries landing in two columns */
+function h7Ledger(c,x,y,s,a,rows,total){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle='#fdf8ec';
+ aRR(c,-52,-46,104,96,3);c.fill();
+ c.strokeStyle='rgba(140,110,130,.30)';c.lineWidth=1;
+ aRR(c,-52,-46,104,96,3);c.stroke();
+ /* the two columns */
+ c.strokeStyle='rgba(140,110,130,.22)';
+ c.beginPath();c.moveTo(6,-40);c.lineTo(6,44);c.stroke();
+ c.beginPath();c.moveTo(-46,-34);c.lineTo(46,-34);c.stroke();
+ c.fillStyle='rgba(74,49,66,.62)';
+ c.textAlign='left';c.font='600 5.4px Lora, Georgia, serif';
+ c.fillText('PARTICULARS',-44,-37);
+ c.textAlign='right';
+ c.fillText('AMOUNT',46,-37);
+ /* the entries, appearing one at a time */
+ const N=Math.max(0,Math.min(5,Math.floor(rows)));
+ for(let i=0;i<N;i++){
+  const yy=-24+i*11;
+  c.fillStyle='rgba(74,49,66,.50)';
+  aRR(c,-44,yy-2.6,38-((i*7)%13),2.4,1);c.fill();
+  aRR(c,30-((i*5)%9),yy-2.6,16+((i*5)%9),2.4,1);c.fill();
+ }
+ if(total>0){
+  c.globalAlpha=a*total;
+  c.strokeStyle='rgba(74,49,66,.55)';c.lineWidth=1.1;
+  c.beginPath();c.moveTo(10,34);c.lineTo(46,34);c.stroke();
+  c.beginPath();c.moveTo(10,38);c.lineTo(46,38);c.stroke();
+  c.globalAlpha=a;
+ }
+ c.textAlign='start';
+ c.restore();
+}
+
+/* a desk lamp, and the cone it throws */
+function h7Lamp(c,x,y,s,a,on){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ if(on>0){
+  const g=c.createLinearGradient(0,-4,0,74);
+  g.addColorStop(0,'rgba(255,224,168,'+(0.34*on)+')');
+  g.addColorStop(1,'rgba(255,224,168,0)');
+  c.fillStyle=g;
+  c.beginPath();c.moveTo(-9,-2);c.lineTo(9,-2);c.lineTo(52,74);c.lineTo(-52,74);
+  c.closePath();c.fill();
+ }
+ c.strokeStyle='#5b5266';c.lineWidth=3;c.lineCap='round';
+ c.beginPath();c.moveTo(24,70);c.lineTo(20,26);c.lineTo(0,-4);c.stroke();
+ c.fillStyle='#6b6076';
+ c.beginPath();c.ellipse(24,71,13,3.6,0,0,7);c.fill();
+ c.fillStyle='#8a7c96';
+ c.beginPath();
+ c.moveTo(-13,-2);c.lineTo(13,-2);c.lineTo(8,-17);c.lineTo(-8,-17);
+ c.closePath();c.fill();
+ if(on>0){
+  c.globalAlpha=a*on;
+  c.fillStyle='#ffe0a8';
+  c.beginPath();c.ellipse(0,-2,13,3.4,0,0,7);c.fill();
+  c.globalAlpha=a;
+ }
+ c.restore();
+}
+
+/* a plain chair, seen from the side. the empty one is the point */
+function h7Chair(c,x,y,s,a,flip){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(flip?-s:s,s);
+ c.strokeStyle='#7d6f88';c.lineWidth=3.4;c.lineCap='round';
+ c.beginPath();c.moveTo(-14,0);c.lineTo(-14,-30);c.stroke();
+ c.beginPath();c.moveTo(-14,-30);c.lineTo(-6,-32);c.stroke();
+ c.fillStyle='#8a7c96';
+ aRR(c,-15,-4,30,5,2);c.fill();
+ c.strokeStyle='#7d6f88';
+ c.beginPath();c.moveTo(-11,1);c.lineTo(-13,22);c.stroke();
+ c.beginPath();c.moveTo(11,1);c.lineTo(13,22);c.stroke();
+ c.restore();
+}
+
+/* the Vegas sign, which says whatever it is told to say */
+function h7Sign(c,x,y,s,a,t,line){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ const bulb=.55+.45*Math.sin(t*3);
+ /* the pole */
+ c.strokeStyle='#7d7488';c.lineWidth=3.4;
+ c.beginPath();c.moveTo(-9,36);c.lineTo(-9,76);c.stroke();
+ c.beginPath();c.moveTo(9,36);c.lineTo(9,76);c.stroke();
+ /* the diamond. wider than the real one, because the real one does not
+    have to fit a name inside it. */
+ const TOP=-58, WAIST=-4, BOT=36, HW=52;
+ c.fillStyle='#fdf6ea';
+ c.beginPath();
+ c.moveTo(0,TOP);c.lineTo(HW,WAIST);c.lineTo(0,BOT);c.lineTo(-HW,WAIST);
+ c.closePath();c.fill();
+ c.strokeStyle='#c2607f';c.lineWidth=2;
+ c.beginPath();
+ c.moveTo(0,TOP+5);c.lineTo(HW-5,WAIST);c.lineTo(0,BOT-4);c.lineTo(-HW+5,WAIST);
+ c.closePath();c.stroke();
+ /* bulbs round the edge */
+ c.fillStyle='rgba(255,224,168,'+(0.55+0.45*bulb)+')';
+ for(let i=0;i<22;i++){
+  const k=i/22*6.283;
+  c.beginPath();c.arc(Math.cos(k)*(HW-10),WAIST+Math.sin(k)*40,1.9,0,7);c.fill();
+ }
+ /* how wide the diamond actually is at a given height -- every line is
+    measured against it, so a long name shrinks instead of hanging off */
+ const room=y2=>2*(y2<WAIST ? (HW-6)*(y2-TOP)/(WAIST-TOP)
+                             : (HW-6)*(BOT-y2)/(BOT-WAIST));
+ const fit=(txt,y2,px,font,col)=>{
+  c.fillStyle=col;c.textAlign='center';
+  let sz=px;
+  for(let i=0;i<14;i++){
+   c.font=font.replace('@',sz.toFixed(1));
+   if(c.measureText(txt).width<=room(y2)-4)break;
+   sz*=0.92;
+  }
+  c.fillText(txt,0,y2);
+ };
+ fit('WELCOME TO',-27,5.2,'600 @px Lora, Georgia, serif','#c2607f');
+ fit('FABULOUS',-17,9.4,'600 @px Playfair Display, Georgia, serif','#c2607f');
+ fit(line||'Zahabiya',0,10.4,'italic @px Lora, Georgia, serif','#4a3142');
+ fit('NEVADA',20,5.2,'600 @px Lora, Georgia, serif','#c2607f');
+ c.textAlign='start';
+ c.restore();
+}
+
+/* a row of lit towers, scrolling */
+function h7Strip(c,W,base,S,a,t){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;
+ const COLS=['#e8729a','#f0bd7c','#7fc7d9','#b58ad4','#f08a6a'];
+ for(let i=0;i<9;i++){
+  const w=S*(.055+((i*37)%7)/7*.05);
+  const h=S*(.16+((i*53)%11)/11*.30);
+  const x=((i*0.13 + t*0.012)%1.25-.12)*W;
+  c.fillStyle='rgba(38,26,48,.92)';
+  aRR(c,x,base-h,w,h,S*.006);c.fill();
+  /* windows */
+  c.fillStyle=COLS[i%COLS.length];
+  const rows=Math.max(2,Math.floor(h/(S*.030)));
+  for(let r=0;r<rows;r++)for(let q=0;q<2;q++){
+   const on=((i*7+r*3+q)%5)!==0;
+   if(!on)continue;
+   c.globalAlpha=a*(.35+.35*Math.sin(t*1.6+i+r));
+   c.fillRect(x+w*(.22+q*.40),base-h+S*.016+r*S*.030,w*.20,S*.012);
+  }
+  c.globalAlpha=a;
+ }
+ c.restore();
+}
+
+/* the fountain, going off because it always is */
+function h7Fountain(c,x,base,S,a,t,k){
+ if(a<=0||k<=0)return;
+ c.save();c.globalAlpha=a;
+ c.fillStyle='rgba(150,200,225,.30)';
+ c.beginPath();c.ellipse(x,base,S*.20,S*.026,0,0,7);c.fill();
+ c.strokeStyle='rgba(215,238,250,.75)';c.lineCap='round';
+ for(let i=0;i<9;i++){
+  const off=(i-4)/4;
+  const hgt=S*(.10+.16*k)*(1-Math.abs(off)*.55)*(0.82+0.18*Math.sin(t*2+i));
+  c.globalAlpha=a*(.75-Math.abs(off)*.3);
+  c.lineWidth=S*.007;
+  c.beginPath();
+  c.moveTo(x+off*S*.14,base);
+  c.quadraticCurveTo(x+off*S*.17,base-hgt,x+off*S*.21,base-hgt*.45);
+  c.stroke();
+ }
+ c.restore();
+}
+
+/* three reels, and what they land on */
+function h7Slot(c,x,y,s,a,spin,face){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle='#b5455a';
+ aRR(c,-38,-30,76,60,7);c.fill();
+ c.fillStyle='#8f2f44';
+ aRR(c,-38,18,76,12,5);c.fill();
+ for(let i=0;i<3;i++){
+  const rx=-24+i*24;
+  c.fillStyle='#fdf6ea';
+  aRR(c,rx-10,-20,20,30,3);c.fill();
+  c.fillStyle='#4a3142';
+  c.textAlign='center';c.font='13px Lora, Georgia, serif';
+  const ch=spin>0.02
+    ? ['7','♥','✦','7','♥'][Math.floor((spin*26+i*3))%5]
+    : (face||'♥');
+  c.save();
+  c.beginPath();aRR(c,rx-10,-20,20,30,3);c.clip();
+  c.fillText(ch,rx,-1+(spin>0.02?((spin*260+i*40)%30)-15:0));
+  c.restore();
+ }
+ c.textAlign='start';
+ c.restore();
+}
+
+/* rain running down a pane */
+function h7Rain(c,x,y,w,h,a,t,rng){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;
+ c.strokeStyle='rgba(200,225,240,.55)';c.lineCap='round';
+ for(let i=0;i<70;i++){
+  const r=((i*61)%97)/97, r2=((i*29)%17)/17;
+  const px=x+r*w;
+  const fall=((t*(.16+r2*.20)+r)%1);
+  const py=y+fall*h;
+  c.globalAlpha=a*(.30+.50*(1-Math.abs(fall-.5)*2));
+  c.lineWidth=1.2+r2*1.4;
+  c.beginPath();c.moveTo(px,py);c.lineTo(px-2.5,py+11+r2*14);c.stroke();
+ }
+ c.restore();
+}
+
+/* a little cup, seen from the side */
+function h7Cup(c,x,y,s,a,col){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+ c.fillStyle='#fbf3ea';
+ c.beginPath();
+ c.moveTo(-11,-11);c.lineTo(11,-11);c.lineTo(8,11);
+ c.quadraticCurveTo(0,14,-8,11);c.closePath();c.fill();
+ c.fillStyle=col||'#8a5a3a';
+ c.beginPath();c.ellipse(0,-11,11,3.2,0,0,7);c.fill();
+ c.strokeStyle='#fbf3ea';c.lineWidth=2.6;
+ c.beginPath();c.arc(12,-2,5,-1.2,1.2);c.stroke();
+ c.restore();
+}
+
+/* a small speech shape */
+function h7Bub(c,x,y,w,h,a,flip,col){
+ if(a<=0)return;
+ c.save();c.globalAlpha=a;c.translate(x,y);if(flip)c.scale(-1,1);
+ c.fillStyle=col||'#fdf6ea';
+ aRR(c,-w/2,-h/2,w,h,h*.34);c.fill();
+ c.beginPath();
+ c.moveTo(-w*.16,h/2-1);c.lineTo(-w*.30,h/2+h*.34);c.lineTo(-w*.02,h/2-1);
+ c.closePath();c.fill();
+ c.restore();
+}
+
+
+/* =====================================================================
+   the lines
+   ===================================================================== */
+
+/* ------------------------------------------------------------ astronaut */
+ASCENES.astronaut={
+ name:'Out of this world',grp:'Gifts · lines',dur:26,
+ blurb:'A pick-up line, delivered with a completely straight face.',
+ dark:true,solo:true,
+ cues:[[.03,.17],[.22,.38],[.43,.62],[.67,.80],[.85,2]],
+ def:{words:['A question.',
+             'Are you an astronaut?',
+             'Because you are out of this world.',
+             'That is it. That is the whole gift.',
+             'I will see myself out. \U0001F680']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){
+  A.bgA='#101a33';A.bgB='#2b2450';
+  A.stars=[];for(let i=0;i<54;i++)A.stars.push({x:R(),y:R(),r:.5+R()*1.5,tw:R()*6.3});
+ },
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H);
+  /* stars, all the way through */
+  A.stars.forEach(st=>{
+   c.globalAlpha=.30+.45*Math.abs(Math.sin(t*.5+st.tw));
+   c.fillStyle='#fff6e8';
+   c.beginPath();c.arc(st.x*W,st.y*H*.86,st.r,0,7);c.fill();
+  });
+  c.globalAlpha=1;
+  /* the curve of a planet, low */
+  const pl=aSeg(P,.02,.22);
+  if(pl>0){
+   c.globalAlpha=pl;
+   const g=c.createLinearGradient(0,H*.82,0,H);
+   g.addColorStop(0,'#3f6f9c');g.addColorStop(1,'#20406a');
+   c.fillStyle=g;
+   c.beginPath();c.ellipse(W*.5,H*1.24,W*.92,H*.42,0,0,7);c.fill();
+   c.globalAlpha=pl*.45;
+   c.fillStyle='#7fc7d9';
+   c.beginPath();c.ellipse(W*.5,H*1.235,W*.92,H*.42,0,Math.PI*1.04,Math.PI*1.96);c.fill();
+   c.globalAlpha=1;
+  }
+  /* and her, drifting past it */
+  const her=aEase(aSeg(P,.16,.44));
+  if(her>0){
+   h7Astro(c,aLerp(W*1.18,W*.56,her),
+           aLerp(H*.22,H*.44,her)+Math.sin(t*.5)*S*.012,
+           S*.0062,her,t);
+  }
+  /* him, much lower down, being extremely pleased with himself */
+  const him=aSeg(P,.62,.76);
+  if(him>0){
+   c.globalAlpha=him;
+   pdFig(c,W*.16,H*.80+Math.sin(t*.7)*S*.004,S*.0044,'m',{wave:true});
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){h7Astro(c,s*.52,s*.52,s*.0090,1,2)}
+};
+
+
+/* ---------------------------------------------------------------- water */
+ASCENES.water={
+ name:'Seventy percent water',grp:'Gifts · lines',dur:28,
+ blurb:'Biology gets most of it right. It does not get all of it right.',
+ light:true,solo:true,
+ cues:[[.03,.20],[.25,.41],[.46,.60],[.65,.82],[.87,2]],
+ def:{words:['Biology says a person is about 70% water.',
+             'Which leaves rather a lot unaccounted for.',
+             'So I checked mine.',
+             'One hundred percent yours. Every time I run it.',
+             'The water can take that up with me. \U0001F4A7']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#eef6fb';A.bgB='#f1d8e2'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.50;
+  /* it fills to seventy, sits there, then goes all the way and turns */
+  const toSeventy=aEase(aSeg(P,.04,.26));
+  const toAll=aEase(aSeg(P,.58,.78));
+  const fill=Math.max(toSeventy*.70,toAll);
+  const pink=aSeg(P,.60,.80);
+  const col=pink>0
+    ? 'rgb('+Math.round(aLerp(111,232,pink))+','+Math.round(aLerp(179,114,pink))+','
+      +Math.round(aLerp(216,154,pink))+')'
+    : '#6fb3d8';
+  h7Beaker(c,W*.5,mid,S*.0092,aEase(aSeg(P,.01,.14)),fill,col);
+  /* the number over it */
+  const num=aSeg(P,.10,.24);
+  if(num>0){
+   const pc=Math.round(aLerp(0,70,toSeventy)*(1-toAll)+aLerp(70,100,toAll)*toAll);
+   c.globalAlpha=num;
+   c.fillStyle=pink>.5?'#c2607f':'#4a6f8f';
+   c.textAlign='center';
+   c.font='600 '+(S*.105)+'px Playfair Display, Georgia, serif';
+   c.fillText(pc+'%',W*.5,mid-S*.40);
+   c.textAlign='start';c.globalAlpha=1;
+  }
+  /* a heart surfacing in it once it turns */
+  const hb=aSeg(P,.74,.90);
+  if(hb>0)n9Heart(c,W*.5,mid+S*.04-Math.sin(t*.8)*S*.008,S*.070*hb,hb*.85,'#ffffff');
+  const her=aSeg(P,.84,.96);
+  if(her>0){
+   c.globalAlpha=her;
+   pdFig(c,W*.84,mid+S*.40,S*.0044,'z',{flip:true});
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){h7Beaker(c,s*.5,s*.54,s*.0085,1,1,'#e8729a')}
+};
+
+
+/* ----------------------------------------------------------------- cute */
+ASCENES.cute={
+ name:'Copper and tellurium',grp:'Gifts · lines',dur:28,
+ blurb:'The worst one in here. He is not sorry about it.',
+ light:true,solo:true,
+ cues:[[.03,.18],[.23,.36],[.41,.60],[.65,.78],[.83,2]],
+ def:{words:['Are you made of copper and tellurium?',
+             'Copper is Cu. Tellurium is Te.',
+             'Because you are Cu-Te.',
+             'I am so sorry.',
+             'No I am not. \U0001F9EA']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#f7f1e4';A.bgB='#eed3dd'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.40;
+  const a1=aEase(aSeg(P,.02,.16)), a2=aEase(aSeg(P,.16,.30));
+  /* the two tiles, apart, then together */
+  const join=aEase(aSeg(P,.38,.56));
+  const gap=aLerp(S*.30,S*.180,join);
+  h7Tile(c,W*.5-gap,mid,S*.0070,a1,29,'Cu','Copper','#f6dfc8');
+  h7Tile(c,W*.5+gap,mid,S*.0070,a2,52,'Te','Tellurium','#dfeadd');
+  /* and what they spell when they touch */
+  const said=aSeg(P,.56,.68);
+  if(said>0){
+   c.globalAlpha=said;
+   c.fillStyle='#c2607f';c.textAlign='center';
+   c.font='600 '+(S*.115)+'px Playfair Display, Georgia, serif';
+   c.fillText('CuTe',W*.5,mid+S*.30);
+   c.textAlign='start';c.globalAlpha=1;
+  }
+  const hb=aSeg(P,.64,.78);
+  if(hb>0)n9Heart(c,W*.5,mid-S*.24-hb*S*.03,S*.050*hb,hb,'#ff9fbb');
+  /* her, unimpressed and laughing anyway */
+  const her=aSeg(P,.80,.94);
+  if(her>0){
+   c.globalAlpha=her;
+   pdFig(c,W*.20,mid+S*.54,S*.0046,'z',{});
+   pdFig(c,W*.80,mid+S*.54,S*.0044,'m',{flip:true,wave:true});
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){
+  h7Tile(c,s*.34,s*.50,s*.0088,1,29,'Cu','Copper','#f6dfc8');
+  h7Tile(c,s*.66,s*.50,s*.0088,1,52,'Te','Tellurium','#dfeadd');
+ }
+};
+
+
+/* --------------------------------------------------------------- ledger */
+ASCENES.ledger={
+ name:'You have no due date',grp:'Gifts · lines',dur:30,
+ blurb:'The accounts joke — everything he files has a deadline and has to balance. She does neither.',
+ light:true,solo:true,
+ cues:[[.03,.18],[.23,.39],[.44,.56],[.61,.78],[.83,2]],
+ def:{words:['Everything I file has a due date on it.',
+             'Every column has to balance by the end of the day.',
+             'Then there is you.',
+             'No deadline. Does not balance. Never being filed.',
+             'Best entry on the books. \U0001F4D2']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fdf6e8';A.bgB='#ecd6dc'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.42;
+  const a1=aEase(aSeg(P,.01,.14));
+  h7Ledger(c,W*.5,mid,S*.0074,a1,aSeg(P,.08,.40)*5.4,aSeg(P,.40,.50));
+  /* the row that refuses */
+  const odd=aSeg(P,.54,.66);
+  if(odd>0){
+   const ly=mid+S*.0074*30;
+   c.globalAlpha=odd;
+   c.fillStyle='rgba(74,49,66,.50)';
+   aRR(c,W*.5-S*.0074*44,ly-S*.010,S*.0074*30,S*.0074*2.4,1);c.fill();
+   c.globalAlpha=1;
+   n9Heart(c,W*.5+S*.0074*34,ly-S*.006,S*.030*odd,odd,'#e8729a');
+  }
+  /* the red stamp that does not get used */
+  const st=aSeg(P,.70,.84);
+  if(st>0){
+   c.save();c.globalAlpha=st*.85;
+   c.translate(W*.5,mid+S*.44);c.rotate(-.13);
+   c.strokeStyle='#c2607f';c.lineWidth=2.2;
+   aRR(c,-S*.15,-S*.030,S*.30,S*.060,S*.008);c.stroke();
+   c.fillStyle='#c2607f';c.textAlign='center';
+   c.font='600 '+(S*.030)+'px Lora, Georgia, serif';
+   c.fillText('NOT DUE',0,S*.010);
+   c.textAlign='start';c.restore();
+  }
+ },
+ mark(c,s){h7Ledger(c,s*.5,s*.52,s*.0082,1,5,1)}
+};
+
+
+/* ----------------------------------------------------------------- type */
+ASCENES.type={
+ name:'Exactly my type',grp:'Gifts · lines',dur:26,
+ blurb:'He looked for a better one for twenty minutes. This was the best one.',
+ dark:true,solo:true,
+ cues:[[.03,.19],[.24,.44],[.49,.64],[.69,.82],[.87,2]],
+ def:{words:['Are you a keyboard?',
+             'Because you are exactly my type.',
+             'I looked for a better one for twenty minutes.',
+             'This was the best one. I want that on record.',
+             'Twenty minutes. ⌨️']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#1b1526';A.bgB='#3a2440'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), mid=H*.54;
+  /* her name lights up across it, one key at a time */
+  const NAME='ZAHABIYA';
+  const n=Math.floor(aSeg(P,.26,.62)*NAME.length+0.001);
+  const lit=NAME.slice(0,Math.max(0,Math.min(NAME.length,n)));
+  h7Keys(c,W*.5,mid,S*.0072,aEase(aSeg(P,.01,.16)),lit,t);
+  /* what it has typed, on the line above */
+  const shown=aSeg(P,.28,.40);
+  if(shown>0&&lit){
+   c.globalAlpha=shown;
+   c.fillStyle='#ffe4f0';c.textAlign='center';
+   c.font='600 '+(S*.062)+'px Playfair Display, Georgia, serif';
+   c.fillText(lit,W*.5,mid-S*.22);
+   /* the cursor */
+   if(Math.sin(t*4)>0){
+    const w=c.measureText(lit).width;
+    c.fillRect(W*.5+w/2+S*.012,mid-S*.275,S*.010,S*.052);
+   }
+   c.textAlign='start';c.globalAlpha=1;
+  }
+  const hb=aSeg(P,.72,.88);
+  if(hb>0)n9Heart(c,W*.80,mid-S*.34-hb*S*.03,S*.052*hb,hb,'#ff9fbb');
+ },
+ mark(c,s){h7Keys(c,s*.5,s*.54,s*.0068,1,'ZAHB',2)}
+};
+
+
+/* =====================================================================
+   the afternoons
+   ===================================================================== */
+
+/* ---------------------------------------------------------------- vegas */
+ASCENES.vegas={
+ name:'Vegas, tonight',grp:'Gifts · to do',dur:48,
+ blurb:'The one with the lights, not the one with the flights. It starts now.',
+ dark:true,solo:true,
+ cues:[[.02,.13],[.17,.32],[.36,.50],[.54,.66],[.70,.84],[.88,2]],
+ def:{words:['Vegas.',
+             'Not the one with the flights. That one is somebody else’s problem.',
+             'This one starts now, and the lights are already on.',
+             'You are wearing the good shoes. I am losing money.',
+             'The fountain goes off every fifteen minutes and we watch it every time.',
+             'Stay as long as you like. \U0001F3B0'],
+  sign:'Zahabiya'},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'},
+         {f:'sign',l:'What the big sign says',h:'One short line.'}],
+ init(A,W,H,R){
+  A.bgA='#140f26';A.bgB='#3b1f44';
+  A.stars=[];for(let i=0;i<30;i++)A.stars.push({x:R(),y:R()*.5,r:.5+R(),tw:R()*6.3});
+ },
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), base=H*.72;
+  A.stars.forEach(st=>{
+   c.globalAlpha=.20+.35*Math.abs(Math.sin(t*.5+st.tw));
+   c.fillStyle='#fff6e8';
+   c.beginPath();c.arc(st.x*W,st.y*H,st.r,0,7);c.fill();
+  });
+  c.globalAlpha=1;
+  /* the strip, behind everything */
+  h7Strip(c,W,base,S,aEase(aSeg(P,.10,.30))*(1-aSeg(P,.94,1)*.3),t);
+  /* the road */
+  const rd=aSeg(P,.04,.18);
+  if(rd>0){
+   c.globalAlpha=rd;
+   c.fillStyle='rgba(30,22,40,.9)';
+   c.fillRect(0,base,W,H-base);
+   c.strokeStyle='rgba(255,224,168,.30)';c.lineWidth=S*.006;
+   c.setLineDash([S*.05,S*.05]);c.lineDashOffset=-t*S*.10;
+   c.beginPath();c.moveTo(0,base+S*.10);c.lineTo(W,base+S*.10);c.stroke();
+   c.setLineDash([]);
+   c.globalAlpha=1;
+  }
+  /* the sign, arriving first because it is the announcement */
+  const sg=aEase(aSeg(P,.02,.16))*(1-aSeg(P,.40,.50));
+  if(sg>0)h7Sign(c,W*.5,H*.34,S*.0070*aLerp(.8,1,aEase(aSeg(P,.02,.16))),sg,t,
+                 AT(A.key||'vegas','sign')||'Zahabiya');
+  /* the fountain */
+  h7Fountain(c,W*.5,base+S*.02,S,aSeg(P,.68,.76)*(1-aSeg(P,.94,1)),t,
+             .5+.5*Math.sin(t*.7));
+  /* the slot machine, on the line where he is losing money */
+  const sl=aEase(aSeg(P,.50,.58))*(1-aSeg(P,.66,.72));
+  if(sl>0)h7Slot(c,W*.70,H*.44,S*.0072,sl,aSeg(P,.50,.62)<.85?1:0,'♥');
+  /* the two of them, walking it */
+  const walk=aEase(aSeg(P,.76,.90));
+  if(walk>0){
+   const wx=aLerp(W*.04,W*.34,walk);
+   c.globalAlpha=walk;
+   pdFig(c,wx,base+S*.055+Math.sin(t*1.6)*S*.004,S*.0048,'m',{});
+   pdFig(c,wx+S*.10,base+S*.055+Math.sin(t*1.6+.7)*S*.004,S*.0050,'z',{});
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){h7Sign(c,s*.5,s*.46,s*.0064,1,1,'ours')}
+};
+
+
+/* ------------------------------------------------------------ studyroom */
+ASCENES.studyroom={
+ name:'For an exam day — the quiet one',grp:'Gifts · to do',dur:34,
+ blurb:'34 seconds, no buttons, nothing to do. A desk, a lamp left on, and the chair next to hers. Already on days 23, 26 and 28.',
+ dark:true,solo:true,
+ cues:[[.04,.21],[.26,.44],[.49,.66],[.71,.85],[.89,2]],
+ def:{words:['Today is one of the four.',
+             'Nothing is being asked of you in here. Read it and go back.',
+             'The lamp stays on. The chair beside you stays where it is.',
+             'You already know all of it. You have known it for weeks.',
+             'Go and get your number. \U0001F4D8']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#171227';A.bgB='#2e2340'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), desk=H*.60;
+  /* the desk */
+  const a1=aEase(aSeg(P,.01,.16));
+  if(a1>0){
+   c.globalAlpha=a1;
+   c.fillStyle='#4a3a4e';
+   aRR(c,W*.04,desk,W*.92,S*.030,S*.008);c.fill();
+   c.fillStyle='#3b2f40';
+   aRR(c,W*.10,desk+S*.030,S*.022,S*.30,S*.006);c.fill();
+   aRR(c,W*.84,desk+S*.030,S*.022,S*.30,S*.006);c.fill();
+   c.globalAlpha=1;
+  }
+  /* the lamp, and the light it makes */
+  h7Lamp(c,W*.90,desk-S*.20,S*.0052,a1,aEase(aSeg(P,.06,.24)));
+  /* books, open and stacked */
+  const bk=aEase(aSeg(P,.14,.32));
+  if(bk>0){
+   c.globalAlpha=bk;
+   c.fillStyle='#f3e8dc';
+   c.save();c.translate(W*.54,desk-S*.014);c.rotate(-.04);
+   aRR(c,-S*.13,-S*.020,S*.26,S*.026,S*.004);c.fill();
+   c.strokeStyle='rgba(120,95,120,.35)';c.lineWidth=1.2;
+   c.beginPath();c.moveTo(0,-S*.019);c.lineTo(0,S*.006);c.stroke();
+   c.restore();
+   c.fillStyle='#7c5b8f';
+   aRR(c,W*.06,desk-S*.030,S*.13,S*.014,S*.003);c.fill();
+   c.fillStyle='#3f6f7a';
+   aRR(c,W*.07,desk-S*.044,S*.12,S*.014,S*.003);c.fill();
+   c.globalAlpha=1;
+  }
+  /* her at it, and the chair beside her that nobody is using tonight */
+  const her=aEase(aSeg(P,.26,.44));
+  if(her>0){
+   c.globalAlpha=her;
+   pdFig(c,W*.28,desk-S*.052,S*.0048,'z',{flat:true});
+   c.globalAlpha=1;
+  }
+  const ch=aEase(aSeg(P,.48,.66));
+  if(ch>0)h7Chair(c,W*.64,desk+S*.005,S*.0050,ch*.9,true);
+  /* a cup put down beside her, quietly */
+  const cup=aEase(aSeg(P,.62,.76));
+  if(cup>0)h7Cup(c,W*.42,desk-S*.042,S*.0038,cup);
+  if(cup>.4)gSteam(c,W*.42,desk-S*.084,S*.0034,(cup-.4)*1.4,t,2,'#b4a6b6');
+ },
+ mark(c,s){h7Lamp(c,s*.62,s*.30,s*.0058,1,1);h7Chair(c,s*.32,s*.74,s*.0060,1,false)}
+};
+
+
+/* ----------------------------------------------------------------- rain */
+ASCENES.downpour={
+ name:'The good kind of rain',grp:'Gifts · to do',dur:34,
+ blurb:'Two cups, one doorway, and nobody going anywhere.',
+ dark:true,solo:true,
+ cues:[[.03,.19],[.24,.41],[.46,.62],[.67,.80],[.85,2]],
+ def:{words:['It is raining.',
+             'Not the useful kind. The kind you stand in a doorway for.',
+             'Two cups. One step back from the edge so we do not get soaked.',
+             'We get soaked.',
+             'Nobody is going anywhere. ☔']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#1a2233';A.bgB='#33283e'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), sill=H*.66;
+  /* the doorway, warm, with the two of them inside it */
+  const a1=aEase(aSeg(P,.01,.16));
+  if(a1>0){
+   c.globalAlpha=a1;
+   const g=c.createLinearGradient(0,H*.18,0,sill);
+   g.addColorStop(0,'rgba(255,206,142,.42)');
+   g.addColorStop(1,'rgba(255,190,140,.14)');
+   c.fillStyle=g;
+   aRR(c,W*.16,H*.18,W*.68,sill-H*.18,S*.030);c.fill();
+   c.strokeStyle='rgba(250,214,178,.72)';c.lineWidth=S*.012;
+   aRR(c,W*.16,H*.18,W*.68,sill-H*.18,S*.030);c.stroke();
+   c.globalAlpha=1;
+  }
+  /* the rain, outside it and in front of it */
+  const rn=aSeg(P,.04,.22);
+  h7Rain(c,0,0,W,H*.98,rn,t,A.rng);
+  /* the sill, and the puddle it is making */
+  const a2=aSeg(P,.08,.24);
+  if(a2>0){
+   c.globalAlpha=a2;
+   c.fillStyle='#4a3a4e';
+   aRR(c,W*.10,sill,W*.80,S*.024,S*.006);c.fill();
+   c.globalAlpha=a2*.30;
+   c.fillStyle='#8fbcd8';
+   c.beginPath();c.ellipse(W*.5,H*.90,W*.40*aSeg(P,.20,.70),S*.030,0,0,7);c.fill();
+   c.globalAlpha=1;
+  }
+  /* two of them, standing in it */
+  const two=aEase(aSeg(P,.26,.46));
+  if(two>0){
+   c.globalAlpha=two;
+   pdFig(c,W*.38,sill-S*.008+Math.sin(t*.6)*S*.003,S*.0050,'m',{});
+   pdFig(c,W*.60,sill-S*.008+Math.sin(t*.6+1)*S*.003,S*.0052,'z',{flip:true});
+   c.globalAlpha=1;
+  }
+  /* the cups */
+  const cup=aEase(aSeg(P,.44,.60));
+  if(cup>0){
+   h7Cup(c,W*.24,sill-S*.014,S*.0036,cup);
+   h7Cup(c,W*.76,sill-S*.014,S*.0036,cup);
+   gSteam(c,W*.24,sill-S*.052,S*.0032,cup*.8,t,2,'#a8b6c4');
+   gSteam(c,W*.76,sill-S*.052,S*.0032,cup*.8,t+1,2,'#a8b6c4');
+  }
+  const hb=aSeg(P,.78,.92);
+  if(hb>0)n9Heart(c,W*.5,sill-S*.24-hb*S*.03,S*.046*hb,hb*.8,'#ff9fbb');
+ },
+ mark(c,s){h7Cup(c,s*.36,s*.62,s*.0072,1);h7Cup(c,s*.64,s*.62,s*.0072,1)}
+};
+
+
+/* ---------------------------------------------------------------- agree */
+ASCENES.agree={
+ name:'One hour where I just agree',grp:'Gifts · to do',dur:32,
+ blurb:'No "but". No "to be fair". No other side of it.',
+ light:true,solo:true,
+ cues:[[.03,.18],[.23,.40],[.45,.60],[.65,.80],[.85,2]],
+ def:{words:['One hour. Any hour you like.',
+             'You talk. About anything. About anyone.',
+             'And I agree with every word of it.',
+             'No “but”. No “to be fair”. No other side.',
+             'You are right. About that as well. \U0001F4AC']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){A.bgA='#fff3ea';A.bgB='#ecd2e0'},
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), floor=H*.82;
+  /* the two of them along the bottom, so the conversation has room to
+     stack above them instead of landing on his face */
+  const a1=aEase(aSeg(P,.01,.16));
+  if(a1>0){
+   c.globalAlpha=a1;
+   pdFig(c,W*.20,floor+Math.sin(t*.7)*S*.003,S*.0052,'z',{});
+   /* his head bobs, because that is the entire gift */
+   const nod=Math.sin(t*2.2)*S*.007*aSeg(P,.34,.50);
+   pdFig(c,W*.80,floor+nod,S*.0050,'m',{flip:true});
+   c.globalAlpha=1;
+  }
+  /* the exchange, alternating up the frame: she says a lot, he says one
+     word, and the one word is always the same word */
+  const TOP=H*.16, STEP=S*.118;
+  const SAY=[
+   [0,.18,'her'],[1,.30,'him'],[2,.40,'her'],
+   [3,.50,'him'],[4,.60,'her'],[5,.70,'him']
+  ];
+  const YES=['right.','exactly.','no, you\u2019re right.'];
+  let hers=0, his=0;
+  SAY.forEach(([row,at,who])=>{
+   const k=aEase(aSeg(P,at,at+.08))*(1-aSeg(P,.94,1));
+   if(k<=0)return;
+   const y=TOP+row*STEP;
+   if(who==='her'){
+    const w=S*(.42-hers*.05);
+    h7Bub(c,W*.40,y,w,S*.070,k,false,'#fdf6ea');
+    /* two grey lines inside it: she is saying rather a lot */
+    c.globalAlpha=k*.50;c.fillStyle='#8a5f78';
+    for(let r=0;r<2;r++){
+     aRR(c,W*.40-w*.40,y-S*.016+r*S*.022,w*(.78-r*.24),S*.009,S*.004);c.fill();
+    }
+    c.globalAlpha=1;
+    hers++;
+   }else{
+    const w=S*.32;
+    h7Bub(c,W*.63,y,w,S*.058,k,true,'#e3d7ef');
+    c.globalAlpha=k;
+    c.fillStyle='#5c4a6b';c.textAlign='center';
+    c.font='italic '+(S*.030)+'px Lora, Georgia, serif';
+    c.fillText(YES[his%YES.length],W*.63,y+S*.010);
+    c.textAlign='start';c.globalAlpha=1;
+    his++;
+   }
+  });
+ },
+ mark(c,s){
+  h7Bub(c,s*.38,s*.42,s*.46,s*.16,1,false,'#fdf6ea');
+  h7Bub(c,s*.62,s*.66,s*.40,s*.14,1,true,'#e8dff0');
+ }
+};
+
+
+/* ---------------------------------------------------------------- drive */
+ASCENES.drive={
+ name:'A ride with nowhere to be',grp:'Gifts · to do',dur:36,
+ blurb:'The same scooter, no destination, and the long way round on purpose.',
+ dark:true,solo:true,
+ cues:[[.03,.19],[.24,.40],[.45,.62],[.67,.81],[.86,2]],
+ def:{words:['The scooter. Late. No reason.',
+             'I am not telling you where we are going, because there is nowhere.',
+             'Every turn is the long way. That is the entire plan.',
+             'You can stop holding on whenever you like. You never do.',
+             'We go until you say. \U0001F6F5']},
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+ init(A,W,H,R){
+  A.bgA='#171b31';A.bgB='#3a2742';
+  A.lamp=[];for(let i=0;i<6;i++)A.lamp.push({x:i/6});
+ },
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), road=H*.70;
+  const R9=ASCENES.ride;            /* same scooter, same road, no destination */
+  /* the road */
+  const a1=aSeg(P,.01,.14);
+  if(a1>0){
+   c.globalAlpha=a1;
+   c.fillStyle='rgba(26,20,36,.92)';
+   c.fillRect(0,road,W,H-road);
+   c.strokeStyle='rgba(255,224,168,.26)';c.lineWidth=S*.005;
+   c.setLineDash([S*.055,S*.055]);c.lineDashOffset=-t*S*.16;
+   c.beginPath();c.moveTo(0,road+S*.13);c.lineTo(W,road+S*.13);c.stroke();
+   c.setLineDash([]);
+   c.globalAlpha=1;
+  }
+  /* streetlights going past, which is how you know it is moving */
+  const lp=aSeg(P,.06,.20);
+  if(lp>0)A.lamp.forEach((L,i)=>{
+   const x=((L.x + t*0.035)%1.15-.08)*W;
+   c.globalAlpha=lp*.7;
+   c.strokeStyle='#5f5470';c.lineWidth=S*.011;c.lineCap='round';
+   c.beginPath();c.moveTo(x,road);c.lineTo(x,road-S*.56);c.stroke();
+   c.beginPath();c.moveTo(x,road-S*.56);c.lineTo(x+S*.050,road-S*.585);c.stroke();
+   c.fillStyle='rgba(255,224,168,.75)';
+   c.beginPath();c.arc(x+S*.054,road-S*.578,S*.019,0,7);c.fill();
+   c.globalAlpha=lp*.14;
+   c.beginPath();c.arc(x+S*.054,road-S*.578,S*.075,0,7);c.fill();
+   c.globalAlpha=1;
+  });
+  /* a signpost whose arms say nothing, because that is the joke */
+  const sg=aSeg(P,.30,.42)*(1-aSeg(P,.58,.68));
+  if(sg>0){
+   const sx=W*.16;
+   c.globalAlpha=sg;
+   c.strokeStyle='#6b6076';c.lineWidth=S*.011;
+   c.beginPath();c.moveTo(sx,road-S*.01);c.lineTo(sx,road-S*.34);c.stroke();
+   ['','',''].forEach((_,i)=>{
+    c.fillStyle='rgba(250,242,232,.62)';
+    aRR(c,sx-(i%2?S*.16:0),road-S*.325+i*S*.052,S*.16,S*.038,S*.005);c.fill();
+   });
+   c.globalAlpha=1;
+  }
+  /* and the two of them on it */
+  const on=aEase(aSeg(P,.12,.30));
+  if(on>0&&R9&&R9.scoot){
+   const ss=S*.0078, sx=W*.58;
+   const by=road-S*.012;
+   c.globalAlpha=on;
+   R9.scoot(c,sx,by,ss,t,true,true);
+   const rr=S*.0058;
+   R9.rider(c,sx-7*ss,by-19*ss-23*rr,rr,'m',t,false);
+   R9.rider(c,sx+9*ss,by-19*ss-23*rr,rr,'z',t,true);
+   c.globalAlpha=1;
+  }
+ },
+ mark(c,s){
+  const R9=ASCENES.ride;
+  if(R9&&R9.scoot)R9.scoot(c,s*.5,s*.66,s*.0120,0,false,true);
  }
 };
 

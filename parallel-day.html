@@ -1,0 +1,3121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>The day that never happened</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;1,400&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#f3e7ef;--ink2:#bda8bb;--line:rgba(255,255,255,.14)}
+*{box-sizing:border-box}
+/* a display: rule beats the hidden attribute, and an invisible overlay that
+   still eats taps is the worst kind of bug — this has bitten twice */
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:#000;color:var(--ink);
+ font:400 16px/1.6 'Lora',Georgia,serif;-webkit-font-smoothing:antialiased}
+
+/* the whole screen is the thing she sees — nothing else */
+#stagebox{position:fixed;inset:0}
+#pcv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#pgarden{position:absolute;left:0;right:0;bottom:0;height:88px;width:100%;
+ pointer-events:none;opacity:.9}
+
+/* the app's own header, drained */
+.chrome{position:absolute;left:0;right:0;
+ top:calc(env(safe-area-inset-top,0px));
+ display:flex;align-items:center;justify-content:space-between;
+ padding:16px 20px;pointer-events:none;transition:opacity .6s}
+#ptitle{font-family:'Playfair Display',serif;font-size:15px}
+#pclock{font:500 12.5px/1 'IBM Plex Mono',ui-monospace,monospace;color:var(--ink2);
+ letter-spacing:.06em;font-variant-numeric:tabular-nums}
+body[data-dead="0"] #pclock{color:#ffd9e8}
+
+/* what she taps during the opening */
+.choice{position:absolute;left:0;right:0;bottom:16%;
+ display:flex;flex-direction:column;gap:11px;align-items:center;padding-inline:26px}
+.choice button{width:100%;max-width:300px;border:1px solid rgba(255,255,255,.2);
+ background:rgba(255,255,255,.08);color:var(--ink);
+ font:500 15.5px/1 'Lora',serif;padding:14px 18px;border-radius:999px;cursor:pointer}
+.choice button.go{background:#d4467c;border-color:#d4467c;color:#fff}
+.choice button:active{transform:scale(.98)}
+
+/* the "are you sure" note */
+.ask{position:fixed;inset:0;background:rgba(6,4,9,.82);backdrop-filter:blur(3px);
+ display:flex;align-items:center;justify-content:center;padding:22px;z-index:30}
+.askbox{background:#241a2e;border:1px solid rgba(255,255,255,.14);border-radius:18px;
+ padding:22px 22px 18px;max-width:340px}
+.askhead{font-family:'Playfair Display',serif;font-size:19px;margin:0 0 10px}
+.askbox p{margin:0 0 11px;font-size:15px;line-height:1.55;color:#d8c6d4}
+.askrow{display:flex;flex-direction:column;gap:9px;margin-top:16px}
+.askrow button{width:100%;border:1px solid #d4467c;background:#d4467c;color:#fff;
+ font:500 15px/1 'Lora',serif;padding:13px 18px;border-radius:999px;cursor:pointer}
+.askrow button.ghost{background:transparent;border-color:rgba(255,255,255,.18);color:#d8c6d4}
+
+/* a quiet strip of bench controls that can be got rid of entirely */
+.bench{position:fixed;left:0;right:0;
+ bottom:calc(env(safe-area-inset-bottom,0px));
+ display:flex;gap:7px;align-items:center;justify-content:center;flex-wrap:wrap;
+ padding:9px 12px;background:rgba(8,5,12,.72);backdrop-filter:blur(6px);z-index:20;
+ transition:transform .35s,opacity .35s}
+body[data-bench="0"] .bench{transform:translateY(120%);opacity:0;pointer-events:none}
+.bench button{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);
+ color:var(--ink);font:500 12.5px/1 'Lora',serif;padding:9px 13px;border-radius:999px;cursor:pointer}
+.bench #pnext{background:#d4467c;border-color:#d4467c;color:#fff}
+#pwhere{flex:1 1 100%;text-align:center;font:500 10.5px/1.4 'IBM Plex Mono',ui-monospace,monospace;
+ color:var(--ink2);letter-spacing:.06em;text-transform:uppercase}
+#pshow{position:fixed;right:10px;
+ bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:21;
+ border:1px solid rgba(255,255,255,.16);background:rgba(8,5,12,.7);color:var(--ink2);
+ font:500 11px/1 'Lora',serif;padding:9px 12px;border-radius:999px;cursor:pointer}
+body[data-bench="1"] #pshow{display:none}
+</style>
+</head>
+<body data-dead="1" data-bench="1">
+
+<div id="stagebox">
+  <canvas id="pcv"></canvas>
+  <canvas id="pgarden"></canvas>
+  <div class="chrome">
+    <span id="ptitle">30 days · for Zahabiya</span>
+    <span id="pclock">27 days · 4 hrs · 11 min</span>
+  </div>
+  <div class="choice" id="pchoice" hidden>
+    <button class="go" id="pYes">Show me</button>
+    <button id="pNo">I don't want to see</button>
+  </div>
+</div>
+
+<div class="ask" id="pask" hidden>
+  <div class="askbox">
+    <p class="askhead">You want to stop.</p>
+    <p>That's completely fine. I'd rather you were alright than that you saw all of it.</p>
+    <p>It doesn't skip anything — it takes you straight to the good part, which is the part I actually wanted you to have.</p>
+    <div class="askrow">
+      <button id="paskGo">Take me to the end</button>
+      <button id="paskStay" class="ghost">I'll keep going</button>
+    </div>
+  </div>
+</div>
+
+<div class="bench">
+  <span id="pwhere"></span>
+  <button id="pnext">next →</button>
+  <button id="pstop" hidden>I want to stop</button>
+  <button id="prestart">restart</button>
+  <button id="phide">hide this</button>
+</div>
+<button id="pshow">bench</button>
+
+<script>
+(()=>{
+'use strict';
+
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>[...(r||document).querySelectorAll(s)];
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+let CLOCK=null;
+const now=()=>CLOCK?new Date(CLOCK):new Date();
+const fmt=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+const dateOf=d=>new Date(2026,8,17+d);
+const ASCENES={}; let ATXT={};
+let DAYS=Array.from({length:30},(_,i)=>({a:'',t:'',m:'',n:''}));
+let S={done:{},unlocked:{},marks:{},reply:{}};
+const save=()=>{};
+let mode='day',cleanup=null;
+const sparkle=()=>{};
+const GARDEN={highlight(){},frontPoint(){return null}};
+const AUDIO={setMode(){},fx(){},wake(){}};
+let STAGE=null;
+function show(html){STAGE.innerHTML='';const w=el('div','view',html);STAGE.appendChild(w);return w}
+const openEditor=()=>{};
+function animView(){}
+
+/* ================= the thirty seconds before the note =================
+   One engine, many scenes. A scene is data: how it draws, how long it runs,
+   what words float over it, and the one small mark it leaves behind on the
+   mural she never sees until the last day.                                */
+
+/* ---- what time is it, and what colour is that ---- */
+const APAL={
+ morning:{a:'#ffe9d6',b:'#ffd6e6',ink:'#5c3b4d',glow:'#ffb48c',star:.10,label:'morning'},
+ day    :{a:'#e8f1ff',b:'#ffe6f1',ink:'#4b3a54',glow:'#ffd394',star:.04,label:'afternoon'},
+ dusk   :{a:'#ff9f7a',b:'#7d5aa8',ink:'#fff2f8',glow:'#ffc98f',star:.40,label:'dusk'},
+ evening:{a:'#3a2a5e',b:'#7a4a78',ink:'#ffeaf4',glow:'#ffc07a',star:.75,label:'evening'},
+ late   :{a:'#141029',b:'#2e1f46',ink:'#ffe4f0',glow:'#9fb8ff',star:1,  label:'late'}
+};
+function todKey(){
+ const h=now().getHours();
+ if(h>=5&&h<11)return 'morning';
+ if(h>=11&&h<16)return 'day';
+ if(h>=16&&h<19)return 'dusk';
+ if(h>=19&&h<23)return 'evening';
+ return 'late';
+}
+function apal(){const p=APAL[todKey()]||APAL.evening;return Object.assign({dark:p.star>.35},p)}
+
+/* ---- small shared maths ---- */
+const aEase=v=>v<=0?0:v>=1?1:v*v*(3-2*v);
+const aSeg=(v,a,b)=>aEase((v-a)/(b-a));
+const aLerp=(a,b,t)=>a+(b-a)*t;
+function aMix(c1,c2,t){
+ const p=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+ const[a,b]=[p(c1),p(c2)];
+ return`rgb(${a.map((v,i)=>Math.round(aLerp(v,b[i],t))).join(',')})`;
+}
+/* a deterministic little random, so a day always looks the same to her */
+function aRng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;return s/233280}}
+
+/* ---- sampling points out of a shape, used by several scenes ---- */
+const _shapeCache={};
+function shapePoints(text,n,w,h){
+ const key=text+'|'+n+'|'+Math.round(w)+'x'+Math.round(h);
+ if(_shapeCache[key])return _shapeCache[key];
+ const c=document.createElement('canvas');
+ c.width=Math.max(8,Math.round(w));c.height=Math.max(8,Math.round(h));
+ const x=c.getContext('2d',{willReadFrequently:true});
+ let size=Math.min(c.width,c.height)*.92;
+ x.fillStyle='#000';x.textAlign='center';x.textBaseline='middle';
+ x.font=`700 ${size}px "Playfair Display",Georgia,serif`;
+ /* shrink until it fits the box */
+ for(let i=0;i<6&&x.measureText(text).width>c.width*.95;i++){
+  size*=c.width*.95/x.measureText(text).width;
+  x.font=`700 ${size}px "Playfair Display",Georgia,serif`;
+ }
+ x.fillText(text,c.width/2,c.height/2);
+ let img;try{img=x.getImageData(0,0,c.width,c.height).data}catch(e){return _shapeCache[key]=[]}
+ const hits=[];
+ for(let py=0;py<c.height;py+=2)for(let px=0;px<c.width;px+=2)
+  if(img[(py*c.width+px)*4+3]>128)hits.push([px,py]);
+ const out=[];
+ if(!hits.length)return _shapeCache[key]=[];
+ for(let i=0;i<n;i++)out.push(hits[Math.floor(i*hits.length/n)]);
+ /* shuffle deterministically so they don't fill top-to-bottom */
+ const r=aRng(text.length+n);
+ for(let i=out.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[out[i],out[j]]=[out[j],out[i]]}
+ return _shapeCache[key]=out.map(([px,py])=>({x:px,y:py}));
+}
+
+/* ================= the scenes ================= */
+/* ASCENES and ATXT are declared at the very top of the app, because
+   applyContent() reads them at load. Each scene is:
+     {name,grp,blurb,dur,def,fields,init,draw,mark}
+   init(A,W,H,R)         — build state on A, R is the seeded random
+   draw(A,c,W,H,t,P,pal) — t seconds, P is 0..1 through the scene
+   mark(c,s,R)           — the keepsake, in a box of size s, origin 0,0 */
+
+function AT(k,f){
+ const o=ATXT[k]&&typeof ATXT[k][f]==='string'?ATXT[k][f].trim():'';
+ if(o)return o;
+ const d=((ASCENES[k]||{}).def||{})[f];
+ return Array.isArray(d)?d.join('\n'):(d==null?'':String(d));
+}
+function AL(k,f){return AT(k,f).split('\n').map(s=>s.trim()).filter(Boolean)}
+/* the lines that float over a scene */
+const aWords=k=>AL(k,'words');
+
+/* When each line arrives, and when it leaves.
+
+   A scene's cue can be a single number (arrive here, stay until the next
+   line) or a pair [arrive, leave]. The pair is the one that matters: a beat's
+   last line has to clear the screen when its picture does, not when the next
+   line turns up, or the words about the spreadsheet are still sitting there
+   while the formula walks in. Scenes with no cues keep the even spread. */
+function aCues(sc,words){
+ const n=words.length;
+ const c0=sc.solo?0.08:0.16, c1=sc.solo?0.88:0.72;
+ const raw=(sc.cues&&sc.cues.length>=n)
+  ? sc.cues.slice(0,n)
+  : words.map((_,i)=>c0+(c1-c0)*(n===1?0.25:i/(n-1)));
+ const ins=raw.map(v=>Array.isArray(v)?v[0]:v);
+ const outs=raw.map((v,i)=>Array.isArray(v)&&v.length>1?v[1]:2);
+ return {ins:ins,outs:outs};
+}
+
+/* which animation runs on a given day */
+function animFor(d){
+ const D=DAYS[d-1];
+ const k=D&&D.a;
+ return (k&&ASCENES[k])?k:'';
+}
+function animDur(k){
+ const v=parseFloat(AT(k,'dur'));
+ if(isFinite(v)&&v>=4&&v<=60)return v;
+ return (ASCENES[k]||{}).dur||14;
+}
+
+/* ================= the mural she doesn't know about ================= */
+/* Every animation she finishes leaves one mark. Thirty days later it's a picture. */
+function addMark(d,k){
+ if(!S.marks)S.marks={};
+ if(S.marks[d])return;
+ S.marks[d]=k;save();
+}
+function muralSpots(n){
+ /* Laid out along a heart, day one to day twenty-nine, going round.
+    A spiral just looked like spilled stickers; this reads as one thing. */
+ const out=[];
+ for(let i=0;i<n;i++){
+  const t=-Math.PI/2+(i/n)*Math.PI*2;          // start at the top, go round
+  const hx=Math.pow(Math.sin(t),3);
+  const hy=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))/16;
+  /* a little wobble so it's hand-made rather than plotted */
+  const r=aRng(i*13+5);
+  out.push({x:.5+hx*.36+(r()-.5)*.028,
+            y:.5+hy*.34+(r()-.5)*.028+.02,
+            s:.92+(i%3)*.06});
+ }
+ return out;
+}
+function drawMural(cv){
+ const dp=Math.min(devicePixelRatio||1,2);
+ const W=cv.clientWidth||300,H=cv.clientHeight||300;
+ cv.width=W*dp;cv.height=H*dp;
+ const c=cv.getContext('2d');c.setTransform(dp,0,0,dp,0,0);
+ const pal=apal();
+ const g=c.createLinearGradient(0,0,W,H);
+ g.addColorStop(0,'#1a1130');g.addColorStop(1,'#43254a');
+ c.fillStyle=g;c.fillRect(0,0,W,H);
+ /* a faint dust of stars underneath */
+ const r0=aRng(11);
+ c.fillStyle='rgba(255,255,255,.28)';
+ for(let i=0;i<70;i++){const x=r0()*W,y=r0()*H,s=r0()*1.3+.3;c.beginPath();c.arc(x,y,s,0,7);c.fill()}
+ const days=[];for(let d=1;d<=29;d++)if(S.marks&&S.marks[d])days.push(d);
+ const spots=muralSpots(29);
+
+ /* the thread running through them, in the order she did them */
+ if(days.length>1){
+  c.strokeStyle='rgba(255,210,232,.22)';c.lineWidth=1.1;c.lineCap='round';
+  c.beginPath();
+  days.forEach((d,i)=>{const s=spots[d-1];if(!s)return;
+   const x=s.x*W,y=s.y*H;i?c.lineTo(x,y):c.moveTo(x,y)});
+  c.stroke();
+ }
+
+ days.forEach(d=>{
+  const k=S.marks[d],sc=ASCENES[k];
+  const sp=spots[d-1];if(!sp)return;
+  const base=Math.min(W,H)*0.062*sp.s;
+  c.save();
+  c.translate(sp.x*W-base/2,sp.y*H-base/2);
+  c.globalAlpha=.94;
+  try{(sc&&sc.mark?sc.mark:defaultMark)(c,base,aRng(d*17+3),pal)}catch(e){}
+  c.restore();
+ });
+ return days.length;
+}
+function defaultMark(c,s){
+ c.fillStyle='#ffd9e8';c.beginPath();c.arc(s/2,s/2,s*.22,0,7);c.fill();
+}
+
+/* ================= the stage ================= */
+let ASTOP=null;
+function stopAnim(){if(ASTOP){try{ASTOP()}catch(e){}ASTOP=null}}
+
+/* forceKey plays a named scene on this day instead of the day's own one —
+   that's how a day can have a second animation after the note. */
+function animView(d,onDone,replay,forceKey){
+ const k=(forceKey&&ASCENES[forceKey])?forceKey:animFor(d);
+ if(!k||!ASCENES[k]){onDone();return}
+ const sc=ASCENES[k],pal=apal(),dur=animDur(k),words=aWords(k);
+ mode='anim';
+ const w=show(`<div class="animwrap" id="awrap">
+   <canvas id="acv"></canvas>
+   <div class="animtext" id="atext">${words.map((l,i)=>`<p style="--i:${i}">${l}</p>`).join('')}</div>
+   <button class="animskip" id="askip" hidden>skip</button>
+  </div>`);
+ const wrap=$('#awrap',w),cv=$('#acv',w),tx=$('#atext',w),skip=$('#askip',w);
+ if(sc.solo)tx.classList.add('solo');   /* the lines share one spot instead of stacking */
+ /* A scene that paints its own pale ground cannot use the clock's ink: at
+    night that ink is nearly white, and white on cream is not text. Such a
+    scene says so, and gets dark letters and a pale scrim instead. */
+ /* A scene that paints its own ground has to say which kind, or it gets the
+    clock's ink: pale letters on a cream field at night, or dark letters on a
+    midnight field in the morning. Either way, unreadable. */
+ wrap.dataset.tod=sc.light?'day':sc.dark?'late':todKey();
+ wrap.style.setProperty('--aink',
+   sc.light?'#4a3142':sc.dark?'#ffe4f0':pal.ink);
+ const c=cv.getContext('2d');
+ let W=0,H=0,raf=0,t0=0,last=0,t=0,ended=false;
+ const A={pal,rng:aRng(d*31+7),day:d,key:k,words};
+ /* a scene that needs her to do something holds the ending open and
+    finishes itself, instead of the clock finishing it */
+ A.hold=!!sc.hold;
+ A.words=words;
+
+ function size(){
+  const dp=Math.min(devicePixelRatio||1,2);
+  W=wrap.clientWidth||innerWidth;H=wrap.clientHeight||Math.round(innerHeight*.62);
+  cv.width=W*dp;cv.height=H*dp;c.setTransform(dp,0,0,dp,0,0);
+  A.W=W;A.H=H;
+  try{sc.init&&sc.init(A,W,H,A.rng)}catch(e){}
+ }
+ function bg(){
+  const g=c.createLinearGradient(0,0,0,H);
+  /* a scene can paint its own ground — the parallel universe drains it */
+  const pa=A.bgA||pal.a, pb=A.bgB||pal.b;
+  g.addColorStop(0,pa);g.addColorStop(1,pb);
+  c.fillStyle=g;c.fillRect(0,0,W,H);
+ }
+ /* the words come in on their own schedule, spread through the scene */
+ /* A scene with beats places its own lines against them: an even spread
+    makes a line about the scooter turning round arrive two seconds before
+    the scooter turns round, which reads as the words not matching at all.
+    Scenes without beats still get the even spread. */
+ const CU=aCues(sc,words), cues=CU.ins, outs=CU.outs;
+ let shownTo=-1;
+
+ /* time lost to an interruption, given back rather than charged to her */
+ let frozen=0;
+ function frame(n){
+  if(!t0){t0=n;last=n}
+  /* motion uses frame time (clamped, so a stall doesn't teleport anything),
+     but how far through the scene we are is wall clock — otherwise a slow
+     phone quietly stretches a 15-second film into half a minute. */
+  const raw=n-last;
+  const dt=Math.min(.05,raw/1000);last=n;
+  /* while something is sitting on top of the film, the film waits: she should
+     not have to watch an advert AND miss the bit underneath it */
+  const covered=!!wrap.querySelector('.pkon');
+  if(covered)frozen+=raw;else t+=dt;
+  /* a holding scene sits at the end of its timeline until it says otherwise */
+  let P=Math.min(1,(n-t0-frozen)/1000/dur);
+  if(A.hold&&P>=1)P=1;
+  bg();
+  try{sc.draw(A,c,W,H,t,P,pal)}catch(e){}
+  /* the smallest settle at the very end, so the handover isn't a hard cut */
+  if(P>.94)wrap.style.opacity=String(1-(P-.94)/.06*0.15);
+  for(let i=shownTo+1;i<cues.length;i++)if(P>=cues[i]){
+   /* a solo scene shows one line at a time — otherwise five lines pile up
+      and the picture ends up underneath the words */
+   if(sc.solo&&shownTo>=0){const q=tx.children[shownTo];if(q)q.classList.remove('in')}
+   const p=tx.children[i];if(p)p.classList.add('in');shownTo=i;
+  }
+  /* and it goes when its picture goes */
+  if(shownTo>=0&&P>=outs[shownTo]){
+   const q=tx.children[shownTo];if(q)q.classList.remove('in');
+  }
+  if(P>=1&&!ended&&!A.hold){ended=true;finish();return}
+  raf=requestAnimationFrame(frame);
+ }
+ /* a scene can bring its own music; it has to go quiet whichever way this ends */
+ let soundOff=null;
+ const endSound=()=>{if(soundOff){try{soundOff()}catch(e){}soundOff=null}};
+ function finish(){
+  endSound();
+  if(raf)cancelAnimationFrame(raf);raf=0;
+  if(!replay){addMark(d,k);flowerMoment();}
+  setTimeout(()=>{if(mode==='anim')onDone()},replay?420:900);
+ }
+ const stop=()=>{endSound();if(raf)cancelAnimationFrame(raf);raf=0;ASTOP=null};
+ ASTOP=stop;cleanup=stop;
+
+ /* a scene that takes taps gets them in its own coordinates */
+ if(sc.tap){
+  const hit=e=>{
+   e.preventDefault();
+   const r=cv.getBoundingClientRect();
+   try{sc.tap(A,e.clientX-r.left,e.clientY-r.top,W,H)}catch(err){}
+  };
+  cv.style.touchAction='none';
+  cv.addEventListener('pointerdown',hit,{passive:false});
+ }
+ /* a holding scene calls this when she has finished whatever it asked */
+ A.release=()=>{
+  if(ended||!A.hold)return;
+  A.hold=false;
+ };
+ /* extra lines a scene wants to put up itself, beyond the timed ones */
+ A.say=(txt)=>{
+  const p=document.createElement('p');
+  p.textContent=txt;tx.appendChild(p);
+  requestAnimationFrame(()=>p.classList.add('in'));
+ };
+ A.clearWords=()=>{tx.innerHTML='';shownTo=cues.length};
+
+ /* she can always get past it — but not instantly, or it's just a button */
+ setTimeout(()=>{if(mode==='anim'&&!sc.noskip)skip.hidden=false},4200);
+ skip.onclick=()=>{if(ended)return;ended=true;stop();
+  if(!replay){addMark(d,k);flowerMoment()}
+  onDone();};
+
+ size();
+ addEventListener('resize',size);
+ const offResize=()=>removeEventListener('resize',size);
+ const prevStop=stop;
+ ASTOP=()=>{offResize();prevStop()};cleanup=ASTOP;
+ /* the background track steps aside for a scene that plays its own */
+ if(sc.sound){AUDIO.setMode('none');try{soundOff=sc.sound(A,dur)}catch(e){}}
+ else AUDIO.setMode('read');
+ raf=requestAnimationFrame(frame);
+}
+
+/* A small door, so the scenes can be driven from outside while they're being
+   built. Nothing here shows up in the app; she will never open a console. */
+try{window.__zb={
+ ASCENES,DAYS,S,animView,drawMural,animFor,animDur,aWords,apal,todKey,
+ txt:()=>ATXT, setTxt(v){ATXT=v||{}}, save,
+ openEditor:d=>openEditor(d)
+}}catch(e){}
+
+/* the day's flower opens while she's still looking at it */
+function flowerMoment(){
+ try{
+  GARDEN.highlight&&GARDEN.highlight();
+  const p=GARDEN.frontPoint&&GARDEN.frontPoint();
+  if(p)setTimeout(()=>sparkle(p.x,p.y,20),260);
+ }catch(e){}
+}
+
+/* ================= the last night: all of it, in one go =================
+   Twenty-nine little films she watched one a day, played back to back with
+   the date on the front of each. She has never seen them in a row, and the
+   whole point of the month was that they add up to something.
+
+   It does NOT re-use animView in a loop: that would tear down and rebuild the
+   stage between every scene, and the seam is exactly what has to disappear. */
+function movieDays(){
+ const out=[];
+ for(let d=1;d<=29;d++){
+  const k=(S.marks&&S.marks[d])||animFor(d);
+  if(k&&ASCENES[k])out.push({d,k});
+ }
+ return out;
+}
+/* his words, both editable from the editor like everything else */
+const MOVIE_OPEN_DEF={a:'Twenty-nine days',b:'all of it, in order'};
+const MOVIE_END_DEF ={a:'That was the year',b:'tomorrow is the actual day'};
+function movieText(which){
+ const o=(ATXT.__movie||{});
+ const d=which==='open'?MOVIE_OPEN_DEF:MOVIE_END_DEF;
+ return {a:(o[which+'A']||'').trim()||d.a, b:(o[which+'B']||'').trim()||d.b};
+}
+function movieView(onDone,fromDay){
+ const list=movieDays().filter(e=>!fromDay||e.d>=fromDay);
+ if(!list.length){onDone&&onDone();return}
+ mode='movie';
+ const w=show(`<div class="animwrap movie" id="mvwrap">
+   <canvas id="mvcv"></canvas>
+   <div class="mvbar" id="mvbar">${list.map(()=>'<i></i>').join('')}</div>
+   <div class="animtext" id="mvtext"></div>
+   <div class="mvcard" id="mvcard"><b id="mvname"></b><span id="mvdate"></span></div>
+   <button class="animskip" id="mvskip">skip</button>
+   <button class="animskip mvexit" id="mvexit">leave</button>
+  </div>`);
+ const wrap=$('#mvwrap',w),cv=$('#mvcv',w),tx=$('#mvtext',w),card=$('#mvcard',w);
+ const bar=$('#mvbar',w),nameEl=$('#mvname',w),dateEl=$('#mvdate',w);
+ wrap.dataset.tod=todKey();
+ const pal=apal();
+ wrap.style.setProperty('--aink',pal.ink);
+ /* the film re-reads this for every scene it plays */
+ const groundFor=s=>{
+  wrap.dataset.tod=s.light?'day':s.dark?'late':todKey();
+  wrap.style.setProperty('--aink',
+    s.light?'#4a3142':s.dark?'#ffe4f0':pal.ink)};
+ const c=cv.getContext('2d');
+ let W=0,H=0,raf=0,i=-1,sc=null,A=null,dur=0,t=0,last=0,t0=0,words=[],cues=[],outs=[],shownTo=-1;
+ let ended=false,titleT=0;
+
+ function size(){
+  const dp=Math.min(devicePixelRatio||1,2);
+  W=wrap.clientWidth||innerWidth;H=wrap.clientHeight||Math.round(innerHeight*.62);
+  cv.width=W*dp;cv.height=H*dp;c.setTransform(dp,0,0,dp,0,0);
+  if(A){A.W=W;A.H=H;try{sc.init&&sc.init(A,W,H,A.rng)}catch(e){}}
+ }
+ function start(n){
+  i=n;
+  if(i>=list.length){finish();return}
+  const e=list[i];
+  sc=ASCENES[e.k];
+  A={pal,rng:aRng(e.d*31+7),day:e.d,key:e.k,words:[]};
+  A.hold=false;A.release=()=>{};A.say=()=>{};A.clearWords=()=>{};
+  dur=animDur(e.k);
+  words=aWords(e.k);A.words=words;
+  /* the words behave the way that scene's own day behaved */
+  tx.className='animtext'+(sc.solo?' solo':'');
+  tx.innerHTML=words.map((l,x)=>`<p style="--i:${x}">${l}</p>`).join('');
+  const CU=aCues(sc,words); cues=CU.ins; outs=CU.outs;
+  shownTo=-1;
+  A.bgA=null;A.bgB=null;
+  try{sc.init&&sc.init(A,W,H,A.rng)}catch(err){}
+  groundFor(sc);
+ nameEl.textContent=sc.name;
+  dateEl.textContent=fmt(dateOf(e.d))+' · day '+e.d;
+  card.classList.add('on');titleT=0;
+  [...bar.children].forEach((b,x)=>b.className=x<i?'done':x===i?'on':'');
+  t=0;last=0;t0=0;
+ }
+ function frame(n){
+  if(!t0){t0=n;last=n}
+  const dt=Math.min(.05,(n-last)/1000);last=n;t+=dt;
+  const P=Math.min(1,(n-t0)/1000/dur);
+  /* the title sits over the opening of each film and then gets out of the way */
+  titleT+=dt;
+  if(titleT>2.3&&card.classList.contains('on'))card.classList.remove('on');
+  const g=c.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,A.bgA||pal.a);g.addColorStop(1,A.bgB||pal.b);
+  c.fillStyle=g;c.fillRect(0,0,W,H);
+  try{sc.draw(A,c,W,H,t,P,pal)}catch(e){}
+  for(let x=shownTo+1;x<cues.length;x++)if(P>=cues[x]){
+   if(sc.solo&&shownTo>=0){const q=tx.children[shownTo];if(q)q.classList.remove('in')}
+   const p=tx.children[x];if(p)p.classList.add('in');shownTo=x;
+  }
+  if(shownTo>=0&&P>=outs[shownTo]){
+   const q=tx.children[shownTo];if(q)q.classList.remove('in');
+  }
+  if(P>=1){next();return}
+  raf=requestAnimationFrame(frame);
+ }
+ function next(){
+  if(raf)cancelAnimationFrame(raf);raf=0;
+  if(ended)return;
+  start(i+1);
+  if(i<list.length)raf=requestAnimationFrame(frame);
+ }
+ function finish(){
+  if(ended)return;ended=true;
+  if(raf)cancelAnimationFrame(raf);raf=0;
+  [...bar.children].forEach(b=>b.className='done');
+  const tt=movieText('end');
+  nameEl.textContent=tt.a;dateEl.textContent=tt.b;
+  card.classList.add('on');
+  setTimeout(()=>{if(mode==='movie')onDone&&onDone()},3400);
+ }
+ const stop=()=>{ended=true;if(raf)cancelAnimationFrame(raf);raf=0;removeEventListener('resize',size)};
+ ASTOP=stop;cleanup=stop;
+ $('#mvskip',w).onclick=()=>{if(!ended)next()};
+ $('#mvexit',w).onclick=()=>{stop();onDone&&onDone()};
+ /* the ground, painted once, for the cards that sit over nothing */
+ function plain(){
+  const g=c.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,pal.a);g.addColorStop(1,pal.b);
+  c.fillStyle=g;c.fillRect(0,0,W,H);
+ }
+ function card2(which,hold,then){
+  const tt=movieText(which);
+  nameEl.textContent=tt.a;dateEl.textContent=tt.b;
+  card.classList.add('on');
+  plain();
+  const id=setTimeout(()=>{
+   if(ended&&which==='open')return;
+   card.classList.remove('on');
+   setTimeout(then,620);
+  },hold);
+  return ()=>clearTimeout(id);
+ }
+ size();addEventListener('resize',size);
+ AUDIO.setMode('read');
+ /* it opens on a card, the way a film does, and closes on one too */
+ card2('open',2600,()=>{
+  if(ended)return;
+  start(0);
+  raf=requestAnimationFrame(frame);
+ });
+}
+try{window.__zb.movieView=movieView;window.__zb.movieDays=movieDays}catch(e){}
+
+/* ================= colour, and the absence of it =================
+   Shared by every scene: the drain, the text that has to read on a ground
+   which changes underneath it, and a wrapper. */
+
+/* ---- colour, and the absence of it ---- */
+function aHexRGB(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]}
+function aGreyOf(h){
+ const[r,g,b]=aHexRGB(h);
+ const y=Math.round(0.299*r+0.587*g+0.114*b);
+ return`rgb(${y},${y},${y})`;
+}
+/* k = 0 fully drained, 1 fully itself.
+   At k=0 this is a flat luminance grey and nothing else — the drained world
+   is black, grey and white, with no hue left anywhere in it. */
+function aCol(hex,k){
+ if(k>=1)return hex;
+ const[r,g,b]=aHexRGB(hex);
+ const y=0.299*r+0.587*g+0.114*b;
+ const m=c=>Math.round(Math.max(0,Math.min(255,y+(c-y)*k)));
+ return`rgb(${m(r)},${m(g)},${m(b)})`;
+}
+/* the ground goes from near-black to pink while this text is on screen,
+   so every line gets a shadow in the opposite direction and reads on both */
+function aGlowText(c,light){
+ c.shadowColor=light?'rgba(20,12,26,.75)':'rgba(255,240,248,.85)';
+ c.shadowBlur=10;c.shadowOffsetY=light?1:0;
+ c.fillStyle=light?'#f6ecf4':'#3f2838';
+}
+function aClearShadow(c){c.shadowColor='transparent';c.shadowBlur=0;c.shadowOffsetY=0}
+function aWrap(c,text,maxW){
+ const out=[],words=String(text).split(' ');let cur='';
+ words.forEach(w=>{const t=cur?cur+' '+w:w;
+  if(c.measureText(t).width>maxW&&cur){out.push(cur);cur=w}else cur=t});
+ if(cur)out.push(cur);
+ return out;
+}
+
+
+/* ================= the two of them =================
+   Deliberately cartoon: round faces, two dots and a mouth. A different
+   register from the careful object drawing, and that contrast is the point. */
+
+/* two figures, drawn simply and on purpose — this register is cartoon,
+   not the careful object-drawing the memories use */
+function pdFig(c,x,y,s,who,opt){
+ opt=opt||{};
+ const k=opt.k==null?1:opt.k;
+ const skin=aCol(who==='z'?'#d9a583':'#c08a63',k);
+ const cloth=aCol(who==='z'?'#e8729a':'#5c6b9c',k);
+ const hairC=aCol('#2f2129',k), capC=aCol('#3f4c78',k), capD=aCol('#33406a',k);
+ c.save();c.translate(x,y);c.scale(s,s);
+ if(opt.flip)c.scale(-1,1);
+ /* body */
+ c.fillStyle=cloth;
+ c.beginPath();
+ c.moveTo(-14,34);c.quadraticCurveTo(-16,2,-9,-6);
+ c.lineTo(9,-6);c.quadraticCurveTo(16,2,14,34);
+ c.closePath();c.fill();
+ /* arms */
+ c.strokeStyle=cloth;c.lineWidth=7;c.lineCap='round';
+ if(opt.wave){
+  c.beginPath();c.moveTo(-10,2);c.lineTo(-20,-14);c.stroke();
+  c.beginPath();c.moveTo(10,2);c.lineTo(17,18);c.stroke();
+ }else if(opt.reach){
+  c.beginPath();c.moveTo(10,2);c.lineTo(26,10);c.stroke();
+  c.beginPath();c.moveTo(-10,2);c.lineTo(-16,18);c.stroke();
+ }else{
+  c.beginPath();c.moveTo(-10,2);c.lineTo(-16,20);c.stroke();
+  c.beginPath();c.moveTo(10,2);c.lineTo(16,20);c.stroke();
+ }
+ /* head */
+ c.fillStyle=skin;
+ c.beginPath();c.arc(0,-20,13,0,7);c.fill();
+ if(who==='z'){
+  /* hair */
+  c.fillStyle=hairC;
+  c.beginPath();c.arc(0,-22,14,Math.PI,0);c.fill();
+  c.beginPath();c.ellipse(-13,-14,5,12,.2,0,7);c.fill();
+  c.beginPath();c.ellipse(13,-14,5,12,-.2,0,7);c.fill();
+ }else{
+  /* the cap, because of the coupon */
+  c.fillStyle=capC;
+  c.beginPath();c.arc(0,-24,13.5,Math.PI,0);c.fill();
+  c.fillRect(-13.5,-25,27,4);
+  c.fillStyle=capD;
+  c.beginPath();c.ellipse(11,-22,11,3.6,0,0,7);c.fill();
+ }
+ /* face — two dots and a curve, nothing more */
+ c.fillStyle=hairC;
+ c.beginPath();c.arc(-4.5,-20,1.7,0,7);c.fill();
+ c.beginPath();c.arc(4.5,-20,1.7,0,7);c.fill();
+ c.strokeStyle=hairC;c.lineWidth=1.6;c.lineCap='round';
+ c.beginPath();
+ if(opt.sad)c.arc(0,-11,5,Math.PI*1.15,Math.PI*1.85);
+ else if(opt.flat){c.moveTo(-4.5,-14.5);c.lineTo(4.5,-14.5)}   /* neither happy nor sad */
+ else c.arc(0,-16,5.5,0.25,Math.PI-0.25);
+ c.stroke();
+ c.restore();
+}
+
+
+/* ================= batch two · the ones that are about something =================
+   Every scene here is a memory with a turn in it. Setup, then something moves,
+   then the bit she recognises. No people are drawn — objects and silhouettes
+   only, because a badly drawn face ruins it and a well drawn object doesn't. */
+
+/* ---- shared bits of drawing ---- */
+function aShadow(c,f){c.save();c.shadowColor='rgba(60,30,50,.22)';c.shadowBlur=18;c.shadowOffsetY=6;f();c.restore()}
+function aRR(c,x,y,w,h,r){
+ if(c.roundRect){c.beginPath();c.roundRect(x,y,w,h,r);return}
+ r=Math.min(r,w/2,h/2);c.beginPath();
+ c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);
+ c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();
+}
+const APAPER='#fffaf4';
+
+/* ---------- 1 · the rubber band ---------- */
+ASCENES.band={
+ name:'The rubber band',grp:'Ours',dur:13,
+ blurb:'A small black thing, bought on the way, handed over without ceremony.',
+ def:{words:['13th June, and I got you one more thing.',
+             'A black rubber band. That is the whole gift.',
+             'You wore it out of there. That is the whole story.']},
+ fields:[{f:'words',l:'Lines that float over it',h:'One per line.'}],
+ init(A,W,H){A.done=false},
+ /* a forearm coming in from the edge of frame: sleeve, arm, a simple hand.
+    The first version drew soft blobs and they read as nothing at all. */
+ wrist(c,x,y,L,T,dir,skin,cuff){
+  c.save();c.translate(x,y);c.scale(dir,1);
+  const wristX=L*.66, handX=L*.88;
+  /* sleeve */
+  c.fillStyle=cuff;
+  aRR(c,-L*.06,-T*.60,L*.30,T*1.20,T*.18);c.fill();
+  /* forearm, tapering to the wrist */
+  c.fillStyle=skin;
+  c.beginPath();
+  c.moveTo(L*.20,-T*.50);
+  c.quadraticCurveTo(L*.48,-T*.44,wristX,-T*.33);
+  c.lineTo(wristX,T*.33);
+  c.quadraticCurveTo(L*.48,T*.44,L*.20,T*.50);
+  c.closePath();c.fill();
+  /* the hand — wider than the wrist, which is the thing that makes it read.
+     No fingers: at this size they turn into fringe. */
+  c.beginPath();
+  c.moveTo(wristX,-T*.32);
+  c.quadraticCurveTo(handX-L*.02,-T*.52,handX+L*.07,-T*.34);
+  c.quadraticCurveTo(handX+L*.17,-T*.02,handX+L*.13,T*.24);
+  c.quadraticCurveTo(handX+L*.06,T*.50,wristX,T*.34);
+  c.closePath();c.fill();
+  /* thumb, up and out from the wrist */
+  c.save();c.translate(wristX+L*.05,-T*.28);c.rotate(-.55);
+  c.beginPath();c.ellipse(0,0,L*.075,T*.20,0,0,7);c.fill();c.restore();
+  c.restore();
+ },
+ band(c,x,y,rx,ry,tilt,alpha,squash){
+  c.save();c.translate(x,y);c.rotate(tilt);
+  c.globalAlpha=alpha;
+  c.strokeStyle='#241d26';c.lineWidth=Math.max(2.4,rx*.16);
+  c.beginPath();c.ellipse(0,0,rx,ry*(squash||1),0,0,7);c.stroke();
+  /* one soft highlight so a black ring doesn't read as a hole */
+  c.strokeStyle='rgba(255,255,255,.30)';c.lineWidth=Math.max(1,rx*.055);
+  c.beginPath();c.ellipse(0,-ry*.16,rx*.84,ry*.48*(squash||1),0,3.5,5.9);c.stroke();
+  c.restore();
+ },
+ draw(A,c,W,H,t,P,pal){
+  const cy=H*.50;
+  const L=W*.46, T=Math.min(H*.125,W*.145);
+  const lift =aSeg(P,.18,.38);
+  const cross=aSeg(P,.38,.72);
+  const land =aSeg(P,.72,.90);
+  const rest =aSeg(P,.90,1);
+
+  const g=c.createRadialGradient(W/2,cy,0,W/2,cy,W*.75);
+  g.addColorStop(0,pal.dark?'rgba(255,224,240,.13)':'rgba(255,255,255,.45)');
+  g.addColorStop(1,'rgba(255,255,255,0)');
+  c.fillStyle=g;c.fillRect(0,0,W,H);
+
+  const inL=aSeg(P,0,.16), inR=aSeg(P,.28,.50);
+  /* hands are not tripods: a faint drift, so no frame is ever identical */
+  const lx=-L*.10-(1-inL)*L*.5, ly=cy-H*.14+Math.sin(t*.85)*H*.006;
+  const rx=W+L*.10+(1-inR)*L*.5, ry=cy+H*.15+Math.sin(t*.7+1.9)*H*.006;
+  aShadow(c,()=>this.wrist(c,lx,ly,L,T, 1,'#cd9271','#f0dce6'));
+  if(inR>0)aShadow(c,()=>this.wrist(c,rx,ry,L,T,-1,'#b97f5d','#dfe6f2'));
+
+  const rr=T*.50, ryy=T*.29;
+  const aX=lx+L*.60, aY=ly;
+  const bX=rx-L*.60, bY=ry;
+
+  if(cross<=0){
+   this.band(c,aX,aY,rr,ryy,-.10+lift*.35,1,1-lift*.20);
+  }else if(land<1){
+   const e=aEase(cross);
+   const x=aLerp(aX,bX,e), y=aLerp(aY,bY,e)-Math.sin(e*Math.PI)*H*.22;
+   const stretch=1+Math.sin(e*Math.PI)*.5;
+   c.save();c.translate(x,y);c.rotate(-.10+e*3.0);c.translate(-x,-y);
+   this.band(c,x,y,rr*stretch,ryy/Math.max(.65,stretch*.85),0,1,1);
+   c.restore();
+  }else{
+   /* it settles, but rubber keeps moving -- the bounce is P-driven and dies,
+      so the resting state carries its own small, endless give */
+   const sc=1+Math.sin(rest*Math.PI)*.10+Math.sin(t*2.1)*.014;
+   this.band(c,bX,bY,rr*sc,ryy/Math.max(.9,sc),.14+Math.sin(t*1.25)*.016,1,1);
+  }
+ },
+ mark(c,s){c.strokeStyle='#241d26';c.lineWidth=s*.13;
+  c.beginPath();c.ellipse(s*.5,s*.5,s*.34,s*.22,.3,0,7);c.stroke()}
+};
+
+/* ---------- 2 · the pink shirt ---------- */
+ASCENES.shirt={
+ name:'The pink shirt',grp:'Ours',dur:14,
+ blurb:'The first day and the last day, side by side — until you notice it is the same shirt.',
+ def:{words:['You wore it the day you walked in.',
+             'And again on the day you left.',
+             'You did that on purpose. I noticed. I never stopped noticing.'],
+      left:'22 April',right:'13 June'},
+ fields:[{f:'words',l:'Lines that float over it',h:'One per line.'},
+         {f:'left',l:'Label on the left panel',h:'Short — a date works best.'},
+         {f:'right',l:'Label on the right panel',h:'Short — a date works best.'}],
+ init(A){},
+ shirt(c,x,y,s,tone){
+  /* formal, full sleeves rolled to the forearm, fine white stripes */
+  c.save();c.translate(x,y);c.scale(s,s);
+  const line='rgba(118,68,92,.26)';
+  c.lineJoin='round';
+
+  /* sleeves: down and out, ending in a rolled cuff */
+  c.fillStyle=tone;c.strokeStyle=line;c.lineWidth=1.1;
+  [-1,1].forEach(d=>{
+   c.beginPath();
+   c.moveTo(d*24,-30);
+   c.quadraticCurveTo(d*46,-22,d*52,2);      // outer edge of the sleeve
+   c.lineTo(d*38,10);
+   c.quadraticCurveTo(d*34,-8,d*22,-14);     // inner edge back to the body
+   c.closePath();c.fill();c.stroke();
+   /* the roll — two stacked bands, lighter, which is what reads as rolled */
+   c.fillStyle='rgba(255,255,255,.55)';
+   c.beginPath();
+   c.moveTo(d*52,2);c.lineTo(d*38,10);c.lineTo(d*41,18);c.lineTo(d*55,10);
+   c.closePath();c.fill();c.stroke();
+   c.beginPath();
+   c.moveTo(d*55,10);c.lineTo(d*41,18);c.lineTo(d*43,24);c.lineTo(d*57,16);
+   c.closePath();c.fill();c.stroke();
+   c.fillStyle=tone;
+  });
+
+  /* body */
+  c.beginPath();
+  c.moveTo(-25,-31);
+  c.lineTo(-27,46);
+  c.quadraticCurveTo(0,52,27,46);
+  c.lineTo(25,-31);
+  c.quadraticCurveTo(0,-24,-25,-31);
+  c.closePath();c.fill();c.stroke();
+
+  /* the stripes, clipped to the body */
+  c.save();
+  c.beginPath();
+  c.moveTo(-25,-31);c.lineTo(-27,46);
+  c.quadraticCurveTo(0,52,27,46);c.lineTo(25,-31);
+  c.quadraticCurveTo(0,-24,-25,-31);c.closePath();c.clip();
+  c.strokeStyle='rgba(255,255,255,.72)';c.lineWidth=1.6;
+  for(let sx=-22;sx<=22;sx+=7.5){
+   c.beginPath();c.moveTo(sx,-34);c.lineTo(sx,52);c.stroke();
+  }
+  c.restore();
+
+  /* collar: two pointed flaps, which is the whole difference between
+     a formal shirt and a t-shirt at this size */
+  c.fillStyle=tone;c.strokeStyle=line;c.lineWidth=1.2;
+  c.beginPath();c.moveTo(-13,-30);c.lineTo(-2,-18);c.lineTo(-14,-14);c.closePath();c.fill();c.stroke();
+  c.beginPath();c.moveTo( 13,-30);c.lineTo( 2,-18);c.lineTo( 14,-14);c.closePath();c.fill();c.stroke();
+
+  /* placket and buttons */
+  c.strokeStyle='rgba(118,68,92,.34)';c.lineWidth=1.2;
+  c.beginPath();c.moveTo(0,-17);c.lineTo(0,45);c.stroke();
+  c.fillStyle='rgba(118,68,92,.38)';
+  [-4,8,20,32,42].forEach(by=>{c.beginPath();c.arc(0,by,1.5,0,7);c.fill()});
+  c.restore();
+ },
+ panel(c,x,y,w,h,label,warm,pal){
+  c.save();
+  aShadow(c,()=>{c.fillStyle=warm?'#fff3e6':'#eef2fb';aRR(c,x,y,w,h,18);c.fill()});
+  c.restore();
+  if(!label)return;
+  c.fillStyle='rgba(90,60,78,.58)';
+  c.font=`600 ${Math.max(10,w*.082)}px Lora,Georgia,serif`;
+  c.textAlign='center';c.textBaseline='alphabetic';
+  c.fillText(label,x+w/2,y+Math.max(20,h*.10));
+ },
+ draw(A,c,W,H,t,P,pal){
+  const show=aSeg(P,.04,.24);
+  const merge=aSeg(P,.36,.80);
+  const e=aEase(merge);
+  const pw=W*.40,ph=H*.52,py=H*.20;
+  /* the two panels slide toward each other and overlap into one */
+  const lx=aLerp(W*.05,W*.5-pw/2,e), rx=aLerp(W*.55,W*.5-pw/2,e);
+  const alphaR=1-aSeg(P,.72,.92)*.9;
+
+  /* light crossing both panels, so the wait before the merge isn't dead air */
+  const sweep=(t*.16)%1;
+  const merged=aSeg(P,.80,.96);
+  c.globalAlpha=show;
+  this.panel(c,lx,py,pw,ph,merged>.5?'':AT(A.key,'left'),false,pal);
+  c.globalAlpha=show*alphaR;
+  this.panel(c,rx,py,pw,ph,AT(A.key,'right'),true,pal);
+  c.globalAlpha=1;
+
+  const s=Math.min(pw,ph)/120*1.15;
+  const sy=py+ph*.52;
+  /* the shirts: same colour all along, which is the whole point */
+  c.globalAlpha=show;
+  this.shirt(c,lx+pw/2,sy,s,'#f3a8c2');
+  c.globalAlpha=show*alphaR;
+  this.shirt(c,rx+pw/2,sy,s,'#f3a8c2');
+  c.globalAlpha=1;
+
+  /* the light moves across, morning on one side and evening on the other */
+  c.save();
+  c.globalAlpha=show*.5;
+  const sx=aLerp(-W*.3,W*1.3,sweep);
+  const sg=c.createLinearGradient(sx-W*.3,0,sx+W*.3,0);
+  sg.addColorStop(0,'rgba(255,225,190,0)');
+  sg.addColorStop(.5,'rgba(255,232,200,.55)');
+  sg.addColorStop(1,'rgba(255,225,190,0)');
+  c.fillStyle=sg;
+  aRR(c,lx,py,pw,ph,18);c.fill();
+  if(alphaR>.15){aRR(c,rx,py,pw,ph,18);c.fill()}
+  c.restore();
+  c.globalAlpha=1;
+
+  /* the two dates land on the one card */
+  if(merged>0){
+   c.save();c.globalAlpha=merged;
+   c.fillStyle='rgba(90,60,78,.72)';
+   c.font=`600 ${Math.max(10,pw*.085)}px Lora,Georgia,serif`;
+   c.textAlign='center';
+   c.fillText(AT(A.key,'left')+'  ·  '+AT(A.key,'right'),W/2,py+ph-14);
+   c.restore();
+  }
+
+  /* once they're one, a quiet glow around the single shirt */
+  if(merge>.8){
+   const a=(merge-.8)/.2;
+   const gg=c.createRadialGradient(W/2,sy,0,W/2,sy,pw*.9);
+   gg.addColorStop(0,`rgba(255,190,214,${.35*a})`);
+   gg.addColorStop(1,'rgba(255,190,214,0)');
+   c.fillStyle=gg;c.fillRect(0,0,W,H);
+  }
+ },
+ mark(c,s){ASCENES.shirt.shirt(c,s*.5,s*.5,s/120*.92,'#f3a8c2')}
+};
+
+/* ---------- 3 · the twenty-fifth of July ---------- */
+ASCENES.july25={
+ name:'25th July',grp:'Ours',dur:15,
+ blurb:'A grey day at a door, and then the flowers turn up.',
+ def:{words:['I made you cry, and then I stood in a shop picking flowers,',
+             'like a bunch of stems could undo an afternoon.',
+             'You kept them anyway. You always keep the things I get wrong.']},
+ fields:[{f:'words',l:'Lines that float over it',h:'One per line.'}],
+ init(A,W,H){
+  A.d=[];for(let i=0;i<70;i++)A.d.push({x:A.rng()*W,y:A.rng()*H,v:180+A.rng()*260,l:8+A.rng()*14});
+ },
+ bouquet(c,x,y,s,open){
+  c.save();c.translate(x,y);c.scale(s,s);
+  const o=aEase(open);
+  /* wrap */
+  c.fillStyle='#fff6ea';c.strokeStyle='rgba(140,90,110,.25)';c.lineWidth=1;
+  c.beginPath();c.moveTo(0,10);c.lineTo(-16*o,-20*o);c.lineTo(16*o,-20*o);c.closePath();
+  c.fill();c.stroke();
+  /* stems and heads */
+  const heads=[[-11,-30],[0,-36],[11,-30],[-6,-24],[6,-24]];
+  c.strokeStyle='rgba(110,160,122,.9)';c.lineWidth=1.6;
+  heads.forEach(([hx,hy])=>{c.beginPath();c.moveTo(0,6);c.lineTo(hx*o,hy*o);c.stroke()});
+  heads.forEach(([hx,hy],i)=>{
+   const r=(4.4+(i%2)*1.5)*o;
+   c.fillStyle=i%2?'#f4a0bc':'#e8729a';
+   c.beginPath();c.arc(hx*o,hy*o,r,0,7);c.fill();
+   c.fillStyle='rgba(255,255,255,.45)';
+   c.beginPath();c.arc(hx*o-r*.3,hy*o-r*.3,r*.34,0,7);c.fill();
+  });
+  c.restore();
+ },
+ draw(A,c,W,H,t,P,pal){
+  const clearing=aSeg(P,.56,.94);
+  const arrive=aSeg(P,.40,.62);
+  const doorW=W*.46,doorH=H*.62,dx=(W-doorW)/2,dy=H*.12;
+
+  /* grey over everything, lifting later */
+  c.fillStyle=`rgba(96,104,124,${.42*(1-clearing)})`;c.fillRect(0,0,W,H);
+
+  /* the door */
+  aShadow(c,()=>{c.fillStyle=aMix('#8d6a76','#c99a86',clearing);aRR(c,dx,dy,doorW,doorH,10);c.fill()});
+  c.strokeStyle='rgba(255,255,255,.22)';c.lineWidth=1.4;
+  aRR(c,dx+doorW*.12,dy+doorH*.10,doorW*.76,doorH*.34,6);c.stroke();
+  aRR(c,dx+doorW*.12,dy+doorH*.52,doorW*.76,doorH*.34,6);c.stroke();
+  c.fillStyle=aMix('#d8c48f','#f0d79a',clearing);
+  c.beginPath();c.arc(dx+doorW*.86,dy+doorH*.52,Math.max(3,doorW*.032),0,7);c.fill();
+  /* the step */
+  c.fillStyle=`rgba(80,60,72,${.35-.12*clearing})`;
+  c.fillRect(dx-W*.04,dy+doorH,doorW+W*.08,H*.035);
+
+  /* rain, easing off as it clears */
+  const n=Math.round(A.d.length*(1-clearing*.9));
+  c.strokeStyle=`rgba(210,222,240,${.5*(1-clearing*.7)})`;c.lineWidth=1.2;c.lineCap='round';
+  for(let i=0;i<n;i++){
+   const d=A.d[i];
+   d.y+=d.v/60;if(d.y>H){d.y=-20;d.x=A.rng()*W}
+   c.beginPath();c.moveTo(d.x,d.y);c.lineTo(d.x-2,d.y+d.l);c.stroke();
+  }
+
+  /* the flowers arrive on the step */
+  if(arrive>0){
+   const drop=aEase(Math.min(1,arrive*1.25));
+   const by=aLerp(dy+doorH-H*.22,dy+doorH-H*.005,drop);
+   this.bouquet(c,W/2,by,Math.min(W*.0072,H*.0042),aSeg(P,.50,.80));
+  }
+
+  /* warmth coming back into the frame */
+  if(clearing>0){
+   const gg=c.createRadialGradient(W/2,dy+doorH*.55,0,W/2,dy+doorH*.55,Math.max(W,H)*.8);
+   gg.addColorStop(0,`rgba(255,206,152,${.34*clearing})`);
+   gg.addColorStop(1,'rgba(255,206,152,0)');
+   c.fillStyle=gg;c.fillRect(0,0,W,H);
+  }
+ },
+ mark(c,s){ASCENES.july25.bouquet(c,s*.5,s*.78,s/70,1)}
+};
+
+/* ---------- 4 · the order ---------- */
+ASCENES.order={
+ name:'The order',grp:'Ours',dur:14,
+ blurb:'The ride, the burger place, the fries — and which one is still there at the end.',
+ def:{words:['We have never once looked at a menu.',
+             'The ride, the same place, the same order.',
+             'The fries were always the point. So were you.']},
+ fields:[{f:'words',l:'Lines that float over it',h:'One per line.'}],
+ init(A){},
+ scooter(c,x,y,s){
+  c.save();c.translate(x,y);c.scale(s,s);
+  c.strokeStyle='rgba(74,47,62,.85)';c.lineWidth=2.6;c.lineCap='round';c.fillStyle='rgba(74,47,62,.85)';
+  c.beginPath();c.arc(-17,0,7.5,0,7);c.stroke();       // wheels
+  c.beginPath();c.arc(17,0,7.5,0,7);c.stroke();
+  c.beginPath();                                        // body
+  c.moveTo(-17,0);c.lineTo(-10,-4);c.quadraticCurveTo(-2,-16,8,-14);
+  c.lineTo(15,-14);c.lineTo(17,0);c.stroke();
+  c.beginPath();c.moveTo(13,-14);c.lineTo(17,-25);c.lineTo(24,-25);c.stroke();  // handlebar
+  c.beginPath();c.moveTo(-11,-14);c.quadraticCurveTo(-4,-19,4,-16);c.stroke();  // seat
+  c.restore();
+ },
+ burger(c,x,y,s){
+  c.save();c.translate(x,y);c.scale(s,s);
+  c.fillStyle='#e0a45f';c.beginPath();
+  c.moveTo(-15,-3);c.quadraticCurveTo(-15,-17,0,-17);c.quadraticCurveTo(15,-17,15,-3);c.closePath();c.fill();
+  c.fillStyle='rgba(255,255,255,.5)';[-8,0,8].forEach(sx=>{c.beginPath();c.arc(sx,-11,1.3,0,7);c.fill()});
+  c.fillStyle='#8fbd7a';c.fillRect(-16,-3,32,3.4);
+  c.fillStyle='#9a5c42';c.fillRect(-14.5,.4,29,4.4);
+  c.fillStyle='#e8b46f';c.beginPath();
+  c.moveTo(-15,4.8);c.quadraticCurveTo(-15,12,0,12);c.quadraticCurveTo(15,12,15,4.8);c.closePath();c.fill();
+  c.restore();
+ },
+ fries(c,x,y,s,pulse){
+  c.save();c.translate(x,y);c.scale(s,s);
+  c.fillStyle='#f0c86a';
+  [[-7,-20,-9],[-2,-25,-3],[3,-23,4],[8,-18,10],[0,-21,0]].forEach(([fx,fy,tx])=>{
+   c.save();c.translate(fx,0);c.rotate((tx-fx)*.02);
+   aRR(c,-2.2,fy,4.4,Math.abs(fy)+4,1.8);c.fill();c.restore();
+  });
+  c.fillStyle='#e8536b';
+  c.beginPath();c.moveTo(-12,-6);c.lineTo(12,-6);c.lineTo(8,14);c.lineTo(-8,14);c.closePath();c.fill();
+  c.fillStyle='rgba(255,255,255,.85)';
+  aRR(c,-8,-2,16,5,1.5);c.fill();
+  if(pulse>0){
+   c.globalAlpha=pulse*.5;c.fillStyle='#fff';
+   c.beginPath();c.arc(0,0,26,0,7);c.fill();c.globalAlpha=1;
+  }
+  c.restore();
+ },
+ draw(A,c,W,H,t,P,pal){
+  const y=H*.56, s=Math.min(W,H)/150*1.55;
+  /* the table */
+  c.strokeStyle=pal.dark?'rgba(255,220,238,.30)':'rgba(120,80,100,.28)';
+  c.lineWidth=1.6;
+  c.beginPath();c.moveTo(W*.06,y+H*.075);c.lineTo(W*.94,y+H*.075);c.stroke();
+
+  const slots=[W*.24,W*.5,W*.76];
+  const ins=[aSeg(P,.06,.24),aSeg(P,.26,.44),aSeg(P,.46,.64)];
+  const fade=aSeg(P,.70,.90);          // the first two step back
+  const hero=aSeg(P,.74,.96);          // the fries stay
+
+  const put=(i,f)=>{
+   const e=aEase(ins[i]);
+   if(e<=0)return;
+   /* a small idle bob: between the last item landing and the fries taking
+      over there was a second and a half of a completely frozen picture */
+   const drop=(1-e)*H*.16 - Math.sin(t*1.15+i*1.7)*H*.0045;
+   c.save();c.globalAlpha=e;
+   c.translate(0,-drop);
+   f(slots[i],y);
+   c.restore();
+  };
+  c.globalAlpha=1;
+  const dim=1-fade*.88;
+  c.globalAlpha=dim; put(0,(x,yy)=>this.scooter(c,x,yy,s));
+  c.globalAlpha=dim; put(1,(x,yy)=>this.burger(c,x,yy,s));
+  c.globalAlpha=1;
+  /* the fries drift to the middle and stay lit */
+  const hx=aLerp(slots[2],W*.5,aEase(hero));
+  const hs=s*(1+aEase(hero)*.55);
+  const e2=aEase(ins[2]);
+  if(e2>0){
+   c.save();c.globalAlpha=e2;
+   c.translate(0,-(1-e2)*H*.16);
+   /* always a little alive, more so once they are the whole point */
+   c.translate(0,-Math.sin(t*1.3+3.1)*H*.0045);
+   this.fries(c,hx,y,hs,(.14+hero*.5)*Math.abs(Math.sin(t*1.6)));
+   c.restore();
+  }
+ },
+ mark(c,s){ASCENES.order.fries(c,s*.5,s*.55,s/60,0)}
+};
+
+/* ---------- 6 · the call ---------- */
+ASCENES.call={
+ name:'The call',grp:'Ours',dur:14,
+ blurb:'Two phones, and three words making the trip between them.',
+ def:{words:['No setting, no plan, nothing arranged.',
+             'Just your voice, and three words I was not ready for.',
+             'I have replayed that call more than you know.'],said:'i love you'},
+ fields:[{f:'words',l:'Lines that float over it',h:'One per line.'},
+         {f:'said',l:'What lands on the screen',h:'Short. It appears letter by letter.'}],
+ init(A){},
+ phone(c,x,y,w,h,lit,pal){
+  aShadow(c,()=>{
+   c.fillStyle='#3b2b3e';aRR(c,x-w/2,y-h/2,w,h,w*.17);c.fill();
+  });
+  c.fillStyle=lit?'#ffe9f3':'#5d4a60';
+  aRR(c,x-w/2+w*.07,y-h/2+h*.045,w*.86,h*.91,w*.12);c.fill();
+  c.fillStyle='rgba(255,255,255,.35)';
+  aRR(c,x-w*.10,y-h/2+h*.02,w*.20,h*.016,2);c.fill();
+ },
+ draw(A,c,W,H,t,P,pal){
+  const pw=Math.min(W*.20,H*.14), ph=pw*2.0;
+  const ax=W*.24, ay=H*.30, bx=W*.76, by=H*.70;
+  const travel=aSeg(P,.22,.66);
+  const landed=aSeg(P,.66,.90);
+
+  /* the line between them */
+  c.strokeStyle=pal.dark?'rgba(255,214,235,.22)':'rgba(140,90,120,.22)';
+  c.setLineDash([3,8]);c.lineWidth=1.2;
+  /* the line is live from the first frame -- the call is already connected */
+  c.lineDashOffset=-(t*14)%11;
+  c.beginPath();c.moveTo(ax,ay);c.quadraticCurveTo(W*.5,H*.40,bx,by);c.stroke();
+  c.setLineDash([]);c.lineDashOffset=0;
+  /* and a phone that is mid-call has a screen that is doing something */
+  const pulse=.10+.06*Math.sin(t*2.6);
+  const pg2=c.createRadialGradient(ax,ay,0,ax,ay,pw*1.5);
+  pg2.addColorStop(0,`rgba(232,114,154,${pulse})`);
+  pg2.addColorStop(1,'rgba(232,114,154,0)');
+  c.fillStyle=pg2;c.beginPath();c.arc(ax,ay,pw*1.5,0,7);c.fill();
+
+  this.phone(c,ax,ay,pw,ph,true,pal);
+  this.phone(c,bx,by,pw,ph,landed>0,pal);
+
+  /* the waveform making the trip */
+  if(travel>0&&landed<1){
+   const e=aEase(travel);
+   const px=(1-e)*(1-e)*ax+2*(1-e)*e*W*.5+e*e*bx;
+   const py=(1-e)*(1-e)*ay+2*(1-e)*e*H*.40+e*e*by;
+   const span=Math.min(W,H)*.10;
+   c.strokeStyle='#e8729a';c.lineWidth=2.2;c.lineCap='round';
+   for(let i=-4;i<=4;i++){
+    const hgt=span*(.25+.75*Math.abs(Math.sin(t*5+i*.8)))*(1-Math.abs(i)/5.5);
+    c.beginPath();c.moveTo(px+i*span*.16,py-hgt/2);c.lineTo(px+i*span*.16,py+hgt/2);c.stroke();
+   }
+  }
+
+  /* and the words arriving on his screen, one letter at a time */
+  const said=AT(A.key,'said')||'';
+  if(landed>0&&said){
+   const n=Math.max(0,Math.floor(said.length*aSeg(P,.68,.92)));
+   const txt=said.slice(0,n);
+   c.save();
+   c.fillStyle='#7a3f5c';
+   c.font=`italic ${Math.max(9,pw*.17)}px Lora,Georgia,serif`;
+   c.textAlign='center';c.textBaseline='middle';
+   /* wrap it inside the little screen */
+   const words=txt.split(' ');const lines=[];let cur='';
+   words.forEach(w=>{const tryl=cur?cur+' '+w:w;
+    if(c.measureText(tryl).width>pw*.74&&cur){lines.push(cur);cur=w}else cur=tryl});
+   if(cur)lines.push(cur);
+   const lh=pw*.22;
+   lines.forEach((l,i)=>c.fillText(l,bx,by-(lines.length-1)*lh/2+i*lh));
+   c.restore();
+   if(landed>.85){
+    const a=(landed-.85)/.15;
+    const gg=c.createRadialGradient(bx,by,0,bx,by,pw*2.2);
+    gg.addColorStop(0,`rgba(255,180,210,${.30*a})`);
+    gg.addColorStop(1,'rgba(255,180,210,0)');
+    c.fillStyle=gg;c.fillRect(0,0,W,H);
+   }
+  }
+ },
+ mark(c,s){c.fillStyle='#3b2b3e';aRR(c,s*.32,s*.14,s*.36,s*.72,s*.08);c.fill();
+  c.fillStyle='#ffe9f3';aRR(c,s*.36,s*.18,s*.28,s*.60,s*.05);c.fill()}
+};
+
+/* ================= the other life =================
+   Helpers now live in acolour.js so the app can use them without
+   dragging the whole parallel day along. */
+
+ASCENES.parallel={
+ name:'The other life',grp:'Ours',dur:36,
+ hold:true,                     /* it does not end on a clock — she ends it */
+ blurb:'Everything drains grey and she walks through the year where you never met. Then she has to put it back, by hand.',
+ def:{
+  open:'22 April. You take the other internship.',
+  captions:'a corridor you never walk down\n'+
+           'the seat next to mine stays empty\n'+
+           'a shirt that stays on the rail\n'+
+           'nobody on the back of it\n'+
+           'one plate, no argument about the paani\n'+
+           'a call that never comes',
+  ask:'Now put it back.',
+  close:'There. That took you eleven seconds.\nIt took us a year, and I would do all of it again.',
+  words:[]
+ },
+ fields:[
+  {f:'open',l:'The line that starts it',h:'One line. It should land like something going wrong.'},
+  {f:'captions',l:'The six empty scenes',h:'One line each, in order: corridor, seat, shirt, scooter, plate, phone.'},
+  {f:'ask',l:'What it asks her to do',h:'Short. It appears when everything stops.'},
+  {f:'close',l:'After she has put it all back',h:'One or two lines.'}
+ ],
+
+ /* ---------- the six things, drawn alone ---------- */
+ corridor(c,x,y,S,k){
+  c.save();c.translate(x,y);
+  /* two walls running away, and a doorway with light nobody walks through */
+  c.strokeStyle=aCol('#8d7a93',k);c.lineWidth=1.4;
+  c.beginPath();c.moveTo(-S*1.5,S*.85);c.lineTo(-S*.42,-S*.15);c.stroke();
+  c.beginPath();c.moveTo( S*1.5,S*.85);c.lineTo( S*.42,-S*.15);c.stroke();
+  c.beginPath();c.moveTo(-S*1.5,-S*1.0);c.lineTo(-S*.42,-S*.62);c.stroke();
+  c.beginPath();c.moveTo( S*1.5,-S*1.0);c.lineTo( S*.42,-S*.62);c.stroke();
+  /* the doorway */
+  c.fillStyle=aCol('#584a60',k);
+  aRR(c,-S*.42,-S*.62,S*.84,S*1.47,S*.04);c.fill();
+  c.fillStyle=aCol('#f6e2c9',k);
+  aRR(c,-S*.30,-S*.50,S*.60,S*1.23,S*.03);c.fill();
+  /* the light it throws on the floor, and nothing standing in it */
+  const g=c.createLinearGradient(0,-S*.5,0,S*1.5);
+  g.addColorStop(0,aCol('#ffe9c4',k*.9));
+  g.addColorStop(1,'rgba(255,233,196,0)');
+  c.globalAlpha=.5;c.fillStyle=g;
+  c.beginPath();c.moveTo(-S*.30,S*.72);c.lineTo(S*.30,S*.72);
+  c.lineTo(S*.85,S*1.5);c.lineTo(-S*.85,S*1.5);c.closePath();c.fill();
+  c.globalAlpha=1;
+  c.restore();
+ },
+ seats(c,x,y,S,k){
+  c.save();c.translate(x,y);
+  const chair=(cx,bag)=>{
+   c.fillStyle=aCol('#6d5c74',k);
+   aRR(c,cx-S*.34,-S*.60,S*.68,S*.72,S*.06);c.fill();   // back
+   c.fillStyle=aCol('#7e6b86',k);
+   aRR(c,cx-S*.40,S*.10,S*.80,S*.17,S*.04);c.fill();    // seat
+   c.fillStyle=aCol('#5a4b62',k);
+   c.fillRect(cx-S*.34,S*.27,S*.07,S*.52);
+   c.fillRect(cx+S*.27,S*.27,S*.07,S*.52);
+   if(bag){
+    c.fillStyle=aCol('#c07a95',k);
+    aRR(c,cx-S*.24,-S*.12,S*.48,S*.30,S*.06);c.fill();
+    c.strokeStyle=aCol('#a9647f',k);c.lineWidth=1.6;
+    c.beginPath();c.arc(cx,-S*.12,S*.16,Math.PI,0);c.stroke();
+   }
+  };
+  chair(-S*.52,true);
+  chair( S*.52,false);
+  c.restore();
+ },
+ hanger(c,x,y,S,k){
+  c.save();c.translate(x,y);
+  /* a rail, and one shirt still on it */
+  c.strokeStyle=aCol('#8b7a91',k);c.lineWidth=2;
+  c.beginPath();c.moveTo(-S*1.25,-S*.95);c.lineTo(S*1.25,-S*.95);c.stroke();
+  c.strokeStyle=aCol('#6f6076',k);c.lineWidth=1.6;
+  c.beginPath();c.moveTo(0,-S*.95);c.lineTo(0,-S*.72);c.stroke();
+  c.beginPath();c.moveTo(0,-S*.72);c.lineTo(-S*.26,-S*.55);c.stroke();
+  c.beginPath();c.moveTo(0,-S*.72);c.lineTo( S*.26,-S*.55);c.stroke();
+  c.save();c.translate(0,-S*.04);
+  ASCENES.shirt.shirt(c,0,0,S/62,aCol('#f3a8c2',k));
+  c.restore();
+  /* a price tag, because that is what makes it a shop and not a wardrobe */
+  c.strokeStyle=aCol('#8b7a91',k);c.lineWidth=1;
+  c.beginPath();c.moveTo(S*.30,-S*.50);c.lineTo(S*.46,-S*.30);c.stroke();
+  c.fillStyle=aCol('#efe6ec',k);
+  aRR(c,S*.40,-S*.30,S*.26,S*.17,S*.03);c.fill();
+  c.restore();
+ },
+ scooterAlone(c,x,y,S,k){
+  /* filled silhouette rather than a line drawing — at this size the strokes
+     read as a bicycle, and the whole point is that it is the scooter */
+  c.save();c.translate(x,y);
+  const body=aCol('#4a2f3e',k), trim=aCol('#7a5468',k);
+  const wheel=(wx)=>{
+   c.fillStyle=body;c.beginPath();c.arc(wx,S*.34,S*.20,0,7);c.fill();
+   c.fillStyle=aCol('#c9b3c2',k);c.beginPath();c.arc(wx,S*.34,S*.095,0,7);c.fill();
+  };
+  wheel(-S*.44);wheel(S*.46);
+  /* the rear cowl and the floorboard — the shape that says scooter */
+  c.fillStyle=body;
+  c.beginPath();
+  c.moveTo(-S*.68,S*.10);
+  c.quadraticCurveTo(-S*.70,-S*.20,-S*.40,-S*.24);
+  c.lineTo(-S*.10,-S*.24);
+  c.quadraticCurveTo(S*.04,-S*.22,S*.10,S*.06);
+  c.lineTo(S*.34,S*.10);
+  c.lineTo(S*.34,S*.26);
+  c.lineTo(-S*.18,S*.26);
+  c.quadraticCurveTo(-S*.42,S*.26,-S*.50,S*.20);
+  c.closePath();c.fill();
+  /* the front shield rising to the bars */
+  c.beginPath();
+  c.moveTo(S*.30,S*.14);
+  c.quadraticCurveTo(S*.44,-S*.26,S*.50,-S*.52);
+  c.lineTo(S*.66,-S*.50);
+  c.quadraticCurveTo(S*.58,-S*.12,S*.52,S*.16);
+  c.closePath();c.fill();
+  /* handlebar */
+  c.strokeStyle=body;c.lineWidth=Math.max(2,S*.05);c.lineCap='round';
+  c.beginPath();c.moveTo(S*.42,-S*.58);c.lineTo(S*.74,-S*.62);c.stroke();
+  /* the seat, and the empty half of it */
+  c.fillStyle=trim;
+  aRR(c,-S*.62,-S*.36,S*.56,S*.15,S*.07);c.fill();
+  c.setLineDash([3,5]);
+  c.strokeStyle=aCol('#c98aa8',Math.max(k,.30));c.lineWidth=1.6;
+  c.beginPath();c.ellipse(-S*.40,-S*.40,S*.20,S*.085,-.10,0,7);c.stroke();
+  c.setLineDash([]);
+  c.restore();
+ },
+ onePlate(c,x,y,S,k){
+  c.save();c.translate(x,y);
+  c.fillStyle=aCol('#efe6ec',k);
+  c.beginPath();c.ellipse(0,S*.30,S*.92,S*.34,0,0,7);c.fill();
+  c.strokeStyle=aCol('#d5c6d0',k);c.lineWidth=1.2;
+  c.beginPath();c.ellipse(0,S*.30,S*.70,S*.24,0,0,7);c.stroke();
+  const st=c.fillStyle;
+  c.save();
+  /* one puri, and nothing poured into it */
+  const g=c.createRadialGradient(-S*.12,-S*.08,S*.03,0,S*.02,S*.40);
+  g.addColorStop(0,aCol('#f6dcae',k));
+  g.addColorStop(.6,aCol('#e6c088',k));
+  g.addColorStop(1,aCol('#c99b5f',k));
+  c.fillStyle=g;c.beginPath();c.arc(0,S*.02,S*.36,0,7);c.fill();
+  c.fillStyle=aCol('#7a4e28',k);
+  c.beginPath();c.ellipse(0,-S*.22,S*.16,S*.07,0,0,7);c.fill();
+  c.restore();
+  c.fillStyle=st;
+  c.restore();
+ },
+ quietPhone(c,x,y,S,k){
+  /* the body stays dark whatever happens, so this one comes back by
+     lighting up rather than by changing colour */
+  c.save();c.translate(x,y);
+  if(k>.5){
+   const g=c.createRadialGradient(0,0,0,0,0,S*1.5);
+   g.addColorStop(0,`rgba(255,170,205,${.42*(k-.5)/.5})`);
+   g.addColorStop(1,'rgba(255,170,205,0)');
+   c.fillStyle=g;c.beginPath();c.arc(0,0,S*1.5,0,7);c.fill();
+  }
+  c.fillStyle=aCol('#3b2b3e',Math.min(1,k+.25));
+  aRR(c,-S*.34,-S*.72,S*.68,S*1.44,S*.12);c.fill();
+  c.fillStyle=k>.5?'#ffe9f3':aCol('#4e4152',k);
+  aRR(c,-S*.28,-S*.65,S*.56,S*1.28,S*.08);c.fill();
+  c.textAlign='center';c.textBaseline='middle';
+  if(k>.5){
+   /* a call coming in, which is the thing that never happened */
+   c.fillStyle='#d4467c';
+   c.font=`500 ${Math.max(7,S*.15)}px Lora,Georgia,serif`;
+   c.fillText('20:45',0,-S*.30);
+   c.strokeStyle='#e8729a';c.lineWidth=Math.max(1.4,S*.035);c.lineCap='round';
+   for(let i=-3;i<=3;i++){
+    const hgt=S*.30*(.3+.7*Math.abs(Math.sin(i*1.1)))*(1-Math.abs(i)/4.4);
+    c.beginPath();c.moveTo(i*S*.075,-hgt/2+S*.08);c.lineTo(i*S*.075,hgt/2+S*.08);c.stroke();
+   }
+  }else{
+   c.fillStyle=aCol('#9c8fa6',Math.max(k,.30));
+   c.font=`500 ${Math.max(8,S*.18)}px 'IBM Plex Mono',ui-monospace,monospace`;
+   c.fillText('20:45',0,-S*.16);
+  }
+  c.restore();
+ },
+
+ /* ---------- state ---------- */
+ init(A,W,H){
+  const caps=AL(A.key,'captions');
+  A.items=[
+   {f:'corridor',     cap:caps[0]||''},
+   {f:'seats',        cap:caps[1]||''},
+   {f:'hanger',       cap:caps[2]||''},
+   {f:'scooterAlone', cap:caps[3]||''},
+   {f:'onePlate',     cap:caps[4]||''},
+   {f:'quietPhone',   cap:caps[5]||''}
+  ];
+  /* where each one sits once everything gathers and she can reach them */
+  const spots=[[.24,.30],[.72,.26],[.22,.55],[.76,.55],[.30,.80],[.72,.80]];
+  A.items.forEach((it,i)=>{
+   it.on=false;it.pop=0;
+   it.gx=spots[i][0]*W;it.gy=spots[i][1]*H;
+  });
+  A.restored=0;A.asked=false;A.finished=0;A.ripples=[];
+ },
+
+ /* ---------- what she taps ---------- */
+ tap(A,x,y,W,H){
+  if(!A.gathered)return;
+  const R=Math.min(W,H)*.17;
+  for(const it of A.items){
+   if(it.on)continue;
+   if(Math.hypot(x-it.gx,y-it.gy)<R){
+    it.on=true;A.restored++;
+    A.ripples.push({x:it.gx,y:it.gy,t:0});
+    try{AUDIO.fx(A.restored>=A.items.length?'win':'good')}catch(e){}
+    if(A.restored>=A.items.length)A.finished=performance.now();
+    return;
+   }
+  }
+ },
+
+ draw(A,c,W,H,t,P,pal){
+  if(!A.items)return;
+  const S=Math.min(W,H);
+  const drain  =aSeg(P,.05,.17);            // colour leaving
+  const tour   =aSeg(P,.17,.88);            // the empty year
+  const gather =aSeg(P,.88,1);              // everything comes to her
+
+  /* how much colour is in the world right now */
+  const back=A.restored/A.items.length;
+  const k=Math.max(1-drain, back);
+  A.bgA=aCol(pal.a,k*.95);
+  A.bgB=aCol(pal.b,k*.95);
+  A.gathered=gather>=1;
+
+  c.textAlign='center';c.textBaseline='middle';
+
+  /* ---- the line that starts it ---- */
+  if(P<.20){
+   const a=aSeg(P,.01,.06)*(1-aSeg(P,.15,.20));
+   if(a>0){
+    c.globalAlpha=a;
+    aGlowText(c,pal.dark||k<.55);
+    c.font=`500 ${Math.max(15,S*.050)}px 'Playfair Display',Georgia,serif`;
+    aWrap(c,AT(A.key,'open'),W*.78).forEach((ln,i,arr)=>
+     c.fillText(ln,W/2,H*.46+(i-(arr.length-1)/2)*S*.070));
+    aClearShadow(c);c.globalAlpha=1;
+   }
+  }
+
+  /* ---- the tour of the year that didn't happen ---- */
+  if(tour>0&&gather<1){
+   const n=A.items.length;
+   const slot=1/n, pos=tour*n;
+   for(let i=0;i<n;i++){
+    const local=pos-i;
+    if(local<=-.18||local>=1.18)continue;
+    const fade=Math.min(aEase(Math.min(1,(local+.18)/.34)),
+                        aEase(Math.min(1,(1.18-local)/.34)));
+    if(fade<=0)continue;
+    /* a slow drift, so it reads as moving through rather than flicking past */
+    const dx=(local-.5)*S*.16;
+    c.globalAlpha=fade;
+    const it=A.items[i];
+    this[it.f](c,W/2+dx,H*.44,S*.26,0);
+    if(it.cap){
+     c.fillStyle='rgba(180,170,190,.85)';
+     c.font=`italic ${Math.max(13,S*.042)}px Lora,Georgia,serif`;
+     aWrap(c,it.cap,W*.74).forEach((ln,j,arr)=>
+      c.fillText(ln,W/2+dx*.5,H*.78+(j-(arr.length-1)/2)*S*.055));
+    }
+    c.globalAlpha=1;
+   }
+  }
+
+  /* ---- everything gathers, and she is asked ---- */
+  if(gather>0){
+   const e=aEase(gather);
+   A.items.forEach((it,i)=>{
+    /* each one flies from the middle out to its own place */
+    const fx=aLerp(W/2,it.gx,e), fy=aLerp(H*.44,it.gy,e);
+    const sz=aLerp(S*.26,S*.115,e);
+    if(it.on&&it.pop<1)it.pop=Math.min(1,it.pop+.06);
+    const pop=1+Math.sin(it.pop*Math.PI)*.22;
+    c.save();
+    if(!it.on&&A.gathered){
+     /* the ones still grey breathe, so it's obvious they're waiting */
+     const b=1+Math.sin(t*1.7+i)*.035;
+     c.translate(fx,fy);c.scale(b,b);c.translate(-fx,-fy);
+    }
+    this[it.f](c,fx,fy,sz*pop,it.on?1:0);
+    c.restore();
+   });
+
+   /* ripples where she touched */
+   A.ripples.forEach(r=>{
+    r.t+=1/60;const rr=r.t*S*.55,a=Math.max(0,.5-r.t*.55);
+    if(a<=0)return;
+    c.strokeStyle=`rgba(244,160,188,${a})`;c.lineWidth=2;
+    c.beginPath();c.arc(r.x,r.y,rr,0,7);c.stroke();
+   });
+   A.ripples=A.ripples.filter(r=>r.t<1);
+
+   /* the instruction, then the closing lines */
+   if(A.restored<A.items.length){
+    c.globalAlpha=aEase(gather);
+    aGlowText(c,pal.dark||back<.55);
+    c.font=`600 ${Math.max(16,S*.055)}px 'Playfair Display',Georgia,serif`;
+    c.fillText(AT(A.key,'ask'),W/2,H*.075);
+    if(A.restored>0){
+     c.font=`400 ${Math.max(11,S*.034)}px 'IBM Plex Mono',ui-monospace,monospace`;
+     c.globalAlpha=aEase(gather)*.75;
+     c.fillText(A.restored+' of '+A.items.length,W/2,H*.128);
+    }
+    aClearShadow(c);c.globalAlpha=1;
+   }else{
+    const since=(performance.now()-A.finished)/1000;
+    const a=Math.min(1,since/1.1);
+    c.globalAlpha=a;
+    aGlowText(c,pal.dark);
+    c.font=`500 ${Math.max(14,S*.046)}px 'Playfair Display',Georgia,serif`;
+    /* clear of the skip button in the corner */
+    const lines=AL(A.key,'close');
+    let ly=H*.11;
+    lines.forEach(ln=>{
+     aWrap(c,ln,W*.74).forEach(w=>{c.fillText(w,W/2,ly);ly+=S*.058});
+     ly+=S*.022;
+    });
+    aClearShadow(c);c.globalAlpha=1;
+    /* let her sit in it for a moment, then hand over to the note */
+    if(since>4.2&&A.hold)A.release();
+   }
+  }
+ },
+
+ mark(c,s){
+  c.fillStyle='#8d7a93';aRR(c,s*.30,s*.16,s*.40,s*.68,s*.04);c.fill();
+  c.fillStyle='#f4a0bc';aRR(c,s*.38,s*.26,s*.24,s*.48,s*.03);c.fill();
+ }
+};
+
+/* ================= three he already described =================
+   The worm line he saved for a normal day, the haircut she is permanently
+   furious about, and the ride home from the internship. Nothing invented:
+   each one is a thing he told me, drawn.                                  */
+
+/* ---------------------------------------------------------------- 1 · the worm
+   A one-joke scene, and the joke has to turn at the end or it is just a pun.
+   The bird is not early because it wants to eat her. It is early because it
+   wants to be there first. That is the whole animation.                      */
+ASCENES.worm={
+ name:'If you were a worm',grp:'Ours',dur:34,
+ blurb:'The earliest bird. Waiting since before dawn, and not for the reason you think.',
+ solo:true,
+ /* [arrives, leaves] -- against the dark, the dawn, and the ones who turn
+    up at a reasonable hour */
+ cues:[[.03,.13],[.15,.26],[.42,.545],[.62,.73],[.79,2]],
+ def:{
+  words:['If you were a worm, I’d be the earliest bird.',
+         'Out here since three, in the dark, for no sensible reason.',
+         'The others turn up at a normal hour. I don’t rate them.',
+         'And no — not to eat you.',
+         'Just so that when you finally came up, I was already there.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+
+ init(A,W,H,R){
+  A.bgA='#14203a';A.bgB='#2a2b4e';
+  A.stars=[];for(let i=0;i<40;i++)A.stars.push({x:R(),y:R()*.55,r:.6+R()*1.3,tw:R()*6.3});
+ },
+
+ bird(c,x,y,s,t,who,a){
+  if(a<=0)return;
+  c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+  const bob=Math.sin(t*1.6+x*.05)*.7;
+  c.translate(0,bob);
+  const body=who==='me'?'#6d86c9':'#a9a3b8';
+  /* legs */
+  c.strokeStyle='#d99a54';c.lineWidth=1.6;c.lineCap='round';
+  c.beginPath();c.moveTo(-2.5,7);c.lineTo(-2.5,11);c.stroke();
+  c.beginPath();c.moveTo(2.5,7);c.lineTo(2.5,11);c.stroke();
+  /* body and the tail */
+  c.fillStyle=body;
+  c.beginPath();c.ellipse(0,2,8,7.5,0,0,7);c.fill();
+  c.beginPath();c.moveTo(6,0);c.lineTo(14,-4);c.lineTo(7,4);c.closePath();c.fill();
+  /* head */
+  c.beginPath();c.arc(-4,-6,5.4,0,7);c.fill();
+  c.fillStyle='#e8a961';
+  c.beginPath();c.moveTo(-9,-6);c.lineTo(-15,-4.6);c.lineTo(-9,-3);c.closePath();c.fill();
+  c.fillStyle='#1d1a26';
+  c.beginPath();c.arc(-5.4,-7.2,1.15,0,7);c.fill();
+  c.restore();
+ },
+ /* he has been here so long he brought a clock */
+ alarm(c,x,y,s,a,t){
+  if(a<=0)return;
+  c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+  c.fillStyle='#c9536b';
+  c.beginPath();c.arc(-4.6,-6.4,2.4,0,7);c.fill();
+  c.beginPath();c.arc(4.6,-6.4,2.4,0,7);c.fill();
+  c.fillStyle='#e8e2ea';c.beginPath();c.arc(0,0,7,0,7);c.fill();
+  c.strokeStyle='#4b4450';c.lineWidth=1.1;c.beginPath();c.arc(0,0,7,0,7);c.stroke();
+  /* stuck at three in the morning, which is the joke */
+  c.lineWidth=1.3;c.lineCap='round';
+  c.beginPath();c.moveTo(0,0);c.lineTo(3.4,0);c.stroke();
+  c.beginPath();c.moveTo(0,0);c.lineTo(0,-4.6);c.stroke();
+  /* and it rings, because of course it does */
+  const ring=Math.sin(t*9)>0?1:0;
+  if(ring){
+   c.strokeStyle='#e8c07a';c.lineWidth=1;
+   [[-9,-9],[9,-9]].forEach(([bx,by])=>{
+    c.beginPath();c.arc(bx,by,3.2,0,Math.PI*1.4);c.stroke();
+   });
+  }
+  c.restore();
+ },
+ ground(c,W,H,y,dawn){
+  c.fillStyle=aMix('#2d2338','#5c4436',dawn);
+  c.fillRect(0,y,W,H-y);
+  c.fillStyle=aMix('#3a2c45','#6d5140',dawn);
+  c.beginPath();c.ellipse(W*.5,y,W*.6,H*.035,0,0,7);c.fill();
+ },
+ /* she comes up out of the soil, unhurried, in her own time */
+ worm(c,x,y,s,t,up){
+  if(up<=0)return;
+  c.save();c.translate(x,y);c.scale(s,s);
+  const h=aEase(up)*15;
+  c.strokeStyle='#e08a9c';c.lineWidth=5.2;c.lineCap='round';
+  c.beginPath();
+  c.moveTo(0,2);
+  c.quadraticCurveTo(Math.sin(t*1.4)*3.5,2-h*.6,Math.sin(t*1.4)*2.2,2-h);
+  c.stroke();
+  if(up>.55){
+   c.fillStyle='#2b1f28';
+   const ey=2-h, ex=Math.sin(t*1.4)*2.2;
+   c.beginPath();c.arc(ex-1.3,ey-.6,.75,0,7);c.fill();
+   c.beginPath();c.arc(ex+1.3,ey-.6,.75,0,7);c.fill();
+  }
+  c.restore();
+ },
+
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), gy=H*.50;
+  const dawn=aSeg(P,.29,.55);
+  A.bgA=aMix('#14203a','#ffd9a8',dawn);
+  A.bgB=aMix('#2a2b4e','#f5a9a0',dawn);
+
+  /* the stars go out as it gets light */
+  const sa=1-dawn;
+  if(sa>0)A.stars.forEach(s=>{
+   c.globalAlpha=sa*(.35+.65*(Math.sin(t*1.4+s.tw)*.5+.5));
+   c.fillStyle='#fff';
+   c.beginPath();c.arc(s.x*W,s.y*gy,s.r,0,7);c.fill();
+  });
+  c.globalAlpha=1;
+
+  /* the sun, eventually */
+  if(dawn>0){
+   const sy=aLerp(gy+S*.10,gy-S*.10,dawn);
+   const g=c.createRadialGradient(W*.78,sy,0,W*.78,sy,S*.30);
+   g.addColorStop(0,`rgba(255,220,150,${.75*dawn})`);
+   g.addColorStop(1,'rgba(255,220,150,0)');
+   c.fillStyle=g;c.beginPath();c.arc(W*.78,sy,S*.30,0,7);c.fill();
+   c.fillStyle=`rgba(255,236,190,${dawn})`;
+   c.beginPath();c.arc(W*.78,sy,S*.048,0,7);c.fill();
+  }
+
+  this.ground(c,W,H,gy,dawn);
+
+  /* him, already there, since long before any of this */
+  this.bird(c,W*.435,gy-S*.035,S*.0130,t,'me',1);
+  this.alarm(c,W*.545,gy-S*.010,S*.0072,1-aSeg(P,.58,.70),t);
+
+  /* the reasonable birds, arriving at a reasonable hour */
+  const late=aSeg(P,.43,.56);
+  for(let i=0;i<3;i++){
+   const a=Math.min(1,Math.max(0,late*3-i));
+   this.bird(c,W*(.635+i*.125),gy-S*.026,S*.0112,t,'them',a);
+  }
+
+  /* and her, coming up when she is ready and not before */
+  this.worm(c,W*.195,gy-S*.005,S*.0105,t,aSeg(P,.66,.84));
+ },
+
+ mark(c,s){
+  c.strokeStyle='#e08a9c';c.lineWidth=s*.075;c.lineCap='round';
+  c.beginPath();c.moveTo(s*.28,s*.72);
+  c.quadraticCurveTo(s*.20,s*.50,s*.29,s*.36);c.stroke();
+  c.fillStyle='#6d86c9';
+  c.beginPath();c.ellipse(s*.62,s*.60,s*.16,s*.145,0,0,7);c.fill();
+  c.beginPath();c.arc(s*.50,s*.45,s*.105,0,7);c.fill();
+  c.fillStyle='#e8a961';
+  c.beginPath();c.moveTo(s*.41,s*.45);c.lineTo(s*.30,s*.48);c.lineTo(s*.41,s*.51);c.closePath();c.fill();
+ }
+};
+
+
+/* ------------------------------------------------------------ 2 · the haircut
+   His line, handed back to her: there is now somebody in your life who you
+   love the most and who does not listen to you at all. It is him. It is
+   about his hair. The scene has to be funny and then slightly sorry.       */
+ASCENES.haircut={
+ name:'The haircut',grp:'Ours',dur:40,
+ blurb:'He cuts it short. She is furious. He does it again.',
+ light:true,   /* pale ground: dark letters, pale scrim */
+ solo:true,
+ /* [arrives, leaves] -- the rule, the cut, her face, and him going again */
+ cues:[[.02,.10],[.11,.19],
+       [.28,.37],
+       [.46,.545],[.55,.63],
+       [.80,2]],
+ def:{
+  words:['You have exactly one rule for me.',
+         'Not that short. That’s it. That’s the whole rule.',
+         'I have broken it every single time.',
+         'So now there’s somebody in your life who you love the most,',
+         'and who does not listen to a word you say.',
+         'It’s me. It’s about my hair. I’m going again next month.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+
+ init(A,W,H,R){
+  A.bgA='#f6e4d8';A.bgB='#e8b9c6';
+  A.snip=[];for(let i=0;i<20;i++)A.snip.push({x:(R()-.5),d:R(),sp:.5+R()*.9,r:R()*6.3});
+ },
+
+ /* him, without the cap for once -- the cap is the reason you never see the
+    hair in any of the other scenes, and this scene is entirely about the hair.
+    hair: 1 is how she likes it, 0 is what he keeps doing to it. */
+ guy(c,x,y,s,hair,happy){
+  c.save();c.translate(x,y);c.scale(s,s);
+  c.fillStyle='#5c6b9c';
+  c.beginPath();
+  c.moveTo(-14,34);c.quadraticCurveTo(-16,2,-9,-6);
+  c.lineTo(9,-6);c.quadraticCurveTo(16,2,14,34);
+  c.closePath();c.fill();
+  c.strokeStyle='#5c6b9c';c.lineWidth=7;c.lineCap='round';
+  c.beginPath();c.moveTo(-10,2);c.lineTo(-16,20);c.stroke();
+  c.beginPath();c.moveTo(10,2);c.lineTo(16,20);c.stroke();
+  c.fillStyle='#c08a63';
+  c.beginPath();c.arc(0,-20,13,0,7);c.fill();
+  /* what is left of it */
+  if(hair>.04){
+   /* the amount has to change the SHAPE, not just nudge it: a full head sits
+      proud of the skull, a buzz cut sits inside it */
+   const r=11.4+hair*2.9, ry=-20.4-hair*2.4;
+   c.fillStyle='#2f2129';
+   c.beginPath();c.arc(0,ry,r,Math.PI,0);c.fill();
+   c.fillRect(-r,ry-.6,r*2,1.2+hair*6.8);
+  }else{
+   c.fillStyle='rgba(47,33,41,.20)';
+   c.beginPath();c.arc(0,-21,13.2,Math.PI,0);c.fill();
+  }
+  c.fillStyle='#1d1a26';
+  c.beginPath();c.arc(-4.5,-20,1.7,0,7);c.fill();
+  c.beginPath();c.arc(4.5,-20,1.7,0,7);c.fill();
+  c.strokeStyle='#1d1a26';c.lineWidth=1.6;c.lineCap='round';
+  c.beginPath();
+  if(happy)c.arc(0,-16,5.5,.25,Math.PI-.25);
+  else{c.moveTo(-4.5,-13.6);c.quadraticCurveTo(0,-15.6,4.5,-13.6)}
+  c.stroke();
+  c.restore();
+ },
+ /* her, arms folded, saying nothing, which is worse */
+ girl(c,x,y,s,t){
+  c.save();c.translate(x,y);c.scale(s,s);
+  c.fillStyle='#e8729a';
+  c.beginPath();
+  c.moveTo(-14,34);c.quadraticCurveTo(-16,2,-9,-6);
+  c.lineTo(9,-6);c.quadraticCurveTo(16,2,14,34);
+  c.closePath();c.fill();
+  /* folded, not hanging */
+  c.strokeStyle='#d2traits';c.strokeStyle='#d2648d';c.lineWidth=6.4;c.lineCap='round';
+  c.beginPath();c.moveTo(-12,5);c.lineTo(11,2);c.stroke();
+  c.beginPath();c.moveTo(-11,10);c.lineTo(12,7);c.stroke();
+  c.fillStyle='#d9a583';
+  c.beginPath();c.arc(0,-20,13,0,7);c.fill();
+  c.fillStyle='#2f2129';
+  c.beginPath();c.arc(0,-22,14,Math.PI,0);c.fill();
+  c.beginPath();c.ellipse(-13,-14,5,12,.2,0,7);c.fill();
+  c.beginPath();c.ellipse(13,-14,5,12,-.2,0,7);c.fill();
+  c.fillStyle='#1d1a26';
+  c.beginPath();c.arc(-4.5,-20,1.7,0,7);c.fill();
+  c.beginPath();c.arc(4.5,-20,1.7,0,7);c.fill();
+  c.strokeStyle='#1d1a26';c.lineWidth=1.6;c.lineCap='round';
+  c.beginPath();c.arc(0,-9,5.2,Math.PI*1.18,Math.PI*1.82);c.stroke();
+  c.restore();
+ },
+ /* one small cloud, well clear of her head, entirely for him */
+ cloud(c,x,y,s,a,t){
+  if(a<=0)return;
+  c.save();c.globalAlpha=a;
+  const bob=Math.sin(t*1.5)*s*.9;
+  c.fillStyle='#7d6a92';
+  [[-10,0,8.5],[0,-4,11],[10,0,8]].forEach(([dx,dy,r])=>{
+   c.beginPath();c.arc(x+s*dx,y+s*dy+bob,s*r,0,7);c.fill();
+  });
+  c.fillStyle='#6a5980';
+  aRR(c,x-s*15,y+bob,s*30,s*5,s*2.5);c.fill();
+  c.strokeStyle='#8f7fc2';c.lineWidth=s*1.9;c.lineCap='round';
+  [-8,0,8].forEach((dx,i)=>{
+   const d=(t*1.5+i*.33)%1;
+   c.globalAlpha=a*(1-d)*.9;
+   c.beginPath();
+   c.moveTo(x+s*dx,y+s*6+bob+d*s*11);
+   c.lineTo(x+s*(dx-2),y+s*11+bob+d*s*11);
+   c.stroke();
+  });
+  c.restore();
+ },
+ scissors(c,x,y,s,open,a){
+  if(a<=0)return;
+  c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);c.rotate(-.35);
+  c.strokeStyle='#6e7a89';c.lineWidth=2.1;c.lineCap='round';
+  [1,-1].forEach(d=>{
+   c.beginPath();c.moveTo(11,d*(1+open*2.6));c.lineTo(-5,d*.4);c.stroke();
+   c.beginPath();c.arc(-9,d*(2.4+open*3),3,0,7);c.stroke();
+  });
+  c.restore();
+ },
+
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), base=H*.40, fs=S*.0056;
+  const cut  = aSeg(P,.20,.27);
+  const proud= aSeg(P,.27,.35);
+  const her  = aSeg(P,.40,.46);
+  const again= aSeg(P,.78,.90);          /* and he does it again anyway */
+
+  /* it grows back a little, and then he cuts it again */
+  const hair = aLerp(1,0,cut)*(1-aSeg(P,.64,.76)) + aSeg(P,.64,.76)*aLerp(.45,0,again);
+  const busy = Math.max(cut<1?cut:0, again>0&&again<1?1:0);
+  const hx   = aLerp(W*.50,W*.33,her);
+
+  /* the hair on the floor */
+  if(busy>0){
+   A.snip.forEach(p=>{
+    const u=((t*p.sp*.55+p.d)%1);
+    c.globalAlpha=busy*(1-u)*.8;
+    c.fillStyle='#2f2129';
+    c.save();
+    c.translate(hx+p.x*S*.085, base-S*.115+u*S*.20);
+    c.rotate(p.r+t*p.sp);
+    c.fillRect(-S*.011,-S*.003,S*.022,S*.006);
+    c.restore();
+   });
+   c.globalAlpha=1;
+  }
+
+  const bobM=Math.sin(t*.95)*S*.0035;
+  this.guy(c,hx,base+bobM,fs,hair,proud>.4||again>.4);
+  /* the scissors hover from the start -- waiting is part of the joke */
+  const idle=Math.sin(t*1.1)*S*.006;
+  /* clear of his head -- at the old offset the finger loops sat on his cheek */
+  this.scissors(c,hx+S*.135+idle,base-S*.205+bobM,fs*1.5,
+                busy>0?Math.abs(Math.sin(t*6)):.25+.25*Math.sin(t*1.4),
+                Math.max(busy,.45));
+
+  if(her>0){
+   c.globalAlpha=her;
+   this.girl(c,W*.68,base+Math.sin(t*.8+2)*S*.0035,fs,t);
+   c.globalAlpha=1;
+   this.cloud(c,W*.68,base-S*.225,fs*.62,her,t);
+  }
+ },
+
+ mark(c,s){
+  c.fillStyle='#c08a63';
+  c.beginPath();c.arc(s*.46,s*.60,s*.27,0,7);c.fill();
+  c.fillStyle='rgba(47,33,41,.24)';
+  c.beginPath();c.arc(s*.46,s*.58,s*.273,Math.PI,0);c.fill();
+  c.strokeStyle='#6e7a89';c.lineWidth=s*.05;c.lineCap='round';
+  c.beginPath();c.moveTo(s*.62,s*.16);c.lineTo(s*.90,s*.38);c.stroke();
+  c.beginPath();c.moveTo(s*.62,s*.38);c.lineTo(s*.90,s*.16);c.stroke();
+  c.beginPath();c.arc(s*.58,s*.20,s*.055,0,7);c.stroke();
+  c.beginPath();c.arc(s*.58,s*.34,s*.055,0,7);c.stroke();
+ }
+};
+
+
+/* --------------------------------------------------------- 3 · the ride home
+   Six o'clock, every evening of the internship. It rhymes on purpose with
+   Before and with 22 April: a seat that is empty, and then isn't.         */
+ASCENES.ride={
+ name:'The ride home',grp:'Ours',dur:40,
+ blurb:'Six o’clock, the scooter, and the seat behind him that stopped being empty.',
+ solo:true,
+ /* [arrives, leaves] -- waiting, getting on, rolling, and the two months */
+ cues:[[.03,.16],[.24,.355],[.42,.53],[.58,.70],[.76,2]],
+ def:{
+  words:['Six o’clock. Same gate, same scooter, same twenty minutes.',
+         'It wasn’t the first day. It took a while to become every day.',
+         'And then you never asked again — you just got on.',
+         'Two months of taking you home.',
+         'Still the best part of that whole job.']
+ },
+ fields:[{f:'words',l:'The lines that float over it',h:'One per line.'}],
+
+ init(A,W,H,R){
+  A.bgA='#ffb07a';A.bgB='#6b4a72';
+  A.lamp=[];for(let i=0;i<7;i++)A.lamp.push({x:i/7});
+  A.dust=[];for(let i=0;i<18;i++)A.dust.push({x:R(),y:R(),sp:.4+R()*1.2});
+ },
+
+ scoot(c,x,y,s,t,roll,rider2){
+  c.save();c.translate(x,y);c.scale(s,s);
+  const wob=Math.sin(t*9)*(roll?.5:0);
+  c.translate(0,wob);
+  /* wheels */
+  c.fillStyle='#2b2630';
+  [[-18,0],[18,0]].forEach(([wx])=>{
+   c.beginPath();c.arc(wx,0,8.2,0,7);c.fill();
+   c.fillStyle='#8d8797';c.beginPath();c.arc(wx,0,3.4,0,7);c.fill();
+   c.fillStyle='#2b2630';
+  });
+  /* body */
+  c.fillStyle='#4a6fa5';
+  c.beginPath();
+  c.moveTo(-18,-3);c.quadraticCurveTo(-13,-13,-4,-13);
+  c.lineTo(11,-13);c.quadraticCurveTo(19,-11,18,-3);
+  c.quadraticCurveTo(4,2,-18,-3);c.closePath();c.fill();
+  /* the long seat: his bit, and the bit behind it */
+  c.fillStyle='#2f2b36';
+  aRR(c,-15,-19,17,6,3);c.fill();
+  c.fillStyle=rider2?'#2f2b36':'#413c4a';
+  aRR(c,1,-20,15,6,3);c.fill();
+  /* handlebar and the light */
+  c.strokeStyle='#3b3644';c.lineWidth=2.6;c.lineCap='round';
+  c.beginPath();c.moveTo(13,-13);c.lineTo(19,-25);c.lineTo(26,-25);c.stroke();
+  c.fillStyle='#ffe0a8';
+  c.beginPath();c.arc(22,-19,3,0,7);c.fill();
+  c.restore();
+ },
+ rider(c,x,y,s,who,t,hold,opt){
+  c.save();c.translate(x,y);
+  /* scenes that borrow this need the face too -- he is not always pleased */
+  pdFig(c,0,0,s,who,opt||{});
+  if(hold){
+   /* she holds on, which took her a while to start doing */
+   c.strokeStyle='#e8729a';c.lineWidth=s*6.5;c.lineCap='round';
+   c.beginPath();c.moveTo(-s*9,s*2);c.lineTo(-s*24,s*4);c.stroke();
+  }
+  c.restore();
+ },
+ street(c,W,H,y,t,roll,A){
+  /* the lamps live in the band just above the road, not up the whole sky */
+  const s=Math.min(W,H);
+  A.lamp.forEach(p=>{
+   const u=((p.x - t*roll*.16)%1+1)%1;
+   const lx=u*W*1.25-W*.12, top=y-s*.30;
+   c.strokeStyle='rgba(52,42,62,.95)';c.lineWidth=s*.010;c.lineCap='round';
+   c.beginPath();c.moveTo(lx,y);c.lineTo(lx,top);c.stroke();
+   c.beginPath();c.moveTo(lx,top);c.quadraticCurveTo(lx+s*.035,top-s*.012,lx+s*.055,top);c.stroke();
+   c.fillStyle='#ffe0a8';
+   c.beginPath();c.ellipse(lx+s*.055,top+s*.006,s*.016,s*.010,0,0,7);c.fill();
+   const g=c.createRadialGradient(lx+s*.055,top,0,lx+s*.055,top,s*.20);
+   g.addColorStop(0,'rgba(255,214,150,.26)');
+   g.addColorStop(1,'rgba(255,214,150,0)');
+   c.fillStyle=g;c.beginPath();c.arc(lx+s*.055,top,s*.20,0,7);c.fill();
+  });
+  /* the road itself, and the dashes that carry the speed */
+  c.fillStyle='#3a2f45';c.fillRect(0,y,W,H-y);
+  c.strokeStyle='rgba(255,236,200,.45)';c.lineWidth=s*.008;
+  c.setLineDash([s*.055,s*.065]);
+  c.lineDashOffset=-(t*roll*s*.66)%(s*.12);
+  c.beginPath();c.moveTo(0,y+(H-y)*.30);c.lineTo(W,y+(H-y)*.30);c.stroke();
+  c.setLineDash([]);
+ },
+
+ draw(A,c,W,H,t,P){
+  const S=Math.min(W,H), gy=H*.40;
+  const ss=S*.0088, rr=S*.0047;          /* a scooter, and people the size of people */
+  const wait  = 1-aSeg(P,.22,.33);
+  const onNow = aSeg(P,.25,.36);
+  const roll  = aSeg(P,.42,.55);
+  const hold  = aSeg(P,.58,.70);
+
+  this.street(c,W,H,gy,t,roll,A);
+
+  /* the office gate, only while he is still waiting outside it */
+  if(wait>0){
+   c.globalAlpha=wait;
+   c.fillStyle='#4b3b52';
+   aRR(c,W*.015,gy-S*.30,W*.17,S*.30,S*.008);c.fill();
+   c.fillStyle='#ffe0a8';
+   aRR(c,W*.05,gy-S*.24,W*.048,S*.075,S*.006);c.fill();
+   c.globalAlpha=1;
+  }
+
+  /* even standing still it ticks over, and he shifts about waiting */
+  const idle=(1-roll)*Math.sin(t*7.5)*S*.0022 + Math.sin(t*.9)*S*.003;
+  const sx=W*.50, sy=gy+S*.075+idle;
+  const seatY=sy-19*ss;                  /* where a person actually sits */
+  this.scoot(c,sx,sy,ss,t,roll,onNow>.5);
+  this.rider(c,sx-7*ss, seatY-23*rr, rr,'m',t,false);
+  if(onNow>0){
+   const u=aEase(onNow);
+   const ex=aLerp(W*.12, sx+9*ss, u);
+   const ey=aLerp(gy+S*.03, seatY-24*rr, u);
+   c.globalAlpha=Math.min(1,onNow*2.4);
+   this.rider(c,ex,ey,rr,'z',t,hold>.4&&onNow>.92);
+   c.globalAlpha=1;
+  }
+
+  /* road dust, so the bottom of the frame is never dead */
+  if(roll>0)A.dust.forEach(p=>{
+   const u=((p.x - t*p.sp*.30)%1+1)%1;
+   c.globalAlpha=roll*.16;
+   c.fillStyle='#d8c3b0';
+   c.beginPath();c.arc(u*W, gy+S*.13+p.y*S*.07, S*.005,0,7);c.fill();
+  });
+  c.globalAlpha=1;
+ },
+
+ mark(c,s){
+  c.fillStyle='#4a6fa5';
+  c.beginPath();
+  c.moveTo(s*.18,s*.60);c.quadraticCurveTo(s*.26,s*.44,s*.39,s*.44);
+  c.lineTo(s*.62,s*.44);c.quadraticCurveTo(s*.76,s*.48,s*.76,s*.60);
+  c.closePath();c.fill();
+  c.fillStyle='#2b2630';
+  c.beginPath();c.arc(s*.28,s*.66,s*.105,0,7);c.fill();
+  c.beginPath();c.arc(s*.68,s*.66,s*.105,0,7);c.fill();
+  c.fillStyle='#5c6b9c';
+  c.beginPath();c.arc(s*.41,s*.31,s*.077,0,7);c.fill();
+  c.fillStyle='#e8729a';
+  c.beginPath();c.arc(s*.57,s*.31,s*.077,0,7);c.fill();
+ }
+};
+
+/* ================= the day that never happened =================
+   Black, grey and white from the 5am rollover until the night. Five openings,
+   each one further through the year, every beat dated. Then one tap puts the
+   whole thing back at once, and what follows is the opposite of the day: the
+   two of you, in colour, being ridiculous. Then the letter.              */
+
+/* ---------- more things, drawn alone ---------- */
+const PD_OBJ={};
+
+PD_OBJ.blankLetter=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);c.rotate(-.04);
+ c.fillStyle=aCol('#fffaf2',k);
+ c.strokeStyle=aCol('#b9a8b4',k);c.lineWidth=1.1;
+ aRR(c,-S*.52,-S*.70,S*1.04,S*1.40,S*.03);c.fill();c.stroke();
+ c.strokeStyle=aCol('#ded0da',k);c.lineWidth=1;
+ for(let i=1;i<=8;i++){
+  const ly=-S*.70+S*1.40*(i/9);
+  c.beginPath();c.moveTo(-S*.40,ly);c.lineTo(S*.40,ly);c.stroke();
+ }
+ c.save();c.translate(S*.10,S*.52);c.rotate(-.35);
+ c.fillStyle=aCol('#4a3a52',k);aRR(c,-S*.34,-S*.035,S*.68,S*.07,S*.035);c.fill();
+ c.fillStyle=aCol('#8a6f86',k);aRR(c,S*.16,-S*.04,S*.20,S*.08,S*.035);c.fill();
+ c.restore();
+ c.restore();
+};
+
+PD_OBJ.emptyVase=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);
+ c.fillStyle=aCol('#dfe8ee',k);
+ c.beginPath();
+ c.moveTo(-S*.22,-S*.55);
+ c.quadraticCurveTo(-S*.40,-S*.05,-S*.30,S*.40);
+ c.quadraticCurveTo(-S*.26,S*.58,0,S*.58);
+ c.quadraticCurveTo(S*.26,S*.58,S*.30,S*.40);
+ c.quadraticCurveTo(S*.40,-S*.05,S*.22,-S*.55);
+ c.closePath();c.fill();
+ c.fillStyle=aCol('#c3ced8',k);
+ c.beginPath();c.ellipse(0,-S*.55,S*.22,S*.08,0,0,7);c.fill();
+ c.fillStyle='rgba(40,40,44,.22)';
+ c.beginPath();c.ellipse(0,-S*.48,S*.16,S*.055,0,0,7);c.fill();
+ c.restore();
+};
+
+PD_OBJ.oneCup=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);
+ const cup=(cx,used)=>{
+  c.fillStyle=aCol(used?'#f3e7ef':'#eee3ea',k);
+  c.beginPath();
+  c.moveTo(cx-S*.26,-S*.26);c.lineTo(cx-S*.20,S*.28);
+  c.quadraticCurveTo(cx,S*.36,cx+S*.20,S*.28);
+  c.lineTo(cx+S*.26,-S*.26);c.closePath();c.fill();
+  c.strokeStyle=aCol('#b9a8b4',k);c.lineWidth=1.4;
+  c.beginPath();c.arc(cx+S*.34,S*.0,S*.13,-1.1,1.1);c.stroke();
+  if(used){
+   c.fillStyle=aCol('#9c6f52',k);
+   c.beginPath();c.ellipse(cx,-S*.24,S*.25,S*.075,0,0,7);c.fill();
+  }else{
+   c.strokeStyle=aCol('#cbb9c6',k);c.lineWidth=1;
+   c.beginPath();c.ellipse(cx,-S*.26,S*.25,S*.075,0,0,7);c.stroke();
+  }
+ };
+ cup(-S*.40,true);
+ c.globalAlpha=.5;cup(S*.42,false);c.globalAlpha=1;
+ c.restore();
+};
+
+PD_OBJ.plainCalendar=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);
+ c.fillStyle=aCol('#fdf7fa',k);
+ c.strokeStyle=aCol('#b9a8b4',k);c.lineWidth=1.2;
+ aRR(c,-S*.62,-S*.62,S*1.24,S*1.24,S*.05);c.fill();c.stroke();
+ c.fillStyle=aCol('#8b7a91',k);
+ aRR(c,-S*.62,-S*.62,S*1.24,S*.24,S*.05);c.fill();
+ c.strokeStyle=aCol('#e0d4dc',k);c.lineWidth=1;
+ for(let r=0;r<5;r++)for(let col=0;col<7;col++){
+  const gx=-S*.56+col*S*.16, gy=-S*.30+r*S*.17;
+  c.strokeRect(gx,gy,S*.14,S*.14);
+ }
+ c.restore();
+};
+
+PD_OBJ.cakeTin=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);
+ c.fillStyle=aCol('#cfd6dc',k);
+ c.beginPath();c.ellipse(0,S*.18,S*.56,S*.20,0,0,7);c.fill();
+ c.fillRect(-S*.56,-S*.16,S*1.12,S*.35);
+ c.fillStyle=aCol('#e2e8ed',k);
+ c.beginPath();c.ellipse(0,-S*.16,S*.56,S*.20,0,0,7);c.fill();
+ c.strokeStyle=aCol('#a9b4bd',k);c.lineWidth=1.3;
+ c.beginPath();c.ellipse(0,-S*.16,S*.40,S*.14,0,0,7);c.stroke();
+ c.fillStyle=aCol('#b9c3cb',k);
+ c.beginPath();c.ellipse(0,-S*.22,S*.10,S*.05,0,0,7);c.fill();
+ c.restore();
+};
+
+PD_OBJ.softToy=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);
+ c.strokeStyle=aCol('#a2909c',k);c.lineWidth=2.2;
+ c.beginPath();c.moveTo(-S*.95,S*.62);c.lineTo(S*.95,S*.62);c.stroke();
+ c.fillStyle=aCol('#d8b49a',k);
+ c.beginPath();c.arc(-S*.26,-S*.30,S*.16,0,7);c.fill();
+ c.beginPath();c.arc( S*.26,-S*.30,S*.16,0,7);c.fill();
+ c.beginPath();c.arc(0,-S*.14,S*.34,0,7);c.fill();
+ c.beginPath();c.ellipse(0,S*.30,S*.38,S*.32,0,0,7);c.fill();
+ c.fillStyle=aCol('#e8cdb8',k);
+ c.beginPath();c.ellipse(0,-S*.04,S*.17,S*.13,0,0,7);c.fill();
+ c.fillStyle=aCol('#4a3a42',k);
+ c.beginPath();c.arc(-S*.12,-S*.20,S*.035,0,7);c.fill();
+ c.beginPath();c.arc( S*.12,-S*.20,S*.035,0,7);c.fill();
+ c.beginPath();c.ellipse(0,-S*.09,S*.05,S*.035,0,0,7);c.fill();
+ c.strokeStyle=aCol('#a2909c',k);c.lineWidth=1;
+ c.beginPath();c.moveTo(S*.30,S*.14);c.lineTo(S*.48,S*.30);c.stroke();
+ c.fillStyle=aCol('#f4eef1',k);
+ aRR(c,S*.42,S*.30,S*.26,S*.17,S*.03);c.fill();
+ c.restore();
+};
+
+PD_OBJ.hairclip=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);
+ c.fillStyle=aCol('#f6eef2',k);
+ c.strokeStyle=aCol('#b9a8b4',k);c.lineWidth=1.1;
+ aRR(c,-S*.46,-S*.58,S*.92,S*1.16,S*.04);c.fill();c.stroke();
+ c.fillStyle=aCol('#d8c4d0',k);
+ c.beginPath();c.arc(0,-S*.48,S*.045,0,7);c.fill();
+ [['#e8729a',-.26],['#c9a4c8',0],['#f0bd7c',.26]].forEach(([col,oy])=>{
+  c.fillStyle=aCol(col,k);
+  aRR(c,-S*.30,S*(oy)-S*.05,S*.60,S*.10,S*.05);c.fill();
+  c.fillStyle='rgba(255,255,255,.28)';
+  aRR(c,-S*.24,S*(oy)-S*.03,S*.30,S*.035,S*.02);c.fill();
+ });
+ c.restore();
+};
+
+/* the shirt was hers already — it lives in her cupboard, and in the other
+   life it simply never comes out for anything that matters */
+PD_OBJ.cupboard=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);
+ /* carcass */
+ c.fillStyle=aCol('#8a6a52',k);
+ aRR(c,-S*.78,-S*.80,S*1.56,S*1.66,S*.04);c.fill();
+ c.fillStyle=aCol('#6f5442',k);
+ aRR(c,-S*.70,-S*.72,S*1.40,S*1.50,S*.03);c.fill();
+ /* the rail and what hangs off it */
+ c.strokeStyle=aCol('#c3b6ad',k);c.lineWidth=Math.max(1.6,S*.022);
+ c.beginPath();c.moveTo(-S*.62,-S*.50);c.lineTo(S*.62,-S*.50);c.stroke();
+ const hang=(hx,tone,w)=>{
+  c.strokeStyle=aCol('#9e8f9a',k);c.lineWidth=Math.max(1,S*.014);
+  c.beginPath();c.moveTo(hx,-S*.50);c.lineTo(hx,-S*.40);c.stroke();
+  c.fillStyle=aCol(tone,k);
+  c.beginPath();
+  c.moveTo(hx-w,-S*.36);
+  c.lineTo(hx-w*.78,S*.52);
+  c.quadraticCurveTo(hx,S*.60,hx+w*.78,S*.52);
+  c.lineTo(hx+w,-S*.36);
+  c.quadraticCurveTo(hx,-S*.30,hx-w,-S*.36);
+  c.closePath();c.fill();
+ };
+ hang(-S*.42,'#9aa6b8',S*.15);
+ hang(-S*.14,'#b6a8bd',S*.14);
+ /* hers, in the middle, with the stripes */
+ hang( S*.14,'#f3a8c2',S*.17);
+ c.save();c.translate(S*.14,S*.02);
+ c.strokeStyle=aCol('#ffffff',k);c.lineWidth=Math.max(.8,S*.012);
+ [-.085,-.028,.028,.085].forEach(o=>{
+  c.beginPath();c.moveTo(S*o,-S*.34);c.lineTo(S*o,S*.50);c.stroke();
+ });
+ c.restore();
+ hang( S*.44,'#a8b0a0',S*.14);
+ /* the open door, so it reads as a cupboard and not a box */
+ c.fillStyle=aCol('#7b5a46',k);
+ aRR(c,S*.72,-S*.80,S*.16,S*1.66,S*.03);c.fill();
+ c.fillStyle=aCol('#d8cfc6',k);
+ c.beginPath();c.arc(S*.78,S*.05,S*.035,0,7);c.fill();
+ c.restore();
+};
+
+/* peri peri fries — they have never had pani puri together, so this is the
+   food that actually belongs to them */
+PD_OBJ.friesAlone=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);
+ c.fillStyle=aCol('#f0c86a',k);
+ [[-.16,-.46,-.20],[-.05,-.58,-.07],[.06,-.54,.09],[.17,-.42,.22],[0,-.50,0]]
+  .forEach(([fx,fy,tx])=>{
+   c.save();c.translate(S*fx,0);c.rotate((tx-fx)*.5);
+   aRR(c,-S*.05,S*fy,S*.10,Math.abs(S*fy)+S*.10,S*.04);c.fill();c.restore();
+  });
+ /* the paper cone, and only one hand's worth gone */
+ c.fillStyle=aCol('#e8536b',k);
+ c.beginPath();c.moveTo(-S*.28,-S*.14);c.lineTo(S*.28,-S*.14);
+ c.lineTo(S*.19,S*.34);c.lineTo(-S*.19,S*.34);c.closePath();c.fill();
+ c.fillStyle='rgba(255,255,255,.85)';
+ aRR(c,-S*.19,-S*.05,S*.38,S*.12,S*.035);c.fill();
+ c.restore();
+};
+
+/* him at a desk, on his own, in a year where nobody turns up to interrupt */
+PD_OBJ.deskAlone=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);
+ c.fillStyle=aCol('#8a6a52',k);
+ aRR(c,-S*.66,S*.20,S*1.32,S*.10,S*.02);c.fill();
+ c.fillStyle=aCol('#6f5442',k);
+ c.fillRect(-S*.58,S*.30,S*.06,S*.36);
+ c.fillRect( S*.52,S*.30,S*.06,S*.36);
+ /* a lamp doing its best */
+ c.strokeStyle=aCol('#4b4450',k);c.lineWidth=Math.max(2,S*.022);
+ c.beginPath();c.moveTo(S*.44,S*.20);c.lineTo(S*.44,-S*.10);
+ c.lineTo(S*.28,-S*.20);c.stroke();
+ c.fillStyle=aCol('#c8b98f',k);
+ c.beginPath();c.moveTo(S*.18,-S*.12);c.lineTo(S*.38,-S*.12);
+ c.lineTo(S*.34,-S*.26);c.lineTo(S*.22,-S*.26);c.closePath();c.fill();
+ /* him, slumped, getting on with it */
+ pdFig(c,-S*.06,S*.06,S*.0068,'m',{sad:true,k});
+ c.fillStyle=aCol('#4b4450',k);
+ aRR(c,-S*.26,S*.08,S*.34,S*.12,S*.01);c.fill();
+ /* the chair beside him that stays pushed in */
+ c.fillStyle=aCol('#6d5c74',k);
+ aRR(c,S*.30,S*.02,S*.30,S*.30,S*.03);c.fill();
+ c.restore();
+};
+
+/* him going home, and the half of the seat that is never used */
+PD_OBJ.rideAlone=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);
+ c.strokeStyle=aCol('#6f6478',k);c.lineWidth=Math.max(2,S*.016);
+ c.setLineDash([S*.09,S*.07]);
+ c.beginPath();c.moveTo(-S*.95,S*.34);c.lineTo(S*.95,S*.34);c.stroke();
+ c.setLineDash([]);
+ const body=aCol('#4a2f3e',k);
+ const wheel=wx=>{
+  c.fillStyle=body;c.beginPath();c.arc(wx,S*.24,S*.115,0,7);c.fill();
+  c.fillStyle=aCol('#c9b3c2',k);c.beginPath();c.arc(wx,S*.24,S*.055,0,7);c.fill();
+ };
+ wheel(-S*.26);wheel(S*.28);
+ c.fillStyle=body;
+ c.beginPath();
+ c.moveTo(-S*.40,S*.08);c.quadraticCurveTo(-S*.42,-S*.08,-S*.24,-S*.11);
+ c.lineTo(-S*.06,-S*.11);c.quadraticCurveTo(S*.02,-S*.10,S*.06,S*.06);
+ c.lineTo(S*.20,S*.08);c.lineTo(S*.20,S*.18);c.lineTo(-S*.11,S*.18);
+ c.quadraticCurveTo(-S*.25,S*.18,-S*.30,S*.14);c.closePath();c.fill();
+ c.beginPath();
+ c.moveTo(S*.18,S*.11);c.quadraticCurveTo(S*.26,-S*.12,S*.30,-S*.28);
+ c.lineTo(S*.39,-S*.27);c.quadraticCurveTo(S*.34,-S*.05,S*.31,S*.12);
+ c.closePath();c.fill();
+ c.strokeStyle=body;c.lineWidth=Math.max(2,S*.028);c.lineCap='round';
+ c.beginPath();c.moveTo(S*.25,-S*.32);c.lineTo(S*.44,-S*.34);c.stroke();
+ c.fillStyle=aCol('#7a5468',k);
+ aRR(c,-S*.37,-S*.19,S*.34,S*.09,S*.04);c.fill();
+ pdFig(c,S*.10,-S*.28,S*.0050,'m',{sad:true,k});
+ /* the space behind him */
+ c.setLineDash([S*.02,S*.025]);
+ c.strokeStyle=aCol('#c98aa8',Math.max(k,.35));c.lineWidth=Math.max(1.4,S*.012);
+ c.beginPath();c.ellipse(-S*.22,-S*.24,S*.09,S*.045,-.1,0,7);c.stroke();
+ c.setLineDash([]);
+ c.restore();
+};
+
+/* nobody minds. that is the problem. */
+PD_OBJ.haircutAlone=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);
+ c.fillStyle=aCol('#5f6b7a',k);
+ aRR(c,-S*.30,S*.10,S*.60,S*.16,S*.04);c.fill();
+ c.fillStyle=aCol('#4d5765',k);
+ c.fillRect(-S*.05,S*.26,S*.10,S*.30);
+ aRR(c,-S*.22,S*.54,S*.44,S*.08,S*.03);c.fill();
+ pdFig(c,-S*.02,-S*.06,S*.0070,'m',{k});
+ /* the clippers, and the hair going */
+ c.save();c.translate(S*.20,-S*.24);c.rotate(-.5);
+ c.fillStyle=aCol('#3d4450',k);aRR(c,-S*.07,-S*.03,S*.14,S*.07,S*.015);c.fill();
+ c.fillStyle=aCol('#c9cfd8',k);aRR(c,-S*.11,-S*.022,S*.05,S*.045,S*.01);c.fill();
+ c.restore();
+ c.fillStyle=aCol('#2f2129',k);
+ for(let i=0;i<9;i++){
+  const hx=-S*.14+((i*37)%70)/70*S*.30;
+  const hy=S*.10+((i*53)%60)/60*S*.46;
+  c.save();c.translate(hx,hy);c.rotate(i*1.7);
+  aRR(c,-S*.035,-S*.006,S*.07,S*.012,S*.006);c.fill();
+  c.restore();
+ }
+ /* the empty chair where the objection would come from */
+ c.fillStyle=aCol('#6d5c74',k);
+ aRR(c,-S*.62,S*.06,S*.26,S*.26,S*.03);c.fill();
+ c.restore();
+};
+
+/* ---------- the year, chapter by chapter ---------- */
+/* Each beat: {o, date, cap}. Placeholders until the real memories land. */
+const PD_CHAPTERS=[
+ {id:'morning', at:'05:00', title:'April',
+  beats:[
+   {o:'corridor',      date:'22 April 2026', cap:'A corridor. You walk down a different one.'},
+   {o:'deskAlone',     date:'22 April 2026', cap:'Hitesh bhai comes in. He does not take leave in this one \u2014 why would he.'},
+   {o:'seats',         date:'22 April 2026', cap:'So the seat beside mine is already taken, and you sit somewhere else entirely.'},
+   {o:'seats',         date:'22 April 2026', cap:'That is it. That is the whole difference. One man came to work.'},
+   {o:'plainCalendar', date:'April 2026',    cap:'Nothing is circled. There is nothing to circle.'},
+   {o:'cupboard',      date:'22 April 2026', cap:'The pink shirt stays in your cupboard. It never becomes the one you wore twice on purpose.'}
+  ],
+  after:'Go. Do your day.\nCome back when you get home.'},
+
+ {id:'midday', at:'11:30', title:'May and June',
+  beats:[
+   {o:'blankLetter', date:'27 May 2026',  cap:'A page I never fill. I have nothing to confess and nobody to confess it to.'},
+   {o:'plainCalendar',date:'29 May 2026', cap:'Nobody asks anybody anything.'},
+   {o:'hairclip',    date:'June 2026',    cap:'Three clips. Still carded. Still in the shop.'},
+   {o:'softToy',     date:'June 2026',    cap:'Still on the shelf, still with its tag on.'},
+   {o:'cakeTin',     date:'10 June 2026', cap:'A tin that never gets carried anywhere.'},
+   {o:'haircutAlone',date:'June 2026',    cap:'Nobody has an opinion about my hair. I cut it whenever I feel like it.'},
+   {o:'band',        date:'13 June 2026', cap:'A black rubber band, on the same wrist it started on.'}
+  ],
+  after:'There is more of this.\nCome back later.'},
+
+ {id:'afternoon', at:'16:00', title:'July and August',
+  beats:[
+   {o:'emptyVase',    date:'25 July 2026',  cap:'No flowers arrive. There is no fight, so there is nothing to be sorry for.'},
+   {o:'friesAlone',   date:'August 2026',   cap:'Peri peri. One order. Nobody reaches across for the last one.'},
+   {o:'plainCalendar',date:'4 August 2026', cap:'A song comes on and it is just a song.'}
+  ],
+  after:'One more before tonight.'},
+
+ {id:'evening', at:'19:00', title:'My side of it', mine:true,
+  beats:[
+   {o:'rideAlone',    date:'June 2026',        cap:'I ride home on my own. There has never been anybody to drop off first.'},
+   {o:'deskAlone',    date:'May 2026',         cap:'I work late. Nobody comes over to bother me about it.'},
+   {o:'blankLetter',  date:'12 September 2026',cap:'I buy a book and it stays a book. I never think to stamp anything into it.'},
+   {o:'quietPhone',   date:'16 September 2026',cap:'The phone does not ring. Nobody tells me anything on a call that changes a year.'},
+   {o:'plainCalendar',date:'17 October 2026',  cap:'And this date, the one this whole app is counting down to, is a Saturday I spend doing nothing.'}
+  ],
+  after:'That is the whole year.\nCome back tonight.'}
+];
+
+/* the one line from outside the simulation, in colour, on a grey screen */
+const PD_VOICE={chapter:'afternoon',
+ line:'I am still here. I just have no way of knowing you.'};
+
+/* ================= and then the opposite of all that =================
+   One tap and it all comes back at once. What follows is not sad. */
+
+/* pdFig now lives in figs.js */
+
+/* Each joy scene: dim for a beat, then he turns up, then the line.
+   p runs 0..1 across the scene; t is wall time for wobbles.        */
+const PD_JOY=[
+ {id:'desk',
+  line:'I used to work late with nobody bothering me.\nThank you for ruining that completely.',
+  draw(c,x,y,S,t,p){
+   const on=aSeg(p,.18,.42), pop=aSeg(p,.42,.66);
+   /* the desk, sitting lower so the two of them have room */
+   c.fillStyle='#8a6a52';
+   aRR(c,x-S*.58,y+S*.24,S*1.16,S*.08,S*.02);c.fill();
+   c.fillStyle='#6f5442';
+   c.fillRect(x-S*.50,y+S*.32,S*.05,S*.24);
+   c.fillRect(x+S*.45,y+S*.32,S*.05,S*.24);
+   /* the lamp, off then on */
+   c.strokeStyle='#4b4450';c.lineWidth=Math.max(2,S*.022);
+   c.beginPath();c.moveTo(x+S*.40,y+S*.18);c.lineTo(x+S*.40,y-S*.12);
+   c.lineTo(x+S*.24,y-S*.22);c.stroke();
+   c.fillStyle=on>0?'#f4c96a':'#6a6270';
+   c.beginPath();c.moveTo(x+S*.14,y-S*.14);c.lineTo(x+S*.34,y-S*.14);
+   c.lineTo(x+S*.30,y-S*.28);c.lineTo(x+S*.18,y-S*.28);c.closePath();c.fill();
+   if(on>0){
+    const g=c.createRadialGradient(x+S*.24,y-S*.10,0,x+S*.24,y-S*.10,S*.70);
+    g.addColorStop(0,`rgba(255,214,140,${.42*on})`);
+    g.addColorStop(1,'rgba(255,214,140,0)');
+    c.fillStyle=g;c.beginPath();c.arc(x+S*.24,y-S*.10,S*.70,0,7);c.fill();
+   }
+   /* him, working, exactly as he was in the grey version */
+   pdFig(c,x-S*.16,y+S*.04,S*.0072,'m',{});
+   c.fillStyle='#4b4450';
+   aRR(c,x-S*.32,y+S*.10,S*.32,S*.12,S*.01);c.fill();
+   /* and then she turns up to ruin his concentration */
+   if(pop>0){
+    const rise=aEase(pop);
+    const lean=Math.sin(t*2.2)*.05;
+    c.save();
+    c.beginPath();c.rect(x-S*.9,y-S*1.2,S*1.8,S*1.38);c.clip();
+    c.translate(x+S*.30,y+S*.30-rise*S*.34);c.rotate(lean);
+    pdFig(c,0,0,S*.0072,'z',{wave:true});
+    c.restore();
+   }
+  }},
+
+ {id:'hair',
+  line:"You wanted long hair. I cut it the week you said so.\nYou have just seen the other version — nobody minding at all.\nStill want the hair?",
+  draw(c,x,y,S,t,p){
+   const cut=aSeg(p,.18,.50), cross=aSeg(p,.44,.70);
+   /* he loses the cap for this one: the cap is why you never see his hair
+      anywhere else, and this scene is entirely about his hair */
+   const fs=S*.0066, drop=34*fs, seat=y+S*.18;
+   /* the barber chair */
+   c.fillStyle='#4d5765';
+   aRR(c,x-S*.17,seat-S*.50,S*.34,S*.52,S*.04);c.fill();
+   c.fillStyle='#5f6b7a';
+   aRR(c,x-S*.23,seat,S*.46,S*.07,S*.03);c.fill();
+   c.fillStyle='#4d5765';
+   c.fillRect(x-S*.035,seat+S*.07,S*.07,S*.19);
+   aRR(c,x-S*.16,seat+S*.26,S*.32,S*.055,S*.025);c.fill();
+   /* him, delighted, losing it */
+   ASCENES.haircut.guy(c,x,seat-drop,fs,1-cut,true);
+   /* the clippers, buzzing */
+   if(cut>0&&cut<1){
+    const buzz=Math.sin(t*26)*S*.005;
+    c.save();c.translate(x+S*.16+buzz,seat-drop-S*.16);c.rotate(-.55);
+    c.fillStyle='#3d4450';aRR(c,-S*.06,-S*.026,S*.12,S*.052,S*.012);c.fill();
+    c.fillStyle='#c9cfd8';aRR(c,-S*.095,-S*.02,S*.045,S*.04,S*.008);c.fill();
+    c.restore();
+   }
+   /* the hair, going, and landing on the floor rather than on him */
+   if(cut>0){
+    c.fillStyle='rgba(47,33,41,.8)';
+    for(let i=0;i<10;i++){
+     const fall=Math.min(1,cut*1.4-i*.07);
+     if(fall<=0)continue;
+     const hx=x-S*.13+((i*37)%70)/70*S*.27;
+     const hy=aLerp(seat-drop-S*.13,seat+S*.33,aEase(fall));
+     c.save();c.translate(hx,hy);c.rotate(i*1.7+t*.4);
+     aRR(c,-S*.028,-S*.005,S*.056,S*.010,S*.005);c.fill();
+     c.restore();
+    }
+   }
+   /* and her, next to it, taking it extremely personally */
+   if(cross>0){
+    const feet=y+S*.30, n=Math.sin(t*2.1)*.035;
+    c.save();c.globalAlpha=cross;
+    c.translate(x-S*.30,feet-drop);c.rotate(n);
+    ASCENES.haircut.girl(c,0,0,fs,t);
+    c.restore();
+    ASCENES.haircut.cloud(c,x-S*.30,feet-drop-S*.30,fs*.58,cross,t);
+   }
+  }},
+
+ {id:'ride',
+  line:"\u201cIt's on the way,\u201d I said.\nEvery day, for two months.\nIt was never on the way.",
+  draw(c,x,y,S,t,p){
+   const hop=aSeg(p,.32,.64);
+   const roll=Math.sin(t*1.6)*S*.007;
+   const fs=S*.0060, drop=34*fs;
+   c.save();c.translate(x+roll,y);
+   /* road */
+   c.strokeStyle='#6f6478';c.lineWidth=Math.max(2,S*.014);
+   c.setLineDash([S*.08,S*.06]);
+   c.beginPath();c.moveTo(-S*.90,S*.40);c.lineTo(S*.90,S*.40);c.stroke();
+   c.setLineDash([]);
+   const body='#4a2f3e';
+   const wheel=wx=>{
+    c.fillStyle=body;c.beginPath();c.arc(wx,S*.28,S*.095,0,7);c.fill();
+    c.fillStyle='#c9b3c2';c.beginPath();c.arc(wx,S*.28,S*.042,0,7);c.fill();
+   };
+   wheel(-S*.30);wheel(S*.30);
+   /* a low, flat scooter so the two of them are the subject */
+   c.fillStyle=body;
+   c.beginPath();
+   c.moveTo(-S*.40,S*.14);
+   c.quadraticCurveTo(-S*.42,S*.02,-S*.28,S*.00);
+   c.lineTo(-S*.06,S*.00);
+   c.quadraticCurveTo(S*.02,S*.02,S*.06,S*.12);
+   c.lineTo(S*.22,S*.14);c.lineTo(S*.22,S*.21);c.lineTo(-S*.12,S*.21);
+   c.quadraticCurveTo(-S*.28,S*.21,-S*.34,S*.18);
+   c.closePath();c.fill();
+   c.beginPath();
+   c.moveTo(S*.20,S*.15);c.quadraticCurveTo(S*.26,S*.00,S*.29,-S*.11);
+   c.lineTo(S*.36,-S*.10);c.quadraticCurveTo(S*.32,S*.02,S*.30,S*.16);
+   c.closePath();c.fill();
+   c.strokeStyle=body;c.lineWidth=Math.max(2,S*.022);c.lineCap='round';
+   c.beginPath();c.moveTo(S*.26,-S*.14);c.lineTo(S*.42,-S*.16);c.stroke();
+   /* the seat */
+   const seat=-S*.02;
+   c.fillStyle='#7a5468';
+   aRR(c,-S*.34,seat-S*.04,S*.34,S*.07,S*.032);c.fill();
+   /* him, riding */
+   pdFig(c,S*.06,seat-drop,fs,'m',{});
+   /* her, arriving and filling the seat that was dashed and empty */
+   if(hop>0){
+    const e=aEase(hop);
+    const hx=aLerp(S*.90,-S*.19,e);
+    const hy=(seat-drop)-Math.sin(e*Math.PI)*S*.18;
+    pdFig(c,hx,hy,fs,'z',{wave:e<.78});
+   }else{
+    c.setLineDash([S*.018,S*.022]);
+    c.strokeStyle='rgba(232,114,154,.55)';c.lineWidth=Math.max(1.4,S*.010);
+    c.beginPath();c.ellipse(-S*.19,seat-S*.02,S*.075,S*.038,-.1,0,7);c.stroke();
+    c.setLineDash([]);
+   }
+   c.restore();
+  }},
+
+ {id:'fries',
+  line:'I only wanted one.\nI have wanted one eleven times.',
+  draw(c,x,y,S,t,p){
+   const reach=aSeg(p,.34,.70);
+   /* they sit close enough to share, and inside the frame */
+   const fs=S*.0066;
+   pdFig(c,x-S*.30,y+S*.12,fs,'z',{});
+   pdFig(c,x+S*.30,y+S*.12,fs,'m',{reach:reach>.1,flip:true});
+   /* the carton between them, emptying */
+   const left=1-reach*.40;
+   c.save();c.translate(x,y+S*.20);
+   c.fillStyle='#f0c86a';
+   [[-.085,-.24],[-.028,-.30],[.030,-.27],[.088,-.21]].forEach(([fx,fy],i)=>{
+    if(i===3&&reach>.5)return;
+    const h=Math.abs(S*fy*left)+S*.06;
+    aRR(c,S*fx-S*.026,S*fy*left,S*.052,h,S*.018);c.fill();
+   });
+   c.fillStyle='#e8536b';
+   c.beginPath();c.moveTo(-S*.145,-S*.06);c.lineTo(S*.145,-S*.06);
+   c.lineTo(S*.10,S*.17);c.lineTo(-S*.10,S*.17);c.closePath();c.fill();
+   /* the little paper fold, so it reads as a carton and not a bucket */
+   c.fillStyle='#d13f58';
+   c.beginPath();c.moveTo(-S*.145,-S*.06);c.lineTo(S*.145,-S*.06);
+   c.lineTo(S*.135,-S*.03);c.lineTo(-S*.135,-S*.03);c.closePath();c.fill();
+   c.restore();
+   /* the stolen one, on its way out of the carton and into his hand */
+   if(reach>.25){
+    const e=aEase((reach-.25)/.75);
+    c.save();
+    /* it arcs up out of the carton and lands in his hand, not on his cap */
+    c.translate(aLerp(x+S*.045,x+S*.195,e),
+                aLerp(y-S*.02,y+S*.05,e)-Math.sin(e*Math.PI)*S*.09);
+    c.rotate(-.3+e*1.5);
+    c.fillStyle='#f0c86a';
+    aRR(c,-S*.016,-S*.065,S*.032,S*.13,S*.012);c.fill();
+    c.restore();
+   }
+  }}
+];
+
+/* the letter that closes the day */
+const PD_LETTER=[
+ 'That was the version without you in it.',
+ 'You would have been fine in there. Genuinely fine \u2014 you would have read your books, and passed your exams, and found things to love, and been happy.',
+ 'So would I have been, probably.',
+ 'Every quiet thing in that version is something you actually did. You took the internship. You sat down. You made me stop playing and say it. You said it back.',
+ 'None of it had to happen. One man went on leave.',
+ 'Thank you for walking down the right corridor.'
+];
+
+/* ---------- how the day starts ----------
+   It has to look like an ordinary morning first, or the drop has nothing
+   to drop from. Then a warning, then a question she gets to answer —
+   and then it happens anyway, because that is the joke.            */
+const PD_OPEN={
+ day:'Day 21',
+ date:'8 October 2026',
+ normal:'Good morning.',
+ warn:'Before today starts, there is something I want to show you.\nNothing bad happens in it. That is sort of the problem.',
+ ask:'Do you ever wonder what would have happened\nif we had never met?',
+ yes:'Show me',
+ no:"I don't want to see",
+ force:['Wrong answer.',
+        'I already built the whole thing.',
+        "You're going anyway. Hold on to something."]
+};
+
+/* ---------- handing her back ----------
+   She came through here, so the app should know day 21 happened. Same origin,
+   same storage key: read it, add the day, put it back. If storage is not
+   available this quietly does nothing, which is the right way to fail. */
+try{
+ var PD_K='zb30';
+ var PD_S=JSON.parse(localStorage.getItem(PD_K)||'{}');
+ PD_S.done=PD_S.done||{};PD_S.unlocked=PD_S.unlocked||{};
+ PD_S.done[21]=true;PD_S.unlocked[21]=true;
+ localStorage.setItem(PD_K,JSON.stringify(PD_S));
+}catch(e){}
+
+STAGE=document.createElement('div');
+
+/* ================= the player ================= */
+const CV=$('#pcv'), C=CV.getContext('2d');
+let W=0,H=0,DPR=1,raf=0,last=0,T=0;
+
+const EVERY=[];
+PD_CHAPTERS.forEach(ch=>ch.beats.forEach(b=>EVERY.push({o:b.o,cap:b.cap,date:b.date})));
+/* the grid has to stay readable — past a dozen they turn into grey confetti,
+   so take an even spread across the year rather than all of it */
+const ALL=EVERY.length<=12?EVERY.slice()
+ :Array.from({length:12},(_,i)=>EVERY[Math.round(i*(EVERY.length-1)/11)]);
+
+const ST={phase:'normal',pt:0,chapter:0,beat:0,beatT:0,
+          bloomT:0,joy:0,joyT:0,letterT:0,flickerAt:0,voiceT:-1,forced:false};
+const BEAT=8.5;
+
+/* ---------- grain and tearing: what makes it feel like somewhere else ---------- */
+let NOISE=null;
+function makeNoise(){
+ const n=document.createElement('canvas');n.width=n.height=128;
+ const x=n.getContext('2d'),d=x.createImageData(128,128);
+ for(let i=0;i<d.data.length;i+=4){
+  const v=Math.random()*255;
+  d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=26;
+ }
+ x.putImageData(d,0,0);NOISE=n;
+}
+function grain(a){
+ if(!NOISE)makeNoise();
+ C.save();C.globalAlpha=a;
+ const ox=-Math.random()*128, oy=-Math.random()*128;
+ for(let gx=ox;gx<W;gx+=128)for(let gy=oy;gy<H;gy+=128)C.drawImage(NOISE,gx,gy);
+ C.restore();
+}
+function scanlines(a){
+ C.save();C.globalAlpha=a;C.fillStyle='#000';
+ for(let y=0;y<H;y+=3)C.fillRect(0,y,W,1);
+ C.restore();
+}
+/* slice the canvas and shove the slices sideways */
+function tear(strength,slices){
+ C.save();C.setTransform(1,0,0,1,0,0);
+ const n=slices||(4+Math.floor(strength*12));
+ for(let i=0;i<n;i++){
+  const sy=Math.random()*CV.height;
+  const sh=(4+Math.random()*30*strength)*DPR;
+  const dx=(Math.random()-.5)*CV.width*.30*strength;
+  C.drawImage(CV,0,sy,CV.width,sh,dx,sy,CV.width,sh);
+ }
+ C.restore();
+}
+/* pull the channels apart a little */
+function chromaSplit(px){
+ C.save();C.setTransform(1,0,0,1,0,0);
+ C.globalCompositeOperation='lighter';C.globalAlpha=.35;
+ C.drawImage(CV,-px*DPR,0);
+ C.drawImage(CV, px*DPR,0);
+ C.restore();
+}
+
+function drawObj(name,x,y,s,k){
+ const fn=PD_OBJ[name];
+ if(fn)return fn(C,x,y,s,k);
+ const sc=ASCENES.parallel;
+ if(sc&&typeof sc[name]==='function')return sc[name](C,x,y,s,k);
+ if(name==='band'){
+  C.strokeStyle=aCol('#241d26',k);C.lineWidth=Math.max(3,s*.16);
+  C.beginPath();C.ellipse(x,y,s*.42,s*.26,.25,0,7);C.stroke();return;
+ }
+ C.fillStyle=aCol('#8d7a93',k);C.beginPath();C.arc(x,y,s*.4,0,7);C.fill();
+}
+
+function size(){
+ DPR=Math.min(devicePixelRatio||1,2);
+ W=CV.clientWidth;H=CV.clientHeight;
+ CV.width=W*DPR;CV.height=H*DPR;C.setTransform(DPR,0,0,DPR,0,0);
+}
+
+/* colour in the world: full before the tear, none after, back at the end */
+function colourK(){
+ const p=ST.phase;
+ if(p==='normal'||p==='warn'||p==='ask'||p==='force')return 1;
+ if(p==='tear')return Math.max(0,1-ST.pt/1.1);
+ if(p==='bloom')return aEase(Math.min(1,ST.bloomT/2.4));
+ return (p==='joy'||p==='letter')?1:0;
+}
+const inOther=()=>['chapter','after','reverse'].includes(ST.phase);
+
+function paintChrome(){
+ const k=colourK();
+ document.body.dataset.dead=k<.6?'1':'0';
+ /* the clock itself gets it wrong in there */
+ let clock='27 days · 4 hrs · 11 min';
+ if(k<.6){
+  clock='— —   — —   — —';
+  if(Math.random()<.03)clock='8 8 : 8 8 : 8 8';
+ }
+ $('#pclock').textContent=clock;
+ $('#ptitle').textContent = k>=.6 ? '30 days · for Zahabiya' : '30 days · for ————————';
+
+ const g=$('#pgarden'), gc=g.getContext('2d');
+ if(g.width!==g.clientWidth*DPR){g.width=g.clientWidth*DPR;g.height=g.clientHeight*DPR}
+ gc.setTransform(DPR,0,0,DPR,0,0);
+ const gw=g.clientWidth, gh=g.clientHeight;
+ gc.clearRect(0,0,gw,gh);
+ const soil=gh-10;
+ const sg=gc.createLinearGradient(0,soil-16,0,gh);
+ sg.addColorStop(0,'rgba(120,120,124,0)');
+ sg.addColorStop(1,k>=.6?'rgba(170,128,155,.55)':'rgba(104,104,110,.55)');
+ gc.fillStyle=sg;gc.fillRect(0,soil-16,gw,gh-soil+16);
+ for(let i=0;i<6;i++){
+  const x=(.10+.80*(i/5))*gw;
+  const grow=Math.max(0,Math.min(1,(k*7-i)));
+  if(grow<=0){
+   gc.strokeStyle='rgba(150,150,154,.45)';gc.lineWidth=1;
+   gc.beginPath();gc.moveTo(x-5,soil);gc.lineTo(x+5,soil);gc.stroke();
+   continue;
+  }
+  const top=soil-(gh*.60)*grow;
+  gc.strokeStyle='rgba(111,163,122,.95)';gc.lineWidth=1.6+1.6*grow;gc.lineCap='round';
+  gc.beginPath();gc.moveTo(x,soil);
+  gc.quadraticCurveTo(x+(i%2?8:-8)*grow,(soil+top)/2,x,top);gc.stroke();
+  if(grow>.75){
+   const o=(grow-.75)/.25;
+   gc.fillStyle=i%2?'#e8729a':'#f4a0bc';
+   gc.beginPath();gc.arc(x,top,3+6*o,0,7);gc.fill();
+  }
+ }
+}
+
+function frame(n){
+ if(!last)last=n;
+ const dt=Math.min(.05,(n-last)/1000);last=n;T+=dt;
+ const S2=Math.min(W,H);
+ const k=colourK();
+
+ const gr=C.createLinearGradient(0,0,0,H);
+ gr.addColorStop(0,aCol('#3a2a5e',k));
+ gr.addColorStop(1,aCol('#7a4a78',k));
+ C.fillStyle=gr;C.fillRect(0,0,W,H);
+ C.textAlign='center';C.textBaseline='middle';
+
+ const P=ST.phase;
+ if(P==='normal'||P==='warn'||P==='ask'||P==='force') drawOpen(S2,dt);
+ else if(P==='tear')      drawTear(S2,dt);
+ else if(P==='chapter')   drawChapter(S2,dt);
+ else if(P==='after')     drawAfter(S2);
+ else if(P==='reverse')   drawReverse(S2);
+ else if(P==='bloom')     drawBloom(S2,dt);
+ else if(P==='joy')       drawJoy(S2,dt);
+ else                     drawLetter(S2,dt);
+
+ /* the other place has grain in it, and now and then it slips */
+ if(inOther()){
+  grain(.55);scanlines(.055);
+  if(Math.random()<.012)tear(.55);
+ }
+
+ paintChrome();
+ raf=requestAnimationFrame(frame);
+}
+
+/* ---------- an ordinary morning, and then the question ---------- */
+function drawOpen(S2,dt){
+ ST.pt+=dt;
+ const P=ST.phase;
+ /* the envelope she expects */
+ if(P==='normal'){
+  const a=Math.min(1,ST.pt/.8);
+  C.globalAlpha=a;
+  C.fillStyle='#f4a0bc';
+  aRR(C,W/2-S2*.28,H*.30,S2*.56,S2*.36,S2*.03);C.fill();
+  C.fillStyle='rgba(255,255,255,.35)';
+  C.beginPath();C.moveTo(W/2-S2*.28,H*.30);C.lineTo(W/2+S2*.28,H*.30);
+  C.lineTo(W/2,H*.30+S2*.22);C.closePath();C.fill();
+  aGlowText(C,true);
+  C.font=`600 ${Math.max(13,S2*.040)}px 'IBM Plex Mono',ui-monospace,monospace`;
+  C.fillText(PD_OPEN.day.toUpperCase(),W/2,H*.22);
+  C.font=`400 ${Math.max(12,S2*.034)}px Lora,Georgia,serif`;
+  C.globalAlpha=a*.8;
+  C.fillText(PD_OPEN.date,W/2,H*.265);
+  C.globalAlpha=a;
+  C.font=`500 ${Math.max(15,S2*.050)}px 'Playfair Display',Georgia,serif`;
+  C.fillText(PD_OPEN.normal,W/2,H*.76);
+  aClearShadow(C);C.globalAlpha=1;
+  if(ST.pt>3.4){ST.phase='warn';ST.pt=0}
+  return;
+ }
+ /* the warning */
+ if(P==='warn'){
+  const a=Math.min(1,ST.pt/.9);
+  C.globalAlpha=a;
+  aGlowText(C,true);
+  C.font=`400 ${Math.max(15,S2*.048)}px Lora,Georgia,serif`;
+  let y=H*.42;
+  PD_OPEN.warn.split('\n').forEach(ln=>{
+   aWrap(C,ln,W*.78).forEach(w=>{C.fillText(w,W/2,y);y+=S2*.062});
+   y+=S2*.020;
+  });
+  aClearShadow(C);C.globalAlpha=1;
+  if(ST.pt>4.6){ST.phase='ask';ST.pt=0;$('#pchoice').hidden=false;paintBar()}
+  return;
+ }
+ /* the question, with her two buttons under it */
+ if(P==='ask'){
+  const a=Math.min(1,ST.pt/.9);
+  C.globalAlpha=a;
+  aGlowText(C,true);
+  C.font=`500 ${Math.max(17,S2*.055)}px 'Playfair Display',Georgia,serif`;
+  let y=H*.36;
+  PD_OPEN.ask.split('\n').forEach(ln=>{
+   aWrap(C,ln,W*.80).forEach(w=>{C.fillText(w,W/2,y);y+=S2*.070});
+  });
+  aClearShadow(C);C.globalAlpha=1;
+  return;
+ }
+ /* she said no. it happens anyway. */
+ if(P==='force'){
+  aGlowText(C,true);
+  C.font=`500 ${Math.max(17,S2*.056)}px 'Playfair Display',Georgia,serif`;
+  PD_OPEN.force.forEach((ln,i)=>{
+   const st=i*1.5, a=Math.min(1,Math.max(0,(ST.pt-st)/.55));
+   if(a<=0)return;
+   C.globalAlpha=a;
+   let fy=H*(.36+i*.11);
+   aWrap(C,ln,W*.80).forEach(w=>{C.fillText(w,W/2,fy);fy+=S2*.062});
+  });
+  aClearShadow(C);C.globalAlpha=1;
+  /* the screen starts misbehaving before it goes */
+  if(ST.pt>2.2&&Math.random()<.25)tear(.4);
+  if(ST.pt>PD_OPEN.force.length*1.5+1.4)toTear();
+  return;
+ }
+}
+
+/* ---------- being pulled through ---------- */
+function drawTear(S2,dt){
+ ST.pt+=dt;
+ const p=ST.pt;
+ /* whatever was on screen, coming apart */
+ C.globalAlpha=Math.max(0,1-p/1.5);
+ C.fillStyle='#f4a0bc';
+ aRR(C,W/2-S2*.28,H*.30,S2*.56,S2*.36,S2*.03);C.fill();
+ C.globalAlpha=1;
+ if(p<1.5){tear(Math.min(1,p*1.1),10+Math.floor(p*22));chromaSplit(2+p*9)}
+ if(p>=1.2&&p<1.5){C.fillStyle=`rgba(255,255,255,${(p-1.2)/.3})`;C.fillRect(0,0,W,H)}
+ if(p>=1.5&&p<2.0){C.fillStyle=`rgba(0,0,0,${Math.min(1,(p-1.5)/.25)})`;C.fillRect(0,0,W,H)}
+ if(p>=2.0&&p<2.9){
+  C.fillStyle='#000';C.fillRect(0,0,W,H);
+  const a=Math.min(1,(p-2.1)/.6);
+  C.globalAlpha=a;
+  aGlowText(C,true);
+  C.font=`500 ${Math.max(12,S2*.036)}px 'IBM Plex Mono',ui-monospace,monospace`;
+  C.fillText('22 APRIL 2026',W/2,H*.47);
+  C.font=`400 ${Math.max(14,S2*.044)}px Lora,Georgia,serif`;
+  C.fillText('You take the other internship.',W/2,H*.53);
+  aClearShadow(C);C.globalAlpha=1;
+  grain(.7);
+ }
+ if(p>=2.9){ST.phase='chapter';ST.chapter=0;ST.beat=0;ST.beatT=0;ST.flickerAt=T+2.4;paintBar()}
+}
+function toTear(){ST.phase='tear';ST.pt=0;$('#pchoice').hidden=true;paintBar()}
+
+/* ---------- the empty year ---------- */
+function drawChapter(S2,dt){
+ const ch=PD_CHAPTERS[ST.chapter];
+ ST.beatT+=dt;
+ if(ST.beatT>BEAT){
+  ST.beatT=0;ST.beat++;
+  ST.flickerAt=T+1.6+Math.random()*3.4;
+  if(ST.beat>=ch.beats.length){
+   ST.phase='after';ST.beat=ch.beats.length-1;
+   if(PD_VOICE.chapter===ch.id)ST.voiceT=T;
+   paintBar();return;
+  }
+ }
+ const b=ch.beats[ST.beat];
+ const f=Math.min(aEase(Math.min(1,ST.beatT/.9)),
+                  aEase(Math.min(1,(BEAT-ST.beatT)/.9)));
+ let k=0;
+ const since=T-ST.flickerAt;
+ if(ST.flickerAt>0&&since>0&&since<.34)k=Math.sin(since/.34*Math.PI)*.92;
+
+ C.globalAlpha=f;
+ drawObj(b.o,W/2,H*.40,S2*.26,k);
+ if(b.date){
+  C.globalAlpha=f*.85;
+  aGlowText(C,true);
+  C.font=`500 ${Math.max(11,S2*.034)}px 'IBM Plex Mono',ui-monospace,monospace`;
+  C.fillText(b.date.toUpperCase(),W/2,H*.665);
+  aClearShadow(C);C.globalAlpha=f;
+ }
+ if(b.cap){
+  aGlowText(C,true);
+  C.font=`italic ${Math.max(13,S2*.043)}px Lora,Georgia,serif`;
+  aWrap(C,b.cap,W*.80).forEach((ln,j,arr)=>
+   C.fillText(ln,W/2,H*.75+(j-(arr.length-1)/2)*S2*.055));
+  aClearShadow(C);
+ }
+ C.globalAlpha=1;
+
+ C.globalAlpha=.4;
+ aGlowText(C,true);
+ C.font=`500 ${Math.max(10,S2*.030)}px 'IBM Plex Mono',ui-monospace,monospace`;
+ C.fillText(ch.title.toUpperCase(),W/2,H*.12);
+ aClearShadow(C);C.globalAlpha=1;
+}
+
+function drawAfter(S2){
+ const ch=PD_CHAPTERS[ST.chapter];
+ if(ST.voiceT>0){
+  const since=T-ST.voiceT;
+  if(since<6.4){
+   const a=Math.min(1,since/.9)*Math.min(1,(6.4-since)/1.2);
+   C.globalAlpha=a;
+   C.shadowColor='rgba(232,114,154,.55)';C.shadowBlur=18;
+   C.fillStyle='#ffd9e8';
+   C.font=`italic ${Math.max(15,S2*.050)}px 'Playfair Display',Georgia,serif`;
+   aWrap(C,PD_VOICE.line,W*.78).forEach((ln,j,arr)=>
+    C.fillText(ln,W/2,H*.46+(j-(arr.length-1)/2)*S2*.070));
+   aClearShadow(C);C.globalAlpha=1;
+   return;
+  }
+ }
+ aGlowText(C,true);
+ C.font=`500 ${Math.max(14,S2*.046)}px 'Playfair Display',Georgia,serif`;
+ let y=H*.42;
+ String(ch.after).split('\n').forEach(ln=>{
+  aWrap(C,ln,W*.76).forEach(w=>{C.fillText(w,W/2,y);y+=S2*.062});
+  y+=S2*.020;
+ });
+ aClearShadow(C);
+}
+
+/* ---------- one tap ---------- */
+function reverseSpots(){
+ const cols=3, rows=Math.ceil(ALL.length/cols), out=[];
+ for(let i=0;i<ALL.length;i++){
+  const r=Math.floor(i/cols), c2=i%cols;
+  out.push({x:W*(.21+.29*c2), y:H*(.31+(.40/Math.max(1,rows-1))*r)});
+ }
+ return out;
+}
+function drawGrid(S2,k,wave){
+ const spots=reverseSpots();
+ ALL.forEach((it,i)=>{
+  const sp=spots[i];
+  let kk=k;
+  if(wave!=null){
+   const d=Math.hypot(sp.x-W/2,sp.y-H*.52)/Math.hypot(W/2,H*.5);
+   kk=Math.max(0,Math.min(1,(wave-d)*2.6));
+  }
+  const pop=kk>0?1+Math.sin(Math.min(1,kk)*Math.PI)*.18:1;
+  drawObj(it.o,sp.x,sp.y,S2*.105*pop,kk);
+ });
+}
+function drawReverse(S2){
+ drawGrid(S2,0,null);
+ aGlowText(C,true);
+ C.font=`600 ${Math.max(16,S2*.056)}px 'Playfair Display',Georgia,serif`;
+ C.fillText('Now put it back.',W/2,H*.16);
+ C.font=`400 ${Math.max(11,S2*.033)}px Lora,Georgia,serif`;
+ C.globalAlpha=.75;
+ C.fillText('one tap is all it takes',W/2,H*.205);
+ C.globalAlpha=1;aClearShadow(C);
+ const pulse=1+Math.sin(T*2.2)*.09;
+ const bx=W/2, by=H*.84, br=S2*.075*pulse;
+ const g=C.createRadialGradient(bx,by,0,bx,by,br*2.1);
+ g.addColorStop(0,'rgba(244,160,188,.38)');
+ g.addColorStop(1,'rgba(244,160,188,0)');
+ C.fillStyle=g;C.beginPath();C.arc(bx,by,br*2.1,0,7);C.fill();
+ C.fillStyle='#e8729a';
+ C.beginPath();
+ C.moveTo(bx,by+br*.45);
+ C.bezierCurveTo(bx-br*1.3,by-br*.45,bx-br*.6,by-br*1.35,bx,by-br*.55);
+ C.bezierCurveTo(bx+br*.6,by-br*1.35,bx+br*1.3,by-br*.45,bx,by+br*.45);
+ C.fill();
+}
+function drawBloom(S2,dt){
+ ST.bloomT+=dt;
+ const w=Math.min(1.4,ST.bloomT/1.9);
+ drawGrid(S2,1,w);
+ if(ST.bloomT<1.1)chromaSplit(6*(1-ST.bloomT/1.1));
+ if(ST.bloomT>3.1){ST.phase='joy';ST.joy=0;ST.joyT=0;paintBar()}
+}
+
+/* ---------- the opposite of the day ---------- */
+function drawJoy(S2,dt){
+ ST.joyT+=dt;
+ const sc=PD_JOY[ST.joy];
+ const DUR=9.0;
+ const p=Math.min(1,ST.joyT/DUR);
+ const fade=Math.min(aEase(Math.min(1,ST.joyT/.6)),
+                     aEase(Math.min(1,(DUR+1.1-ST.joyT)/.7)));
+ C.globalAlpha=fade;
+ try{sc.draw(C,W/2,H*.42,S2,T,p)}catch(e){}
+ if(p>.58){
+  const a=Math.min(1,(p-.58)/.2);
+  C.globalAlpha=fade*a;
+  aGlowText(C,true);
+  C.font=`500 ${Math.max(15,S2*.048)}px 'Playfair Display',Georgia,serif`;
+  let y=H*.74;
+  String(sc.line).split('\n').forEach(ln=>{
+   aWrap(C,ln,W*.82).forEach(w=>{C.fillText(w,W/2,y);y+=S2*.058});
+  });
+  aClearShadow(C);
+ }
+ C.globalAlpha=1;
+ if(ST.joyT>DUR+1.1)nextJoy();
+}
+function nextJoy(){
+ ST.joy++;ST.joyT=0;
+ if(ST.joy>=PD_JOY.length){ST.phase='letter';ST.letterT=0}
+ paintBar();
+}
+
+function drawLetter(S2,dt){
+ ST.letterT+=dt;
+ aGlowText(C,true);
+ C.font=`400 ${Math.max(14,S2*.042)}px Lora,Georgia,serif`;
+ let y=H*.20;
+ PD_LETTER.forEach((ln,i)=>{
+  const a=Math.min(1,Math.max(0,(ST.letterT-i*1.5)/1.1));
+  C.globalAlpha=a;
+  aWrap(C,ln,W*.82).forEach(w=>{C.fillText(w,W/2,y);y+=S2*.054});
+  y+=S2*.028;
+ });
+ C.globalAlpha=1;aClearShadow(C);
+}
+
+/* ---------- taps ---------- */
+CV.addEventListener('pointerdown',()=>{
+ if(ST.phase==='reverse'){ST.phase='bloom';ST.bloomT=0;paintBar();return}
+ if(ST.phase==='joy'&&ST.joyT>1.2){nextJoy();return}
+},{passive:true});
+
+$('#pYes').onclick=()=>toTear();
+$('#pNo').onclick=()=>{
+ /* she said no, which is the answer this was built for */
+ ST.forced=true;ST.phase='force';ST.pt=0;$('#pchoice').hidden=true;paintBar();
+};
+
+/* ---------- bench controls ---------- */
+function paintBar(){
+ const L={normal:'morning · an ordinary day',
+          warn:'morning · the warning',
+          ask:'morning · her choice',
+          force:'morning · she said no',
+          tear:'morning · going through',
+          chapter:PD_CHAPTERS[ST.chapter].at+' · '+PD_CHAPTERS[ST.chapter].title,
+          after:PD_CHAPTERS[ST.chapter].at+' · she closes it',
+          reverse:'night · one tap to put it back',
+          bloom:'night · it comes back',
+          joy:'night · '+(ST.joy+1)+' of '+PD_JOY.length,
+          letter:'night · the letter'};
+ $('#pwhere').textContent=L[ST.phase]||'';
+ $('#pnext').textContent=(ST.phase==='letter')?'restart':'next →';
+ $('#pstop').hidden=!(ST.chapter>=1&&(ST.phase==='chapter'||ST.phase==='after'));
+}
+function nextStep(){
+ const p=ST.phase;
+ if(p==='letter'){restart();return}
+ if(p==='normal'){ST.phase='warn';ST.pt=0;paintBar();return}
+ if(p==='warn'){ST.phase='ask';ST.pt=0;$('#pchoice').hidden=false;paintBar();return}
+ if(p==='ask'||p==='force'){toTear();return}
+ if(p==='tear'){ST.pt=2.9;return}
+ if(p==='reverse'){ST.phase='bloom';ST.bloomT=0;paintBar();return}
+ if(p==='bloom'){ST.phase='joy';ST.joy=0;ST.joyT=0;paintBar();return}
+ if(p==='joy'){nextJoy();return}
+ if(ST.chapter>=PD_CHAPTERS.length-1&&p==='after'){toReverse();return}
+ if(p==='after'){ST.chapter++;ST.phase='chapter';ST.beat=0;ST.beatT=0;
+                 ST.voiceT=-1;ST.flickerAt=T+2}
+ else {ST.phase='after'; if(PD_VOICE.chapter===PD_CHAPTERS[ST.chapter].id)ST.voiceT=T}
+ paintBar();
+}
+function toReverse(){ST.phase='reverse';paintBar()}
+function restart(){
+ Object.assign(ST,{phase:'normal',pt:0,chapter:0,beat:0,beatT:0,bloomT:0,
+                   joy:0,joyT:0,letterT:0,voiceT:-1,flickerAt:T+2,forced:false});
+ $('#pchoice').hidden=true;paintBar();
+}
+$('#pnext').onclick=nextStep;
+$('#prestart').onclick=restart;
+$('#phide').onclick=()=>{document.body.dataset.bench='0'};
+$('#pshow').onclick=()=>{document.body.dataset.bench='1'};
+$('#pstop').onclick=()=>{$('#pask').hidden=false};
+$('#paskStay').onclick=()=>{$('#pask').hidden=true};
+$('#paskGo').onclick=()=>{$('#pask').hidden=true;toReverse()};
+
+size();addEventListener('resize',size);
+paintBar();
+raf=requestAnimationFrame(frame);
+
+/* a door for the harness, so a test can jump straight to a phase */
+try{window.__pd={get ST(){return ST},PD_JOY,nextJoy,paintBar,
+ goJoy(i){ST.phase='joy';ST.joy=i||0;ST.joyT=0;paintBar()} }}catch(e){}
+})();
+</script>
+</body>
+</html>
