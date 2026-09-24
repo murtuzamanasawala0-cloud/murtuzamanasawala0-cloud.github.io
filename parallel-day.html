@@ -72,9 +72,25 @@ body[data-bench="0"] .bench{transform:translateY(120%);opacity:0;pointer-events:
  border:1px solid rgba(255,255,255,.16);background:rgba(8,5,12,.7);color:var(--ink2);
  font:500 11px/1 'Lora',serif;padding:9px 12px;border-radius:999px;cursor:pointer}
 body[data-bench="1"] #pshow{display:none}
+/* what she actually taps: one quiet control at a time, and only when it is needed */
+.pnav{position:fixed;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));
+ display:flex;flex-direction:column;align-items:center;gap:10px;z-index:15;pointer-events:none}
+.pnav>*{pointer-events:auto;animation:pnavin .7s ease both}
+@keyframes pnavin{from{opacity:0;transform:translateY(8px)}}
+.pcont,.pdone{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.10);color:#f3e9f0;
+ font:500 15px/1 'Lora',serif;padding:13px 26px;border-radius:999px;cursor:pointer;
+ -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.pdone{background:#d4467c;border-color:#d4467c;color:#fff}
+.plater{font:italic 400 14px/1.5 'Lora',serif;color:rgba(235,225,232,.75);text-align:center;padding:0 30px}
+.pstop2{border:0;background:none;color:rgba(235,225,232,.5);font:400 12.5px/1 'Lora',serif;
+ text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:6px}
+.papp{color:rgba(235,225,232,.55);font:400 12.5px/1 'Lora',serif}
+.pfade{position:fixed;inset:0;background:#fdf0f5;opacity:0;pointer-events:none;z-index:50;
+ transition:opacity .9s ease}
+.pfade.on{opacity:1;pointer-events:auto}
 </style>
 </head>
-<body data-dead="1" data-bench="1">
+<body data-dead="1" data-bench="0">
 
 <div id="stagebox">
   <canvas id="pcv"></canvas>
@@ -84,7 +100,6 @@ body[data-bench="1"] #pshow{display:none}
     <span id="pclock">27 days · 4 hrs · 11 min</span>
   </div>
   <div class="choice" id="pchoice" hidden>
-    <button class="go" id="pYes">Show me</button>
     <button id="pNo">I don't want to see</button>
   </div>
 </div>
@@ -108,7 +123,15 @@ body[data-bench="1"] #pshow{display:none}
   <button id="prestart">restart</button>
   <button id="phide">hide this</button>
 </div>
-<button id="pshow">bench</button>
+<button id="pshow" hidden>bench</button>
+<div class="pnav" id="pnav">
+  <button class="pcont" id="pcont" hidden>continue &rarr;</button>
+  <span class="plater" id="plater" hidden></span>
+  <button class="pdone" id="pdone" hidden>Back to today &rarr;</button>
+  <button class="pstop2" id="pstop2" hidden>I want to stop</button>
+  <a class="papp" id="papp" href="index.html" hidden>back to the app</a>
+</div>
+<div class="pfade" id="pfade"></div>
 
 <script>
 (()=>{
@@ -1577,7 +1600,7 @@ ASCENES.parallel={
    The bird is not early because it wants to eat her. It is early because it
    wants to be there first. That is the whole animation.                      */
 ASCENES.worm={
- name:'If you were a worm',grp:'Ours',dur:34,
+ name:'If you were a worm',grp:'Gifts · lines',dur:34,
  blurb:'The earliest bird. Waiting since before dawn, and not for the reason you think.',
  solo:true,
  /* [arrives, leaves] -- against the dark, the dawn, and the ones who turn
@@ -1597,21 +1620,32 @@ ASCENES.worm={
   A.stars=[];for(let i=0;i<40;i++)A.stars.push({x:R(),y:R()*.55,r:.6+R()*1.3,tw:R()*6.3});
  },
 
- bird(c,x,y,s,t,who,a){
+ /* A bird, facing left. 'flap' 0..1 opens the wing; a landed bird keeps it
+    folded. Drawn so that two of them never look alike: his is blue and
+    round, theirs are grey, smaller, and further away. */
+ bird(c,x,y,s,t,who,a,flap){
   if(a<=0)return;
   c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
-  const bob=Math.sin(t*1.6+x*.05)*.7;
-  c.translate(0,bob);
-  const body=who==='me'?'#6d86c9':'#a9a3b8';
-  /* legs */
-  c.strokeStyle='#d99a54';c.lineWidth=1.6;c.lineCap='round';
-  c.beginPath();c.moveTo(-2.5,7);c.lineTo(-2.5,11);c.stroke();
-  c.beginPath();c.moveTo(2.5,7);c.lineTo(2.5,11);c.stroke();
-  /* body and the tail */
+  const me=who==='me';
+  const body=me?'#6d86c9':'#a9a3b8', dark=me?'#5670b0':'#908aa0';
+  /* legs, only when standing */
+  if(!flap){
+   c.strokeStyle='#d99a54';c.lineWidth=1.6;c.lineCap='round';
+   c.beginPath();c.moveTo(-2.5,7);c.lineTo(-2.5,11);c.stroke();
+   c.beginPath();c.moveTo(2.5,7);c.lineTo(2.5,11);c.stroke();
+  }
+  /* tail and body */
   c.fillStyle=body;
-  c.beginPath();c.ellipse(0,2,8,7.5,0,0,7);c.fill();
   c.beginPath();c.moveTo(6,0);c.lineTo(14,-4);c.lineTo(7,4);c.closePath();c.fill();
-  /* head */
+  c.beginPath();c.ellipse(0,2,8,7.5,0,0,7);c.fill();
+  /* the wing: folded along the side, or up and beating */
+  c.save();c.translate(1.5,1);
+  c.rotate(flap?(-0.9+Math.sin(t*22)*0.9)*flap:0.15);
+  c.fillStyle=dark;
+  c.beginPath();c.ellipse(3,0,6.2,3.2,0,0,7);c.fill();
+  c.restore();
+  /* head, beak, eye */
+  c.fillStyle=body;
   c.beginPath();c.arc(-4,-6,5.4,0,7);c.fill();
   c.fillStyle='#e8a961';
   c.beginPath();c.moveTo(-9,-6);c.lineTo(-15,-4.6);c.lineTo(-9,-3);c.closePath();c.fill();
@@ -1619,56 +1653,112 @@ ASCENES.worm={
   c.beginPath();c.arc(-5.4,-7.2,1.15,0,7);c.fill();
   c.restore();
  },
- /* he has been here so long he brought a clock */
- alarm(c,x,y,s,a,t){
+ /* he has been here so long he brought a clock. It stands on its own patch
+    of ground and hops when it rings, instead of being glued to his tail. */
+ alarm(c,x,y,s,a,t,ringing){
   if(a<=0)return;
-  c.save();c.globalAlpha=a;c.translate(x,y);c.scale(s,s);
+  const hop=ringing?Math.abs(Math.sin(t*18))*2.2:0;
+  const tilt=ringing?Math.sin(t*36)*0.12:0;
+  c.save();c.globalAlpha=a;c.translate(x,y-hop*s);c.scale(s,s);c.rotate(tilt);
+  /* feet */
+  c.strokeStyle='#4b4450';c.lineWidth=1.4;c.lineCap='round';
+  c.beginPath();c.moveTo(-4,6);c.lineTo(-6,9);c.stroke();
+  c.beginPath();c.moveTo(4,6);c.lineTo(6,9);c.stroke();
+  /* bells */
   c.fillStyle='#c9536b';
-  c.beginPath();c.arc(-4.6,-6.4,2.4,0,7);c.fill();
-  c.beginPath();c.arc(4.6,-6.4,2.4,0,7);c.fill();
-  c.fillStyle='#e8e2ea';c.beginPath();c.arc(0,0,7,0,7);c.fill();
-  c.strokeStyle='#4b4450';c.lineWidth=1.1;c.beginPath();c.arc(0,0,7,0,7);c.stroke();
-  /* stuck at three in the morning, which is the joke */
-  c.lineWidth=1.3;c.lineCap='round';
-  c.beginPath();c.moveTo(0,0);c.lineTo(3.4,0);c.stroke();
-  c.beginPath();c.moveTo(0,0);c.lineTo(0,-4.6);c.stroke();
-  /* and it rings, because of course it does */
-  const ring=Math.sin(t*9)>0?1:0;
-  if(ring){
-   c.strokeStyle='#e8c07a';c.lineWidth=1;
-   [[-9,-9],[9,-9]].forEach(([bx,by])=>{
-    c.beginPath();c.arc(bx,by,3.2,0,Math.PI*1.4);c.stroke();
-   });
-  }
+  c.beginPath();c.arc(-4.6,-6.4,2.6,0,7);c.fill();
+  c.beginPath();c.arc(4.6,-6.4,2.6,0,7);c.fill();
+  /* face */
+  c.fillStyle='#f1ecf2';c.beginPath();c.arc(0,0,7.4,0,7);c.fill();
+  c.strokeStyle='#4b4450';c.lineWidth=1.2;c.beginPath();c.arc(0,0,7.4,0,7);c.stroke();
+  /* three o'clock, which is the joke */
+  c.lineWidth=1.4;
+  c.beginPath();c.moveTo(0,0);c.lineTo(3.6,0);c.stroke();
+  c.beginPath();c.moveTo(0,0);c.lineTo(0,-4.8);c.stroke();
   c.restore();
+  if(ringing){
+   c.save();c.globalAlpha=a*.9;c.translate(x,y);c.scale(s,s);
+   c.strokeStyle='#f0c47a';c.lineWidth=1.2;c.lineCap='round';
+   const r=Math.sin(t*18)>0;
+   [[-1,-12],[1,-12]].forEach(([sg,by])=>{
+    c.beginPath();c.moveTo(sg*9,by+2);c.lineTo(sg*(r?13:12),by-1);c.stroke();
+    c.beginPath();c.moveTo(sg*11,by+6);c.lineTo(sg*(r?15:14),by+5);c.stroke();
+   });
+   c.restore();
+  }
  },
  ground(c,W,H,y,dawn){
-  c.fillStyle=aMix('#2d2338','#5c4436',dawn);
+  c.fillStyle=aMix('#2d2338','#6a4f3e',dawn);
   c.fillRect(0,y,W,H-y);
-  c.fillStyle=aMix('#3a2c45','#6d5140',dawn);
-  c.beginPath();c.ellipse(W*.5,y,W*.6,H*.035,0,0,7);c.fill();
+  /* a softer band where the ground meets the sky */
+  c.fillStyle=aMix('#3a2c45','#7d5e49',dawn);
+  c.beginPath();c.ellipse(W*.5,y,W*.62,H*.028,0,0,7);c.fill();
+  /* a few tufts, so it reads as grass and not as a table */
+  c.strokeStyle=aMix('#4a3a55','#8f7a52',dawn);c.lineWidth=1.4;c.lineCap='round';
+  [.08,.27,.55,.71,.92].forEach((k,i)=>{
+   const gx=W*k, gh=H*.018;
+   for(let j=-1;j<=1;j++){
+    c.beginPath();c.moveTo(gx+j*3,y+H*.03);
+    c.lineTo(gx+j*5,y+H*.03-gh*(1-Math.abs(j)*.3));c.stroke();
+   }
+  });
+ },
+ /* the wire the sensible birds sit on, strung across the back */
+ wire(c,W,H,a,dawn){
+  if(a<=0)return;
+  c.save();c.globalAlpha=a;
+  /* strung high across the whole sky between two poles we never see, so
+     the birds on it are clearly sitting on something and nowhere near him */
+  c.strokeStyle=aMix('rgba(150,160,200,.55)','rgba(60,40,50,.8)',dawn);
+  c.lineWidth=2;
+  c.beginPath();c.moveTo(W*-.06,H*.16);
+  c.quadraticCurveTo(W*.50,H*.27,W*1.06,H*.17);c.stroke();
+  c.restore();
+ },
+ wireY(W,H,k){               /* where on the wire a bird sits, k from 0 to 1 */
+  const x0=W*-.06,x1=W*1.06,cx=W*.50, y0=H*.16,y1=H*.17,cy=H*.27;
+  const u=k, x=(1-u)*(1-u)*x0+2*(1-u)*u*cx+u*u*x1;
+  const y=(1-u)*(1-u)*y0+2*(1-u)*u*cy+u*u*y1;
+  return [x,y];
  },
  /* she comes up out of the soil, unhurried, in her own time */
  worm(c,x,y,s,t,up){
+  /* the little mound is there from the start: she was always going to */
+  c.save();c.translate(x,y);c.scale(s,s);
+  c.fillStyle='#5a4232';
+  c.beginPath();c.ellipse(0,3,9,3.4,0,Math.PI,0);c.fill();
+  c.fillStyle='#3b2a20';
+  c.beginPath();c.ellipse(0,2.6,4.2,1.4,0,0,7);c.fill();
+  c.restore();
   if(up<=0)return;
   c.save();c.translate(x,y);c.scale(s,s);
-  const h=aEase(up)*15;
-  c.strokeStyle='#e08a9c';c.lineWidth=5.2;c.lineCap='round';
+  const h=aEase(up)*17;
+  const sway=Math.sin(t*1.4);
+  c.strokeStyle='#e08a9c';c.lineWidth=5.6;c.lineCap='round';
   c.beginPath();
-  c.moveTo(0,2);
-  c.quadraticCurveTo(Math.sin(t*1.4)*3.5,2-h*.6,Math.sin(t*1.4)*2.2,2-h);
+  c.moveTo(0,2.4);
+  c.quadraticCurveTo(sway*3.8,2-h*.6,sway*2.4,2-h);
   c.stroke();
+  /* the stripes a worm has */
+  c.strokeStyle='rgba(180,90,110,.35)';c.lineWidth=1;
+  for(let k=.3;k<.95;k+=.18){
+   const py=2-h*k, px=sway*2.4*k*k;
+   c.beginPath();c.moveTo(px-2.2,py);c.lineTo(px+2.2,py);c.stroke();
+  }
   if(up>.55){
    c.fillStyle='#2b1f28';
-   const ey=2-h, ex=Math.sin(t*1.4)*2.2;
-   c.beginPath();c.arc(ex-1.3,ey-.6,.75,0,7);c.fill();
-   c.beginPath();c.arc(ex+1.3,ey-.6,.75,0,7);c.fill();
+   const ey=2-h, ex=sway*2.4;
+   c.beginPath();c.arc(ex-1.3,ey-.6,.8,0,7);c.fill();
+   c.beginPath();c.arc(ex+1.3,ey-.6,.8,0,7);c.fill();
+   /* and a small smile, because she knows he has been out here all night */
+   c.strokeStyle='#2b1f28';c.lineWidth=.6;
+   c.beginPath();c.arc(ex,ey+.4,1.1,.2,Math.PI-.2);c.stroke();
   }
   c.restore();
  },
 
  draw(A,c,W,H,t,P){
-  const S=Math.min(W,H), gy=H*.50;
+  const S=Math.min(W,H), gy=H*.62;
   const dawn=aSeg(P,.29,.55);
   A.bgA=aMix('#14203a','#ffd9a8',dawn);
   A.bgB=aMix('#2a2b4e','#f5a9a0',dawn);
@@ -1678,36 +1768,60 @@ ASCENES.worm={
   if(sa>0)A.stars.forEach(s=>{
    c.globalAlpha=sa*(.35+.65*(Math.sin(t*1.4+s.tw)*.5+.5));
    c.fillStyle='#fff';
-   c.beginPath();c.arc(s.x*W,s.y*gy,s.r,0,7);c.fill();
+   c.beginPath();c.arc(s.x*W,s.y*gy*.9,s.r,0,7);c.fill();
   });
   c.globalAlpha=1;
 
-  /* the sun, eventually */
+  /* the sun, eventually, behind everything */
   if(dawn>0){
-   const sy=aLerp(gy+S*.10,gy-S*.10,dawn);
-   const g=c.createRadialGradient(W*.78,sy,0,W*.78,sy,S*.30);
-   g.addColorStop(0,`rgba(255,220,150,${.75*dawn})`);
+   const sx=W*.80, sy=aLerp(gy+S*.08,gy-S*.26,dawn);
+   const g=c.createRadialGradient(sx,sy,0,sx,sy,S*.34);
+   g.addColorStop(0,`rgba(255,220,150,${.7*dawn})`);
    g.addColorStop(1,'rgba(255,220,150,0)');
-   c.fillStyle=g;c.beginPath();c.arc(W*.78,sy,S*.30,0,7);c.fill();
+   c.fillStyle=g;c.beginPath();c.arc(sx,sy,S*.34,0,7);c.fill();
    c.fillStyle=`rgba(255,236,190,${dawn})`;
-   c.beginPath();c.arc(W*.78,sy,S*.048,0,7);c.fill();
+   c.beginPath();c.arc(sx,sy,S*.050,0,7);c.fill();
   }
 
+  /* the wire, which is where the sensible ones will sit */
+  this.wire(c,W,H,aSeg(P,.02,.14),dawn);
   this.ground(c,W,H,gy,dawn);
 
-  /* him, already there, since long before any of this */
-  this.bird(c,W*.435,gy-S*.035,S*.0130,t,'me',1);
-  this.alarm(c,W*.545,gy-S*.010,S*.0072,1-aSeg(P,.58,.70),t);
+  /* the reasonable birds, arriving at a reasonable hour: they fly in from
+     the right one after another and land on the wire, well away from him */
+  const SPOT=[.56,.70,.84];
+  SPOT.forEach((k,i)=>{
+   const land=aSeg(P,.43+i*.035,.52+i*.035);
+   if(land<=0)return;
+   const [wx,wy]=this.wireY(W,H,k);
+   const e=aEase(land);
+   /* an arc in from off-screen, dipping as it comes */
+   const fx=aLerp(W*1.18+i*S*.06,wx,e);
+   const fy=aLerp(H*.04,wy-S*.028,e)-Math.sin(e*Math.PI)*S*.05;
+   this.bird(c,fx,fy,S*.0068,t+i,'them',Math.min(1,land*2.4),land<.98?1:0);
+  });
 
-  /* the reasonable birds, arriving at a reasonable hour */
-  const late=aSeg(P,.43,.56);
-  for(let i=0;i<3;i++){
-   const a=Math.min(1,Math.max(0,late*3-i));
-   this.bird(c,W*(.635+i*.125),gy-S*.026,S*.0112,t,'them',a);
-  }
+  /* him, already there, since long before any of this. At night he is a
+     little hunched and shivering; when it gets light he sits up. */
+  const hx=W*.42, hy=gy-S*.040;
+  const shiver=(1-dawn)*Math.sin(t*24)*S*.0016;
+  const perk=aEase(aSeg(P,.40,.55));
+  /* at the very end he hops once towards her */
+  const hop=aSeg(P,.84,.90);
+  const hopx=aLerp(0,-S*.07,aEase(hop));
+  const hopy=-Math.sin(hop*Math.PI)*S*.05;
+  this.bird(c,hx+shiver+hopx,hy+hopy-perk*S*.006,S*.0132,t,'me',1,0);
+
+  /* the clock, on its own patch of ground behind him, ringing at three */
+  const ringing=P>.14&&P<.30;
+  this.alarm(c,W*.84,gy-S*.030,S*.0082,1-aSeg(P,.58,.70),t,ringing);
 
   /* and her, coming up when she is ready and not before */
-  this.worm(c,W*.195,gy-S*.005,S*.0105,t,aSeg(P,.66,.84));
+  this.worm(c,W*.18,gy+S*.004,S*.0150,t,aSeg(P,.66,.82));
+
+  /* the heart between them, once he has hopped over */
+  const hb=aSeg(P,.88,.97);
+  if(hb>0)n9Heart(c,W*.26,gy-S*.18-hb*S*.03,S*.050*hb,hb,'#ff9fbb');
  },
 
  mark(c,s){
@@ -2150,25 +2264,97 @@ PD_OBJ.cakeTin=(c,x,y,S,k)=>{
  c.restore();
 };
 
+/* the Spiderman soft toy -- in this life it never leaves the shop */
 PD_OBJ.softToy=(c,x,y,S,k)=>{
  c.save();c.translate(x,y);
  c.strokeStyle=aCol('#a2909c',k);c.lineWidth=2.2;
- c.beginPath();c.moveTo(-S*.95,S*.62);c.lineTo(S*.95,S*.62);c.stroke();
- c.fillStyle=aCol('#d8b49a',k);
- c.beginPath();c.arc(-S*.26,-S*.30,S*.16,0,7);c.fill();
- c.beginPath();c.arc( S*.26,-S*.30,S*.16,0,7);c.fill();
- c.beginPath();c.arc(0,-S*.14,S*.34,0,7);c.fill();
- c.beginPath();c.ellipse(0,S*.30,S*.38,S*.32,0,0,7);c.fill();
- c.fillStyle=aCol('#e8cdb8',k);
- c.beginPath();c.ellipse(0,-S*.04,S*.17,S*.13,0,0,7);c.fill();
- c.fillStyle=aCol('#4a3a42',k);
- c.beginPath();c.arc(-S*.12,-S*.20,S*.035,0,7);c.fill();
- c.beginPath();c.arc( S*.12,-S*.20,S*.035,0,7);c.fill();
- c.beginPath();c.ellipse(0,-S*.09,S*.05,S*.035,0,0,7);c.fill();
+ c.beginPath();c.moveTo(-S*.95,S*.66);c.lineTo(S*.95,S*.66);c.stroke();
+ const red=aCol('#d23a3a',k),blue=aCol('#2f56a8',k),web=aCol('#5a1a1a',k);
+ /* legs and arms, plush and stubby */
+ c.fillStyle=blue;
+ aRR(c,-S*.26,S*.30,S*.20,S*.34,S*.09);c.fill();
+ aRR(c, S*.06,S*.30,S*.20,S*.34,S*.09);c.fill();
+ c.fillStyle=red;
+ c.beginPath();c.ellipse(-S*.16,S*.62,S*.13,S*.07,0,0,7);c.fill();
+ c.beginPath();c.ellipse( S*.16,S*.62,S*.13,S*.07,0,0,7);c.fill();
+ c.save();c.translate(-S*.30,S*.06);c.rotate(.5);aRR(c,-S*.08,-S*.04,S*.16,S*.30,S*.08);c.fill();c.restore();
+ c.save();c.translate( S*.30,S*.06);c.rotate(-.5);aRR(c,-S*.08,-S*.04,S*.16,S*.30,S*.08);c.fill();c.restore();
+ /* body: red chest, blue sides */
+ c.fillStyle=blue;c.beginPath();c.ellipse(0,S*.18,S*.30,S*.26,0,0,7);c.fill();
+ c.fillStyle=red;c.beginPath();c.ellipse(0,S*.16,S*.19,S*.24,0,0,7);c.fill();
+ c.fillStyle=web;
+ c.beginPath();c.ellipse(0,S*.10,S*.035,S*.05,0,0,7);c.fill();
+ /* the big head */
+ c.fillStyle=red;c.beginPath();c.ellipse(0,-S*.26,S*.36,S*.33,0,0,7);c.fill();
+ c.strokeStyle=web;c.lineWidth=Math.max(.8,S*.010);
+ for(let i=0;i<8;i++){const a=i/8*6.283;
+  c.beginPath();c.moveTo(0,-S*.22);c.lineTo(Math.cos(a)*S*.36,-S*.22+Math.sin(a)*S*.33);c.stroke()}
+ [.12,.22,.31].forEach(r=>{c.beginPath();c.ellipse(0,-S*.22,S*r*1.05,S*r,0,0,7);c.stroke()});
+ /* the eyes */
+ c.fillStyle=aCol('#ffffff',k);c.strokeStyle=aCol('#1a1a1a',k);c.lineWidth=Math.max(1.2,S*.02);
+ [[-1],[1]].forEach(([sd])=>{
+  c.beginPath();c.moveTo(sd*S*.05,-S*.28);
+  c.quadraticCurveTo(sd*S*.26,-S*.44,sd*S*.25,-S*.24);
+  c.quadraticCurveTo(sd*S*.16,-S*.16,sd*S*.05,-S*.28);c.closePath();c.fill();c.stroke();
+ });
+ /* the tag, still on */
  c.strokeStyle=aCol('#a2909c',k);c.lineWidth=1;
- c.beginPath();c.moveTo(S*.30,S*.14);c.lineTo(S*.48,S*.30);c.stroke();
+ c.beginPath();c.moveTo(S*.36,S*.12);c.lineTo(S*.54,S*.30);c.stroke();
  c.fillStyle=aCol('#f4eef1',k);
- aRR(c,S*.42,S*.30,S*.26,S*.17,S*.03);c.fill();
+ aRR(c,S*.48,S*.30,S*.26,S*.17,S*.03);c.fill();
+ c.restore();
+};
+
+/* one ticket, for a film nobody drags me to */
+PD_OBJ.oneTicket=(c,x,y,S,k)=>{
+ c.save();c.translate(x,y);c.rotate(-.08);
+ c.fillStyle=aCol('#f3e3c4',k);
+ const w=S*.70,h=S*.34,r=S*.09;
+ c.beginPath();c.moveTo(-w,-h);c.lineTo(w,-h);c.lineTo(w,-r);
+ c.arc(w,0,r,-Math.PI/2,Math.PI/2,true);c.lineTo(w,h);c.lineTo(-w,h);c.lineTo(-w,r);
+ c.arc(-w,0,r,Math.PI/2,-Math.PI/2,true);c.closePath();c.fill();
+ c.strokeStyle=aCol('#b99a6a',k);c.setLineDash([S*.03,S*.03]);c.lineWidth=1.2;
+ c.beginPath();c.moveTo(S*.34,-S*.30);c.lineTo(S*.34,S*.30);c.stroke();c.setLineDash([]);
+ c.fillStyle=aCol('#8a3030',k);c.textAlign='center';
+ c.font='700 '+(S*.11)+'px Lora, Georgia, serif';c.fillText('ADMIT ONE',-S*.16,-S*.10);
+ c.font='600 '+(S*.075)+'px Lora, Georgia, serif';c.fillStyle=aCol('#5a4636',k);
+ c.fillText('SPIDER-MAN',-S*.16,S*.06);
+ c.font='400 '+(S*.06)+'px Lora, Georgia, serif';c.fillText('4 AUG · SEAT F7',-S*.16,S*.19);
+ /* a tiny spider on the stub */
+ c.fillStyle=aCol('#2a2a2a',k);c.beginPath();c.ellipse(S*.52,0,S*.04,S*.06,0,0,7);c.fill();
+ c.strokeStyle=aCol('#2a2a2a',k);c.lineWidth=1;
+ for(let i=0;i<4;i++){const yy=-S*.04+i*S*.028;
+  c.beginPath();c.moveTo(S*.52,yy);c.lineTo(S*.44,yy-S*.03+i*S*.01);c.stroke();
+  c.beginPath();c.moveTo(S*.52,yy);c.lineTo(S*.60,yy-S*.03+i*S*.01);c.stroke();}
+ c.textAlign='start';c.restore();
+};
+
+/* her books, and the stamp she never gets: it hovers over the page, and
+   never comes down */
+PD_OBJ.stampAlone=(c,x,y,S,k)=>{
+ const tt=(typeof performance!=='undefined'?performance.now():0)/1000;
+ c.save();c.translate(x,y);
+ /* the open book */
+ c.fillStyle=aCol('#fbf6ee',k);
+ c.beginPath();c.moveTo(0,S*.12);c.quadraticCurveTo(-S*.34,S*.02,-S*.70,S*.10);
+ c.lineTo(-S*.70,S*.58);c.quadraticCurveTo(-S*.34,S*.50,0,S*.60);
+ c.quadraticCurveTo(S*.34,S*.50,S*.70,S*.58);c.lineTo(S*.70,S*.10);
+ c.quadraticCurveTo(S*.34,S*.02,0,S*.12);c.closePath();c.fill();
+ c.strokeStyle=aCol('#c9b9ad',k);c.lineWidth=1.2;
+ c.beginPath();c.moveTo(0,S*.12);c.lineTo(0,S*.60);c.stroke();
+ /* the flyleaf where a name would go -- a dashed empty circle */
+ c.setLineDash([S*.025,S*.025]);c.strokeStyle=aCol('#cdb7c4',k);
+ c.beginPath();c.arc(S*.34,S*.34,S*.14,0,7);c.stroke();c.setLineDash([]);
+ /* the stamp, coming down and stopping short, every time */
+ const dip=Math.max(0,Math.sin(tt*1.6));
+ const sy=-S*.44+dip*S*.30;
+ c.fillStyle=aCol('#7a4a5e',k);
+ aRR(c,S*.34-S*.06,sy-S*.30,S*.12,S*.22,S*.05);c.fill();
+ c.beginPath();c.ellipse(S*.34,sy-S*.32,S*.10,S*.06,0,0,7);c.fill();
+ c.fillStyle=aCol('#b98aa0',k);
+ aRR(c,S*.34-S*.15,sy-S*.08,S*.30,S*.10,S*.02);c.fill();
+ c.fillStyle=aCol('#58404e',k);
+ aRR(c,S*.34-S*.15,sy+S*.01,S*.30,S*.03,S*.01);c.fill();
  c.restore();
 };
 
@@ -2358,26 +2544,26 @@ const PD_CHAPTERS=[
    {o:'blankLetter', date:'27 May 2026',  cap:'A page I never fill. I have nothing to confess and nobody to confess it to.'},
    {o:'plainCalendar',date:'29 May 2026', cap:'Nobody asks anybody anything.'},
    {o:'hairclip',    date:'June 2026',    cap:'Three clips. Still carded. Still in the shop.'},
-   {o:'softToy',     date:'June 2026',    cap:'Still on the shelf, still with its tag on.'},
+   {o:'softToy',     date:'June 2026',    cap:'A Spiderman soft toy. Still on the shelf, still with its tag on.'},
    {o:'cakeTin',     date:'10 June 2026', cap:'A tin that never gets carried anywhere.'},
    {o:'haircutAlone',date:'June 2026',    cap:'Nobody has an opinion about my hair. I cut it whenever I feel like it.'},
    {o:'band',        date:'13 June 2026', cap:'A black rubber band, on the same wrist it started on.'}
   ],
   after:'There is more of this.\nCome back later.'},
 
- {id:'afternoon', at:'16:00', title:'July and August',
+ {id:'afternoon', at:'16:00', title:'July to September',
   beats:[
    {o:'emptyVase',    date:'25 July 2026',  cap:'No flowers arrive. There is no fight, so there is nothing to be sorry for.'},
    {o:'friesAlone',   date:'August 2026',   cap:'Peri peri. One order. Nobody reaches across for the last one.'},
-   {o:'plainCalendar',date:'4 August 2026', cap:'A song comes on and it is just a song.'}
+   {o:'oneTicket',    date:'4 August 2026', cap:'A new Spiderman film comes out. Nobody to watch it with, so I don\u2019t.'},
+   {o:'stampAlone',   date:'12 September 2026', cap:'Your books stay unstamped. Nobody gives you a stamp with your name on it.'}
   ],
   after:'One more before tonight.'},
 
  {id:'evening', at:'19:00', title:'My side of it', mine:true,
   beats:[
    {o:'rideAlone',    date:'June 2026',        cap:'I ride home on my own. There has never been anybody to drop off first.'},
-   {o:'deskAlone',    date:'May 2026',         cap:'I work late. Nobody comes over to bother me about it.'},
-   {o:'blankLetter',  date:'12 September 2026',cap:'I buy a book and it stays a book. I never think to stamp anything into it.'},
+   {o:'deskAlone',    date:'May 2026',         cap:'I work alone, and efficiently. Nothing ever distracts me.'},
    {o:'quietPhone',   date:'16 September 2026',cap:'The phone does not ring. Nobody tells me anything on a call that changes a year.'},
    {o:'plainCalendar',date:'17 October 2026',  cap:'And this date, the one this whole app is counting down to, is a Saturday I spend doing nothing.'}
   ],
@@ -2397,7 +2583,7 @@ const PD_VOICE={chapter:'afternoon',
    p runs 0..1 across the scene; t is wall time for wobbles.        */
 const PD_JOY=[
  {id:'desk',
-  line:'I used to work late with nobody bothering me.\nThank you for ruining that completely.',
+  line:'I used to work alone, and efficiently.\nThen you became my favourite distraction.',
   draw(c,x,y,S,t,p){
    const on=aSeg(p,.18,.42), pop=aSeg(p,.42,.66);
    /* the desk, sitting lower so the two of them have room */
@@ -2610,13 +2796,8 @@ const PD_OPEN={
    She came through here, so the app should know day 21 happened. Same origin,
    same storage key: read it, add the day, put it back. If storage is not
    available this quietly does nothing, which is the right way to fail. */
-try{
- var PD_K='zb30';
- var PD_S=JSON.parse(localStorage.getItem(PD_K)||'{}');
- PD_S.done=PD_S.done||{};PD_S.unlocked=PD_S.unlocked||{};
- PD_S.done[21]=true;PD_S.unlocked[21]=true;
- localStorage.setItem(PD_K,JSON.stringify(PD_S));
-}catch(e){}
+/* (day 21 is no longer marked done on arrival: she comes back to the app
+   afterwards and finishes it there -- the game, the letter, the voice note) */
 
 STAGE=document.createElement('div');
 
@@ -2754,6 +2935,7 @@ function frame(n){
  const dt=Math.min(.05,(n-last)/1000);last=n;T+=dt;
  const S2=Math.min(W,H);
  const k=colourK();
+ if(ST.phase==='letter')try{navSync()}catch(e){}
 
  const gr=C.createLinearGradient(0,0,0,H);
  gr.addColorStop(0,aCol('#3a2a5e',k));
@@ -3055,7 +3237,6 @@ CV.addEventListener('pointerdown',()=>{
  if(ST.phase==='joy'&&ST.joyT>1.2){nextJoy();return}
 },{passive:true});
 
-$('#pYes').onclick=()=>toTear();
 $('#pNo').onclick=()=>{
  /* she said no, which is the answer this was built for */
  ST.forced=true;ST.phase='force';ST.pt=0;$('#pchoice').hidden=true;paintBar();
@@ -3063,6 +3244,7 @@ $('#pNo').onclick=()=>{
 
 /* ---------- bench controls ---------- */
 function paintBar(){
+ try{navSync()}catch(e){}
  const L={normal:'morning · an ordinary day',
           warn:'morning · the warning',
           ask:'morning · her choice',
@@ -3107,6 +3289,67 @@ $('#pshow').onclick=()=>{document.body.dataset.bench='1'};
 $('#pstop').onclick=()=>{$('#pask').hidden=false};
 $('#paskStay').onclick=()=>{$('#pask').hidden=true};
 $('#paskGo').onclick=()=>{$('#pask').hidden=true;toReverse()};
+
+/* ================= her way through it =================
+   The bench is gone for her (add #bench to the address to get it back).
+   She moves on with one button, when the next part is open: the parts
+   open across the real day on 8 October, and before or after that day
+   everything is open (that is him, previewing). Where she got to is kept,
+   so coming back later carries on instead of starting again. */
+const PD_KEY='zb30pd';
+const pdLoad=()=>{try{return JSON.parse(localStorage.getItem(PD_KEY)||'{}')||{}}catch(e){return {}}};
+const pdSave=o=>{try{localStorage.setItem(PD_KEY,JSON.stringify(Object.assign(pdLoad(),o)))}catch(e){}};
+const PD_DAY=new Date(2026,9,8);
+const OPENS=PD_CHAPTERS.map(c=>c.at).concat(['20:30']);
+function isOpen(i){
+ const n=now(), end=new Date(PD_DAY);end.setDate(end.getDate()+1);
+ if(n<PD_DAY||n>=end)return true;
+ const [h,m]=OPENS[Math.min(i,OPENS.length-1)].split(':').map(Number);
+ const at=new Date(PD_DAY);at.setHours(h,m,0,0);
+ return n>=at;
+}
+function nextFromAfter(){
+ if(ST.chapter>=PD_CHAPTERS.length-1){toReverse();return}
+ ST.chapter++;ST.phase='chapter';ST.beat=0;ST.beatT=0;ST.voiceT=-1;ST.flickerAt=T+2;
+ paintBar();
+}
+let navKey='';
+function navSync(){
+ const p=ST.phase, nxt=ST.chapter+1;
+ const open=p==='after'&&isOpen(nxt);
+ const letterDone=p==='letter'&&ST.letterT>PD_LETTER.length*1.5+2;
+ const key=[p,ST.chapter,open,letterDone].join('|');
+ if(key===navKey)return;navKey=key;
+ if(p==='after')pdSave({ch:ST.chapter+1});
+ if(p==='reverse')pdSave({ch:PD_CHAPTERS.length});
+ if(p==='letter')pdSave({end:true});
+ $('#pcont').hidden=!(p==='after'&&open);
+ $('#plater').hidden=!(p==='after'&&!open);
+ if(p==='after'&&!open)$('#plater').textContent='The next part opens at '+OPENS[Math.min(nxt,OPENS.length-1)]+'. You can close this — it will wait for you.';
+ $('#papp').hidden=!(p==='after'&&!open);
+ $('#pdone').hidden=!letterDone;
+ $('#pstop2').hidden=!(ST.chapter>=1&&(p==='chapter'||p==='after'));
+ /* re-run the entrance animation for whatever just appeared */
+ $$('#pnav>*').forEach(e=>{if(!e.hidden){e.style.animation='none';void e.offsetWidth;e.style.animation=''}});
+}
+$('#pcont').onclick=()=>{navKey='';nextFromAfter()};
+$('#pstop2').onclick=()=>{$('#pask').hidden=false};
+$('#pdone').onclick=()=>{
+ pdSave({end:true});
+ $('#pfade').classList.add('on');
+ setTimeout(()=>{location.href='index.html'},950);
+};
+setInterval(()=>{navKey='';navSync()},15000);
+/* the bench, for him only */
+if(/bench/.test(location.hash)){document.body.dataset.bench='1';$('#pshow').hidden=false}
+/* coming back later: pick up where she left off */
+(()=>{
+ const st=pdLoad();
+ if(st.end||!st.ch)return;
+ if(st.ch>=PD_CHAPTERS.length){ST.chapter=PD_CHAPTERS.length-1;ST.phase=isOpen(PD_CHAPTERS.length)?'reverse':'after'}
+ else{ST.chapter=st.ch-1;ST.phase='after'}
+ ST.beat=PD_CHAPTERS[ST.chapter].beats.length-1;
+})();
 
 size();addEventListener('resize',size);
 paintBar();
