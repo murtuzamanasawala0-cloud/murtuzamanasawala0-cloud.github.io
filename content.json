@@ -12,6 +12,16 @@
   },
   "wordle": {
    "words": "ROSES\nLILIES\nTULIPS"
+  },
+  "safe": {
+   "ask": "Set the dials to the day i said I LOVE YOU!",
+   "code": "0606"
+  },
+  "oddone": {
+   "good": "🍟 | peri peri fries\n🍛 | biryani\n🥑 | avocado\n🍫 | Mars\n🌷 | tulips"
+  },
+  "simon": {
+   "days": "6 June | 🛵 the ride | 🏖️ the beach  |🌷 flowers  | ❤️ I love you | 6th June. The ride, the flowers, the beach, and me finally saying it out loud.\nour usual date | 🛵 the ride | 🍔 the burger place | 🍟 fries | 🥰 happy | The date we keep repeating. Different day, same order, and you always end up with the fries.\na work day | 🏢 office | 😩 stress | 🍦 ice cream | 🥰 better | Every bad office day, in four steps. The ice cream was never really about the ice cream.\n25 July | 💢 the fight | 😢 you crying | 💐 flowers | 🥰 okay again | 25th July. I made you cry, and then I spent the rest of it trying to undo it. I still think about that one."
   }
  },
  "anims": {
@@ -26,6 +36,18 @@
   },
   "may23": {
    "words": "23rd May. Your data was off, so I decided you were asleep.\nI waited outside yours. Then I gave up and left.\nHalfway there I checked a phone that had made no sound at all.\nA text. A missed call. You are ready and waiting for mee.\nI have never turned a scooter around that fast.\nYou were still standing there when I got back.\nYou got on. We went to work. I said very little.\nI had to leave for Bombay by midday. We kept texting anyway.\nYou said it was temporary. A few more days and you were gone.\nSo I said fine. I’ll enjoy it while it lasts. Someone else will sit there.\nYou were furious, which was the entire point.\nNobody replaces you. I’ll text and call and annoy you wherever you go.\nThat night you felt like the lazy intern who knew nothing.\nSo I wrote you something long.\nYou told me later this was the day you were sure."
+  },
+  "may28": {
+   "words": "I didn’t sleep. I wrote you a letter instead.\nIt took most of the night, and I meant every line of it.\nCame in early. Picked you up. Said nothing about it.\nThen handed it back over my shoulder while you sat behind me.\nYou went very red and didn’t speak for a while.\nThen the same office. The same desk. The same work.\nNothing about that day was the same.\nI was nervous the whole time, but i wud still love to live that day again."
+  },
+  "may29": {
+   "words": "29th May. Two questions. No lying.\nI have forgotten the first one, which I am sorry about.\nThe second was: what are we.\nI did not have an answer.\nYou had to tell me that the correct move was to ask you.\nSo I asked you. \nWill you be my girlfriend!?\nYou said yes. Best thing that happened to me"
+  },
+  "weeks": {
+   "words": "Nothing changed. Except all of it did.\nWe had just spent the whole day sitting beside in the same office.\nIt made no difference at all.\n12 - 12:30 - 1 - 1:30 - 2\nKept saying goodnight bye bye, but the conversation never ended\nAnd sacrificing all that sleep was soo worth itt."
+  },
+  "brownies": {
+   "words": "You told me to bake you brownies.\nYou were joking. I chose not to notice.\nI made them 3rd June morning, before work.\nAnd then I handed you a letter instead.\nIt apologised, at some length, for not getting you brownies.\n“Did you really think I wouldn’t get you something you asked for?”\nThen the brownies."
   }
  },
  "days": [
@@ -194,16 +216,16 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "jigsaw",
+   "g": "safe",
    "a": "may28",
    "af": true,
    "tz": "<p>Tonight, when you are done for the day — the game, then the letter.</p><p>Tomorrow: two questions, and me answering one of them extremely badly.</p><p>You had to help. 🌸</p>",
-   "a2": "",
+   "a2": "posy",
    "az": "",
    "ab": "",
-   "bt": "…\nSorry, were you tapping something?\nThere is no button here.\nYou are imagining the button.\nGoodnight. 🌸",
+   "bt": "Loading tomorrow… 2%\nLoading tomorrow… 61%\nLoading tomorrow… 99%\nLoading tomorrow… 3%\nOkay. It is not loading. It is tomorrow.\nGo to sleep. 🌙",
    "wn": "",
-   "pk": "",
+   "pk": "spoiler",
    "vn": "",
    "vz": "",
    "pd": false,
@@ -217,7 +239,7 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "colourscene",
+   "g": "paint",
    "a": "may29",
    "af": true,
    "tz": "<p>The game and the letter are for tonight.</p><p>Tomorrow we are past the beginning.</p><p>Everything after this one is us. 🌸</p>",
@@ -240,7 +262,7 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "unscramble",
+   "g": "oddone",
    "a": "weeks",
    "af": true,
    "tz": "<p>Game tonight, then the letter — and there is a second film waiting after it.</p><p>Tomorrow: how professional we were at work.</p><p>Extremely professional. 🌸</p>",
@@ -263,7 +285,7 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "truefalse",
+   "g": "dobble2",
    "a": "secret",
    "af": true,
    "tz": "<p>Tonight: the game, the letter, and one more thing after it.</p><p>Tomorrow: the day I had off and came in anyway.</p><p>You worked out why immediately. 🌸</p>",
@@ -378,7 +400,7 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "datematch",
+   "g": "thisorthat",
    "a": "waras",
    "af": true,
    "tz": "<p>The game and the letter are for this evening.</p><p>Tomorrow is 13th June.</p><p>You know exactly what day that is. 🌸</p>",
