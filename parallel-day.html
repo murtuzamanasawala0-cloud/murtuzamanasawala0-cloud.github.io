@@ -3337,10 +3337,12 @@ $('#pstop2').onclick=()=>{$('#pask').hidden=false};
 $('#pdone').onclick=()=>{
  pdSave({end:true});
  $('#pfade').classList.add('on');
- setTimeout(()=>{location.href='index.html'},950);
+ setTimeout(()=>{location.href=window.__HOME||'index.html'},950);
 };
 setInterval(()=>{navKey='';navSync()},15000);
 /* the bench, for him only */
+/* in the keepsake this page is opened from inside the app, so home is wherever that is */
+if(window.__HOME)try{$('#papp').href=window.__HOME}catch(e){}
 if(/bench/.test(location.hash)){document.body.dataset.bench='1';$('#pshow').hidden=false}
 /* coming back later: pick up where she left off */
 (()=>{

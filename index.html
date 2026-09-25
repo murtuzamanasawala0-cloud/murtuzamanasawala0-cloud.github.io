@@ -912,6 +912,41 @@ audio.vnprev{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
 .pcbar{flex-wrap:wrap;gap:8px}
 .pcx.hint{animation:pchint 1.1s ease;box-shadow:0 0 0 3px #f0bd7c}
 @keyframes pchint{0%,100%{transform:scale(1)}30%{transform:scale(1.18)}}
+/* ---- her diary ---- */
+.dyov{position:fixed;inset:0;z-index:210;background:rgba(60,34,56,.45);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+ display:flex;align-items:flex-end;justify-content:center;animation:stin .3s ease}
+.dyov.out{opacity:0;transition:opacity .3s ease}
+.dybox{width:100%;max-width:520px;max-height:92vh;overflow:auto;background:#fffaf5;color:#57394f;
+ border-radius:24px 24px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom,0px));
+ box-shadow:0 -10px 40px rgba(60,30,60,.25);animation:dyup .35s cubic-bezier(.2,.9,.3,1);
+ background-image:repeating-linear-gradient(180deg,transparent 0 31px,rgba(201,164,200,.18) 31px 32px)}
+@keyframes dyup{from{transform:translateY(40px);opacity:.4}}
+.dyhead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.dyhead h2{font:600 26px/1.1 'Playfair Display',Georgia,serif;margin:4px 0 0;color:#c2607f}
+.dyx{width:36px;height:36px;border-radius:50%;border:1px solid var(--line,#ecdbe5);background:#fff;color:#57394f;font-size:20px;line-height:1}
+.dynew{background:#fff;border:1px solid var(--line,#ecdbe5);border-radius:16px;padding:12px 14px;margin-bottom:8px;box-shadow:0 4px 14px rgba(90,60,100,.08)}
+.dydate{font:italic 500 13px/1 'Lora',serif;color:#b0879f;margin-bottom:8px}
+.dynew textarea,.dyedit{width:100%;border:0;background:transparent;resize:vertical;font:400 17px/1.55 'Caveat','Lora',cursive;color:#4a3142;outline:none;min-height:90px}
+.dyedit{background:#fff;border:1px dashed #e8b9cb;border-radius:10px;padding:8px;min-height:70px}
+.dyrow{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.dyok{font:italic 400 13px/1.4 'Lora',serif;color:#6f9f7c;min-height:18px}
+.dyday{font:600 11px/1 'IBM Plex Mono',ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:#c2607f;margin:22px 0 8px}
+.dyent{background:rgba(255,255,255,.85);border-radius:14px;padding:10px 14px;margin-bottom:8px;border:1px solid rgba(236,219,229,.8)}
+.dytag{font:500 11.5px/1.3 'Lora',serif;color:#b0879f;margin-bottom:4px}
+.dytxt{font:400 18px/1.45 'Caveat','Lora',cursive;color:#4a3142;white-space:pre-wrap}
+.dyent.art img{display:block;width:100%;max-width:280px;border-radius:10px;border:1px solid var(--line,#ecdbe5);margin-top:4px;background:#fffdfe}
+.dyact{display:flex;gap:10px;margin-top:6px}
+.dyact button{border:0;background:none;color:#b0879f;font:500 12.5px/1 'Lora',serif;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+.dyempty{font:italic 400 14px/1.5 'Lora',serif;color:#8a6f84;text-align:center;margin:26px 10px}
+.dykeep{margin-top:26px;padding-top:16px;border-top:1px dashed #e8b9cb;text-align:center}
+.dykeep p{font:400 13.5px/1.55 'Lora',serif;color:#7c5b72;margin:0 0 10px}
+.dybtn{font-size:13.5px;padding:9px 16px}
+/* ---- the keepsake panel ---- */
+.kpanel{margin:8px 0 12px;padding:10px 12px;border:1px solid rgba(255,255,255,.2);border-radius:10px;font-size:12.5px;line-height:1.5}
+.kpanel summary{font-weight:600;cursor:pointer}
+.kpanel p{margin:8px 0}
+.kpanel input{width:120px}
+#kpStat{margin-top:6px;color:#ffd9e8;min-height:16px}
 
 .devbuild{font:600 10.5px/1 ui-monospace,monospace;letter-spacing:.12em;color:#f9a8c8;opacity:.75;margin:-6px 0 10px;text-transform:uppercase}.devbuildbar{font:600 9.5px/1 ui-monospace,monospace;letter-spacing:.1em;color:#f9a8c8;opacity:.7;margin-left:7px;align-self:center}
 </style>
@@ -947,6 +982,7 @@ audio.vnprev{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
       <div class="eyebrow">Your 30 days</div>
       <h2 style="font-size:23px;margin-top:6px">Thirty days to you</h2>
       <p class="lead" style="font-size:14px;margin-top:6px">Tap any day you've unlocked to read it again.</p>
+      <div style="margin-top:10px"><button class="btn ghost" id="calDiary">\U0001F4D4 Your diary</button></div>
     </div>
     <div class="cal" id="cal"></div>
     <div class="legend">
@@ -1135,12 +1171,18 @@ audio.vnprev{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
   <button id="pvEnd">back to the editor</button></div>
 <div id="devbar" hidden>
   <button id="dPrev" aria-label="previous day">◀</button><span id="dLabel">Day 1</span><button id="dNext" aria-label="next day">▶</button>
-  <button id="dWin2">win</button><button id="dEdit">edit</button><button id="dRead">read all</button><button id="dMore">⚙</button><span class="devbuildbar">3F5BC2</span>
+  <button id="dWin2">win</button><button id="dEdit">edit</button><button id="dRead">read all</button><button id="dMore">⚙</button><span class="devbuildbar">1E1DE2</span>
 </div>
 <div id="devErr" hidden></div>
 <div id="dev">
   <h4>Dev panel · Murtaza only</h4>
-  <div class="devbuild">build 3F5BC2</div>
+  <div class="devbuild">build 1E1DE2</div>
+  <details class="kpanel"><summary>Keepsake — after the birthday</summary>
+   <p>Everything in one file: every word you wrote, the voice notes, the music, the parallel day and the birthday page. Do this from the live site, with internet on, once you have finished editing.</p>
+   <p><b>1.</b> <button id="kpOpen" type="button">Download an open copy</button> — keep it on your laptop. Opens without internet, forever.</p>
+   <p><b>2.</b> A word only you two know: <input id="kpPw" autocomplete="off" spellcheck="false" placeholder="the word"> <button id="kpLock" type="button">Download the locked site</button></p>
+   <p>Put that <i>index.html</i> in the repo in place of the old one, and delete everything else except manifest.webmanifest, sw.js, robots.txt and the two icons. Same link, but it only opens with the word. Her progress and her diary stay, because it is the same address.</p>
+   <div id="kpStat"></div></details>
   <div class="drow">
     <button id="dJump">Jump to day ▸</button>
     <input id="dDay" type="number" min="1" max="30" value="1" style="width:62px">
@@ -1435,11 +1477,12 @@ const curDay=()=>Math.max(0,Math.min(30,todayNum()));
 const KEY='zb30';
 let S={done:{},unlocked:{}};
 try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+if(window.__KEEP){for(let d=1;d<=30;d++)S.unlocked[d]=true}
 var pvSnap=null;   /* var, not let: save() sits above the preview code */
 function save(){if(pvSnap!=null)return;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let dev=false;
 const isDone=d=>!!S.done[d];
-const canOpen=d=>dev||(d<=curDay()&&(d===curDay()||isDone(d)||S.unlocked[d]));
+const canOpen=d=>dev||window.__KEEP||(d<=curDay()&&(d===curDay()||isDone(d)||S.unlocked[d]));
 const weekOf=d=>d>=30?'b':d>=22?4:d>=15?3:d>=8?2:1;
 
 /* ================= confetti ================= */
@@ -1545,9 +1588,10 @@ function gameView(d,idx){
  if(dev)$('#devskip',w).innerHTML='<button class="btn ghost" onclick="window.__win()">dev: win</button>';
  const won=()=>{
   if(mode!=='game')return;
-  if(idx+1<list.length){try{sparkle(innerWidth/2,innerHeight*.42,16)}catch(e){}
+  try{keepArt(d,key)}catch(e){}
+  if(idx+1<list.length){sfx('good');try{sparkle(innerWidth/2,innerHeight*.42,16)}catch(e){}
    setTimeout(()=>gameView(d,idx+1),700);return}
-  mode='won';FEEL.tap('win');celebrate(d);
+  mode='won';FEEL.tap('win');sfx('cheer');celebrate(d);
   const fresh=!again;           /* no 'come back tomorrow' on an old day */
   setTimeout(()=>{relive=0;
    const onward=()=>{
@@ -1564,7 +1608,7 @@ function gameView(d,idx){
  catch(e){cleanup=null;$('#gbox',w).innerHTML='<div class="card center"><p class="lead">This one would not start. Tap Back and try another.</p></div>'}
 }
 function celebrate(d){
- S.done[d]=true;save();updateDot();growGarden();AUDIO.fx('win');
+ S.done[d]=true;save();updateDot();growGarden();
  const big=DAYS[d-1].big;
  burst(W/2,H*.42,big?150:90,big?1.15:1);
  if(big)setTimeout(()=>rain(90),350);
@@ -1659,6 +1703,7 @@ function messageView(d,fresh){
  if(ag)ag.onclick=()=>{const k=DAYS[d-1].a2;
   animView(d,()=>messageView(d,false),true,k)};
  $('#calOpen',w).onclick=openSheet;
+ {const b=$('#bdDiary',w);if(b)b.onclick=()=>diaryOpen();}
 }
 const BAIT_DEFAULT=["bav jaldi che 😄", "wait for tomorrow", "no. tomorrow.", "you can keep tapping. it will still be tomorrow.", "okay fine — tomorrow, but earlier. 🌸"];   /* lab/baitsets.py, same list the picker shows */
 function baitLines(d){
@@ -1783,7 +1828,7 @@ function parallelCard(d){
 function wirePd(w,d){
  const b=$('#pdGo',w);
  if(!b)return;
- b.onclick=()=>{try{location.href='parallel-day.html'}catch(e){}};
+ b.onclick=()=>{try{goPage('parallel-day.html')}catch(e){}};
 }
 function baitCard(d){
  const t=baitTomorrow();
@@ -1822,6 +1867,7 @@ function replyBox(d){
    <div class="rrow"><button class="btn ghost" id="replySave">Keep it</button>
      <span class="rsaved" id="replyOk">kept 🌸</span></div>
    <p class="tease" style="margin-top:8px">This stays on your phone. Nobody else sees it — not even him.</p>
+   <div style="margin-top:8px"><button class="btn ghost dybtn" data-diary>\u{1F4D4} your diary</button></div>
  </div>`;
 }
 function wireReply(w,d){
@@ -1834,6 +1880,7 @@ function wireReply(w,d){
   save();ok.classList.add('on');setTimeout(()=>ok.classList.remove('on'),1800);
  };
  btn.onclick=put;
+ const db=w.querySelector('[data-diary]');if(db)db.onclick=()=>diaryOpen();
  let tm=0;
  ta.addEventListener('input',()=>{clearTimeout(tm);tm=setTimeout(put,1200)});
 }
@@ -1874,6 +1921,7 @@ function birthdayView(){
      a little more every time you showed up. Today they are open.<br>They still don't die. Neither does this.</div></div>
    ${muralCard()}
    ${diaryCard()}
+   <div class="row" style="margin-top:10px"><button class="btn ghost" id="bdDiary">\u{1F4D4} Your diary</button></div>
    <div class="card giftcard" id="giftCard">
      <span class="giftlock">🎁</span>
      <div class="line">There's one more thing.</div>
@@ -1898,7 +1946,7 @@ function wireGift(w){
  const tryIt=()=>{
   if(inp.value.trim().toUpperCase()===CFG.giftPw.toUpperCase()){
    msg.textContent='Opening…';burst(W/2,H*.5,120,1.1);
-   setTimeout(()=>{location.href='birthday.html'},900);
+   setTimeout(()=>{goPage('birthday.html')},900);
   }else{msg.textContent='Not it. Ask him nicely. 👀';inp.classList.add('shake');setTimeout(()=>inp.classList.remove('shake'),450)}
  };
  go.onclick=tryIt;inp.addEventListener('keydown',e=>{if(e.key==='Enter')tryIt()});
@@ -2210,7 +2258,7 @@ const AUDIO=(()=>{
  /* ---- the background track ---- */
  function track(m){
   if(tracks[m]!==undefined)return tracks[m];
-  const src=SRC[m];if(!src){tracks[m]=null;return null}
+  const src=(window.__KEEPMEDIA&&window.__KEEPMEDIA[SRC[m]])||SRC[m];if(!src){tracks[m]=null;return null}
   const a=new Audio();
   a.loop=true;a.preload='auto';a.volume=0;
   /* no file in the repo yet = no music, quietly. not an error worth shouting about */
@@ -2244,8 +2292,121 @@ const AUDIO=(()=>{
 
  /* ---- effects ---- */
  let lastFx=0;
- function fx(kind){
+ /* ================= the game sounds =================
+    All made here, from oscillators and a little noise, so they cost nothing
+    to download and there is no file that can go missing. Each one is short,
+    soft, and pitched to sit under the music rather than on top of it. */
+ let NOISE=null;
+ function noise(){
+  if(NOISE)return NOISE;
+  const n=ctx.sampleRate*1.2,b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+  return NOISE=b;
+ }
+ /* a burst of filtered noise */
+ function hiss(at,dur,type,f0,f1,vol,q){
+  const s=ctx.createBufferSource();s.buffer=noise();
+  const f=ctx.createBiquadFilter();f.type=type||'bandpass';f.Q.value=q||1.2;
+  f.frequency.setValueAtTime(f0,at);if(f1)f.frequency.exponentialRampToValueAtTime(f1,at+dur);
+  const g=ctx.createGain();g.gain.setValueAtTime(.0001,at);
+  g.gain.exponentialRampToValueAtTime(vol,at+Math.min(.02,dur*.2));
+  g.gain.exponentialRampToValueAtTime(.0001,at+dur);
+  s.connect(f);f.connect(g);g.connect(fxG);
+  s.start(at,Math.random()*.5);s.stop(at+dur+.05);
+ }
+ /* a pitched blip that can slide */
+ function blip(at,dur,type,f0,f1,vol){
+  const o=ctx.createOscillator(),g=ctx.createGain();o.type=type||'sine';
+  o.frequency.setValueAtTime(f0,at);if(f1)o.frequency.exponentialRampToValueAtTime(f1,at+dur);
+  g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(vol,at+.006);
+  g.gain.exponentialRampToValueAtTime(.0001,at+dur);
+  o.connect(g);g.connect(fxG);o.start(at);o.stop(at+dur+.03);
+ }
+ const PENTA=[523.25,587.33,659.25,783.99,880,1046.5,1174.66,1318.5];
+ const lastK={};
+ function sfx(kind,o){
+  o=o||{};
+  const t=now(),r=Math.random();
+  /* the fast ones are throttled so a flurry of taps does not become a buzz */
+  const gap={pop:.03,scratch:.06,brush:.09,pour:.11,step:.07,slide:.05,swish:.09,click:.035,tick:.2}[kind];
+  if(gap){if(t-(lastK[kind]||0)<gap)return;lastK[kind]=t}
+  switch(kind){
+   case 'pop':        /* bubble wrap */
+    hiss(t,.05,'bandpass',1400+r*900,500,.5,2.5);blip(t,.07,'sine',520+r*260,160,.22);break;
+   case 'swish':      /* a swipe through the air */
+    hiss(t,.2,'bandpass',600,3800,.28,.9);break;
+   case 'slice':      /* the blade going through */
+    hiss(t,.16,'highpass',2600,5200,.3,.7);blip(t+.01,.08,'triangle',1400+r*400,700,.12);break;
+   case 'squish':     /* fruit, landing in halves */
+    hiss(t,.14,'lowpass',900,200,.45,1);blip(t,.12,'sine',220,90,.2);break;
+   case 'yuck':       /* she sliced the gavar */
+    blip(t,.18,'sawtooth',260,150,.08);blip(t+.12,.26,'sawtooth',190,110,.08);break;
+   case 'bonk':       /* whack */
+    blip(t,.12,'sine',420,120,.35);hiss(t,.05,'lowpass',2200,400,.35,.8);break;
+   case 'crash':      /* scooter into traffic */
+    hiss(t,.55,'lowpass',2800,180,.6,.6);blip(t,.32,'square',160,55,.12);hiss(t+.06,.3,'bandpass',4200,1500,.25,3);break;
+   case 'honk':
+    blip(t,.16,'square',415,0,.07);blip(t,.16,'square',523,0,.05);blip(t+.2,.22,'square',415,0,.07);blip(t+.2,.22,'square',523,0,.05);break;
+   case 'coin':
+    blip(t,.07,'square',988,0,.06);blip(t+.07,.22,'square',1319,0,.06);break;
+   case 'chomp':      /* the snake, eating */
+    hiss(t,.05,'lowpass',1600,500,.4,1);hiss(t+.07,.05,'lowpass',1300,400,.35,1);blip(t,.1,'triangle',660,880,.1);break;
+   case 'thud':       /* something landing on something */
+    blip(t,.16,'sine',170,70,.4);hiss(t,.06,'lowpass',700,200,.3,1);break;
+   case 'drop':       /* let go of it */
+    blip(t,.22,'sine',900,380,.12);break;
+   case 'topple':
+    [0,.09,.2].forEach((d,i)=>{blip(t+d,.18,'sine',220-i*40,90,.3);hiss(t+d,.08,'lowpass',900,200,.3,1)});break;
+   case 'slide':      /* a tile moving */
+    hiss(t,.07,'bandpass',900,1600,.18,1.6);break;
+   case 'merge': {    /* two into one: higher the further up the ladder */
+    const f=PENTA[Math.min(PENTA.length-1,o.level||0)];
+    note(f,t,.3,.14);note(f*1.5,t+.05,.35,.08);break}
+   case 'flip':       /* a card turning over */
+    hiss(t,.05,'bandpass',2400,1200,.22,2);blip(t+.02,.06,'triangle',700,1100,.08);break;
+   case 'click':      /* a dial, a key */
+    blip(t,.025,'square',1900+r*300,0,.05);break;
+   case 'unlock':
+    blip(t,.05,'square',900,0,.06);blip(t+.08,.12,'square',600,0,.07);
+    [659.25,880,1318.5].forEach((f,i)=>note(f,t+.25+i*.08,.5,.1));break;
+   case 'scratch':
+    hiss(t,.07,'bandpass',3000+r*1500,1800,.16,3);break;
+   case 'brush':
+    hiss(t,.14,'lowpass',1400,700,.08,.7);break;
+   case 'pour':
+    hiss(t,.14,'bandpass',500+r*300,900,.18,4);blip(t,.08,'sine',300+r*200,500,.05);break;
+   case 'fill': {     /* a colour dropping into a shape */
+    const f=PENTA[Math.floor(r*5)];note(f,t,.35,.11);break}
+   case 'twinkle': {  /* a star found */
+    const f=PENTA[Math.min(PENTA.length-1,o.i||Math.floor(r*8))];note(f*2,t,.6,.07);note(f*3,t+.04,.5,.04);break}
+   case 'step':
+    blip(t,.03,'sine',480+r*80,0,.08);break;
+   case 'tick':
+    blip(t,.03,'square',1500,0,.05);break;
+   case 'place':      /* a piece on a board */
+    blip(t,.09,'triangle',540,380,.2);hiss(t,.03,'lowpass',1500,400,.2,1);break;
+   case 'beep':
+    blip(t,.14,'square',880,0,.07);break;
+   case 'tug':
+    blip(t,.08,'triangle',260+r*60,180,.18);break;
+   case 'tone': {     /* simon-style: one note per button */
+    const f=[392,493.88,587.33,739.99,880][(o.i||0)%5];note(f,t,.45,.16);break}
+   case 'nope':       /* wrong answer, gently */
+    blip(t,.1,'triangle',330,300,.12);blip(t+.12,.16,'triangle',262,240,.12);break;
+   case 'lose':
+    [392,349.23,293.66].forEach((f,i)=>note(f,t+i*.16,.4,.1));break;
+   case 'cheer':      /* she won the game */
+    [523.25,659.25,783.99,1046.5,1318.5].forEach((f,i)=>note(f,t+i*.07,.7,.12));
+    hiss(t+.3,.6,'highpass',5000,9000,.05,.5);break;
+   case 'hint':
+    [880,1174.66].forEach((f,i)=>note(f,t+i*.08,.4,.08));break;
+   default: return false;
+  }
+  return true;
+ }
+ function fx(kind,o){
   if(!ctx||!on)return;
+  if(sfx(kind,o))return;
   const t=now();
   if(kind==='tap'||kind==='good'||kind==='bad'){if(t-lastFx<.05)return;lastFx=t}
   if(kind==='tap')note(880,t,.09,.08);
@@ -2438,8 +2599,19 @@ const AUDIO=(()=>{
   const to=v?0.10:(on?1:0);
   try{master.gain.linearRampToValueAtTime(to,now()+(v?0.18:0.55))}catch(e){}
  }
- return{setMode,fx,setOn,paintBtn,birthdaySong,jazzWaltz,isOn:()=>on,wake,duck};
+ /* a door for the trials: play every sound once, report any that throw */
+ function selfTest(){boot();const bad=[];['pop','swish','slice','squish','yuck','bonk','crash','honk','coin','chomp','thud','drop','topple','slide','merge','flip','click','unlock','scratch','brush','pour','fill','twinkle','step','tick','place','beep','tug','tone','nope','lose','cheer','hint'].forEach(k=>{try{if(!sfx(k,{level:3,i:2}))bad.push(k+':unknown')}catch(e){bad.push(k+':'+e.message)}});return bad}
+ return{setMode,fx,setOn,paintBtn,birthdaySong,jazzWaltz,isOn:()=>on,wake,duck,selfTest};
 })();
+
+/* the games call this; it never throws, and it is silent when the sound is off */
+const SFX_FEEL={pop:'pop',bonk:'thump',thud:'thump',chomp:'pop',place:'pop',coin:'pop',crash:'crash',topple:'crash',squish:'pop',unlock:'win',cheer:'win'};
+function sfx(k,o){
+ try{if(window.__sfxLog)window.__sfxLog.push(k);AUDIO.fx(k,o)}catch(e){}
+ /* and felt in the hand, for the ones that are a physical thing */
+ try{const f=SFX_FEEL[k];if(f&&typeof FEEL!=='undefined')FEEL.tap(f)}catch(e){}
+}
+try{window.__au=AUDIO}catch(e){}
 
 /* ---- what the games are doing, without touching all 33 of them ---- */
 let GOBS=null;
@@ -2450,7 +2622,7 @@ function watchGame(box){
   for(const m of ms){
    if(m.type==='attributes'&&m.attributeName==='class'){
     const c=m.target.classList;
-    if(c.contains('good')||c.contains('hit')||c.contains('winline'))AUDIO.fx('good');
+    if(c.contains('good')||c.contains('hit')||c.contains('winline')||c.contains('found'))AUDIO.fx('good');
     else if(c.contains('shake')||c.contains('bad'))AUDIO.fx('bad');
    }
   }
@@ -2547,6 +2719,7 @@ function ghRepo(){
 function ghToken(){try{return localStorage.getItem(LS_TOK)||''}catch(e){return ''}}
 function b64utf8(s){const by=new TextEncoder().encode(s);let bin='';for(let i=0;i<by.length;i+=0x8000)bin+=String.fromCharCode.apply(null,by.subarray(i,i+0x8000));return btoa(bin)}
 async function loadRemote(){
+ if(window.__KEEP)return false;   /* everything is already inside */
  try{
   const r=await fetch('content.json?t='+Date.now(),{cache:'no-store'});
   if(!r.ok)return false;
@@ -3342,7 +3515,303 @@ edsheet.addEventListener('click',e=>{if(e.target===edsheet)edsheet.classList.rem
 
 /* ================= calendar ================= */
 const sheet=$('#sheet');
+/* ================= her diary, her drawings, and keeping all of it =================
+
+   THE DIARY. Everything she has written in one place: the note she leaves
+   under each day, anything she writes in the diary itself (any day, as often
+   as she likes), and the pictures she coloured and painted. Newest first.
+   It all lives in the same saved state as the rest of her progress (S), so
+   it travels with it.
+
+   THE KEEPSAKE. One HTML file with everything inside it: the app, every word
+   he wrote in the editor, the voice notes, the music, the parallel day and
+   the birthday page -- so nothing is fetched from anywhere, ever again.
+     · his copy is built without anyone's progress in it
+     · hers carries her side: replies, diary, drawings, what she has opened
+   And a LOCKED copy: the same file, encrypted with a word only the two of
+   them know, meant to replace index.html in the repo after the birthday.
+   The link keeps working; without the word the file is noise.            */
+
+const KEEP_ON=!!window.__KEEP;
+const ART_GAMES=['paint','mandala','colorbynum','colourscene'];
+
+/* ---------------- drawings ---------------- */
+function keepArt(d,key){
+ if(!ART_GAMES.includes(key)||!d)return;
+ const box=$('#gbox');if(!box)return;
+ let url='';
+ const cv=box.querySelector('canvas');
+ const svg=box.querySelector('svg.csvg')||box.querySelector('svg');
+ if(key==='paint'&&cv){
+  const Z=Math.min(1,440/cv.width),t=document.createElement('canvas');
+  t.width=Math.round(cv.width*Z);t.height=Math.round(cv.height*Z);
+  const x=t.getContext('2d');x.fillStyle='#fffdfe';x.fillRect(0,0,t.width,t.height);x.drawImage(cv,0,0,t.width,t.height);
+  url=t.toDataURL('image/jpeg',.72);
+ }else if(svg){
+  const c=svg.cloneNode(true);c.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  c.removeAttribute('class');c.setAttribute('style','background:#fffdfe');
+  url='data:image/svg+xml,'+encodeURIComponent(new XMLSerializer().serializeToString(c));
+ }else if(cv){
+  url=cv.toDataURL('image/jpeg',.72);
+ }
+ if(!url||url.length>400000)return;
+ if(!S.art)S.art={};
+ S.art[d]={u:url,g:key,at:Date.now()};
+ save();
+}
+
+/* ---------------- the diary ---------------- */
+function diaryEntries(){
+ const L=[];
+ (S.diary||[]).forEach(e=>L.push({kind:'diary',id:e.id,at:e.at,text:e.text}));
+ if(S.reply)Object.keys(S.reply).forEach(d=>{if(S.reply[d])L.push({kind:'reply',d:+d,at:+dateOf(+d)+20*3600e3,text:S.reply[d]})});
+ if(S.art)Object.keys(S.art).forEach(d=>{const a=S.art[d];if(a&&a.u)L.push({kind:'art',d:+d,at:a.at||+dateOf(+d),u:a.u})});
+ return L.sort((a,b)=>b.at-a.at);
+}
+function diaryOpen(){
+ const ov=el('div','dyov');
+ const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+ ov.innerHTML=`<div class="dybox">
+  <div class="dyhead"><div><div class="eyebrow">yours</div><h2>Your diary</h2></div>
+   <button class="dyx" aria-label="close">×</button></div>
+  <div class="dynew">
+   <div class="dydate">${today}</div>
+   <textarea id="dyIn" rows="4" spellcheck="true" placeholder="Dear diary…"></textarea>
+   <div class="dyrow"><span class="dyok" id="dyOk"></span><button class="btn" id="dySave">Keep it</button></div>
+  </div>
+  <div id="dyList"></div>
+  <div class="dykeep">
+   <p>Everything in here lives on this phone — nobody else can read it, not even him.
+     To keep it forever, save a copy: one file with all 30 days and all of this inside it.</p>
+   <button class="btn ghost" id="dyCopy">Save a copy of everything</button>
+   <div class="dyok" id="dyStat"></div>
+  </div></div>`;
+ document.body.appendChild(ov);
+ const close=()=>{ov.classList.add('out');setTimeout(()=>ov.remove(),300)};
+ ov.querySelector('.dyx').onclick=close;
+ ov.addEventListener('click',e=>{if(e.target===ov)close()});
+ const inp=ov.querySelector('#dyIn');
+ ov.querySelector('#dySave').onclick=()=>{
+  const v=inp.value.trim();if(!v)return;
+  if(!S.diary)S.diary=[];
+  S.diary.push({id:Date.now().toString(36),at:Date.now(),text:v});save();
+  inp.value='';ov.querySelector('#dyOk').textContent='kept \u{1F338}';
+  setTimeout(()=>{const o=ov.querySelector('#dyOk');if(o)o.textContent=''},1800);
+  paint();
+ };
+ ov.querySelector('#dyCopy').onclick=async ev=>{
+  const b=ev.currentTarget,st=ov.querySelector('#dyStat');b.disabled=true;
+  try{
+   const html=await buildKeepsake(true,m=>st.textContent=m);
+   await keepHandOver('our-30-days.html',html);
+   st.textContent='Saved. Keep that file somewhere safe — open it any time, even with no internet.';
+  }catch(e){st.textContent='That did not work: '+(e.message||e)+'. Try again with internet on.'}
+  b.disabled=false;
+ };
+ const paint=()=>{
+  const L=diaryEntries(),host=ov.querySelector('#dyList');
+  if(!L.length){host.innerHTML='<p class="dyempty">Nothing yet. Anything you write under a day, or up here, shows up in this list.</p>';return}
+  let last='';
+  host.innerHTML=L.map((e,i)=>{
+   const dt=new Date(e.at),day=dt.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+   const head=day!==last?`<div class="dyday">${day}</div>`:'';last=day;
+   if(e.kind==='art')return head+`<div class="dyent art"><div class="dytag">day ${e.d} · you made this</div><img src="${e.u}" alt="your drawing"></div>`;
+   if(e.kind==='reply')return head+`<div class="dyent"><div class="dytag">day ${e.d} · what you wrote back</div><div class="dytxt">${esc(e.text)}</div></div>`;
+   return head+`<div class="dyent" data-id="${e.id}"><div class="dytag">${dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>
+     <div class="dytxt">${esc(e.text)}</div>
+     <div class="dyact"><button data-a="edit">edit</button><button data-a="del">delete</button></div></div>`;
+  }).join('');
+  host.querySelectorAll('.dyent[data-id]').forEach(row=>{
+   const id=row.dataset.id,E=()=> (S.diary||[]).find(x=>x.id===id);
+   row.querySelector('[data-a=edit]').onclick=()=>{
+    const e=E();if(!e)return;
+    const t=el('textarea','dyedit');t.value=e.text;t.rows=4;
+    row.querySelector('.dytxt').replaceWith(t);t.focus();
+    const b=row.querySelector('[data-a=edit]');b.textContent='done';
+    b.onclick=()=>{e.text=t.value.trim()||e.text;save();paint()};
+   };
+   const del=row.querySelector('[data-a=del]');
+   del.onclick=()=>{
+    if(del.dataset.sure){S.diary=(S.diary||[]).filter(x=>x.id!==id);save();paint();return}
+    del.dataset.sure='1';del.textContent='really delete?';setTimeout(()=>{if(del.isConnected){del.dataset.sure='';del.textContent='delete'}},3000);
+   };
+  });
+ };
+ paint();
+}
+
+/* ---------------- building the keepsake ---------------- */
+const KJ=o=>JSON.stringify(o).replace(/</g,'\\u003c');
+async function keepText(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(u+' is missing ('+r.status+')');return r.text()}
+async function keepData(u){
+ const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(u+' is missing ('+r.status+')');
+ const b=await r.blob();
+ return await new Promise((ok,no)=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=()=>no(new Error('could not read '+u));f.readAsDataURL(b)});
+}
+/* the plain keepsake source, wherever we are */
+async function keepSource(say){
+ if(window.__KEEP_HTML)return window.__KEEP_HTML;
+ let app=await keepText('index.html');
+ if(app.slice(0,1200).includes('name="zb-lock"')){
+  /* this is the locked site: open it again with the word she already gave */
+  let pw='';try{pw=localStorage.getItem('zb30lock')||''}catch(e){}
+  if(!pw)pw=prompt('The word that opens this:')||'';
+  app=await keepUnlock(app,pw);
+ }
+ if(app.slice(0,3000).includes('id="keepmeta"'))return app;
+ say&&say('Collecting everything he wrote…');
+ const content=buildContent();
+ for(let i=0;i<content.days.length;i++){
+  const v=content.days[i].vn;
+  if(v&&!/^data:/.test(v)){
+   say&&say('Voice note for day '+(i+1)+'…');
+   try{content.days[i].vn=await keepData(v)}catch(e){content.days[i].vn=''}
+  }
+ }
+ const media={};
+ for(const f of ['music.mp3','game.mp3']){say&&say('The music…');try{media[f]=await keepData(f)}catch(e){}}
+ const pages={};
+ for(const f of ['parallel-day.html','birthday.html']){try{pages[f]=await keepText(f)}catch(e){}}
+ const meta='<script id="keepmeta">window.__KEEP=1;window.__KEEPSTATE={};/*ks*/window.__KEEPMEDIA='+KJ(media)+';window.__KEEPPAGES='+KJ(pages)+';'+
+  '(function(){try{var s=window.__KEEPSTATE||{};for(var k in s){if(s[k]&&!localStorage.getItem(k))localStorage.setItem(k,s[k])}}catch(e){}})();<\/script>';
+ app=app.replace('<head>',()=>'<head>\n'+meta);
+ app=app.replace(/<script type="application\/json" id="content">[\s\S]*?<\/script>/,()=>'<script type="application/json" id="content">'+KJ(content)+'<\/script>');
+ app=app.replace(/<title>[^<]*<\/title>/,()=>'<title>30 days · ours<\/title>');
+ return app;
+}
+async function buildKeepsake(withState,say){
+ let html=await keepSource(say);
+ const st={};
+ if(withState)['zb30','zb30pd'].forEach(k=>{try{const v=localStorage.getItem(k);if(v)st[k]=v}catch(e){}});
+ html=html.replace(/window\.__KEEPSTATE=[\s\S]*?;\/\*ks\*\//,()=>'window.__KEEPSTATE='+KJ(st)+';/*ks*/');
+ say&&say('Nearly there…');
+ return html;
+}
+async function keepHandOver(name,html){
+ const blob=new Blob([html],{type:'text/html'});
+ try{
+  const f=new File([blob],name,{type:'text/html'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})&&/iPhone|iPad|Android/i.test(navigator.userAgent)){
+   await navigator.share({files:[f],title:name});return;
+  }
+ }catch(e){if(e&&e.name==='AbortError')throw new Error('cancelled')}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
+ document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},8000);
+}
+
+/* ---------------- the lock ---------------- */
+const kb64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
+const kun64=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
+async function keepKey(pw,salt,n,use){
+ const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw.trim().toUpperCase()),'PBKDF2',false,['deriveKey']);
+ return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:n,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,[use]);
+}
+async function keepLock(html,pw){
+ if(!window.crypto||!crypto.subtle)throw new Error('this browser cannot lock files; open the site from its https link');
+ const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),n=210000;
+ const key=await keepKey(pw,salt,n,'encrypt');
+ const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(html)));
+ return KEEP_LOCK.replace('__P__',()=>JSON.stringify({s:kb64(salt),i:kb64(iv),n,c:kb64(ct)}));
+}
+async function keepUnlock(wrapper,pw){
+ const m=wrapper.match(/const P=(\{[\s\S]*?\});\s*\/\*p\*\//);if(!m)throw new Error('not a locked file');
+ const P=JSON.parse(m[1]);
+ const key=await keepKey(pw,kun64(P.s),P.n,'decrypt');
+ const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:kun64(P.i)},key,kun64(P.c));
+ return new TextDecoder().decode(pt);
+}
+/* the whole locked index.html. Tiny, and nothing in it but the lock. */
+const KEEP_LOCK=`<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="zb-lock" content="1">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="theme-color" content="#f4a0bc">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<title>30 days</title>
+<style>
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{display:flex;align-items:center;justify-content:center;padding:24px;
+ background:linear-gradient(180deg,#fdf0f5,#f3dce8);color:#57394f;font:400 16px/1.5 Georgia,serif}
+.lk{width:100%;max-width:320px;text-align:center}
+.z{width:64px;height:64px;border-radius:50%;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;
+ background:#e8729a;color:#fff;font:600 28px/1 Georgia,serif;box-shadow:0 10px 26px rgba(232,114,154,.35)}
+h1{font:600 24px/1.2 Georgia,serif;margin:0 0 6px}p{margin:0 0 16px;opacity:.8}
+input[type=password]{width:100%;padding:14px 16px;border-radius:999px;border:1px solid #e6d4e0;font:inherit;text-align:center;
+ letter-spacing:.12em;text-transform:uppercase;background:#fff;color:inherit}
+button{margin-top:12px;width:100%;padding:14px;border:0;border-radius:999px;background:#e8729a;color:#fff;font:600 16px/1 Georgia,serif}
+label{display:block;margin-top:12px;font-size:13px;opacity:.75}#msg{min-height:22px;margin-top:12px;font-size:14px}
+</style></head><body>
+<div class="lk" id="zblock"><div class="z">Z</div><h1>Just for us</h1><p>Type the word.</p>
+<input id="pw" type="password" autocomplete="current-password" autocapitalize="characters">
+<button id="go">Open</button>
+<label><input type="checkbox" id="rem" checked> remember on this phone</label>
+<div id="msg"></div></div>
+<script>
+const P=__P__;/*p*/
+const un=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
+async function open(pw,quiet){
+ const msg=document.getElementById('msg');
+ try{
+  if(!quiet)msg.textContent='Opening\\u2026';
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw.trim().toUpperCase()),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:un(P.s),iterations:P.n,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:un(P.i)},key,un(P.c));
+  const html=new TextDecoder().decode(pt);
+  try{if(document.getElementById('rem').checked)localStorage.setItem('zb30lock',pw.trim())}catch(e){}
+  window.__KEEP_HTML=html;
+  document.open();document.write(html);document.close();
+ }catch(e){
+  try{if(quiet)localStorage.removeItem('zb30lock')}catch(e2){}
+  if(!quiet)msg.textContent='That is not the word.';
+ }
+}
+document.getElementById('go').onclick=()=>open(document.getElementById('pw').value);
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')open(e.target.value)});
+try{const s=localStorage.getItem('zb30lock');if(s)open(s,true)}catch(e){}
+<\/script></body></html>`;
+
+/* ---------------- opening the other pages from inside the keepsake ---------------- */
+function goPage(name){
+ const h=(window.__KEEPPAGES||{})[name];
+ if(!h){location.href=name;return}
+ const home=location.href.split('#')[0];
+ const inj='<script>window.__HOME='+KJ(home)+';window.__KEEP=1;'+
+  'addEventListener("DOMContentLoaded",function(){if(document.getElementById("pdone"))return;'+
+  'var b=document.createElement("a");b.href=window.__HOME;b.textContent="\\u2190 back to the 30 days";'+
+  'b.style.cssText="position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:9999;background:#57394f;color:#fff;'+
+  'padding:10px 16px;border-radius:999px;font:500 14px/1 Georgia,serif;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.25)";'+
+  'document.body.appendChild(b)});<\/script>';
+ const doc=h.replace('<head>',()=>'<head>'+inj);
+ try{location.href=URL.createObjectURL(new Blob([doc],{type:'text/html'}))}
+ catch(e){document.open();document.write(doc);document.close()}
+}
+
+/* ---------------- his side: the keepsake panel ---------------- */
+function wireKeepPanel(){
+ const st=$('#kpStat');if(!st)return;
+ const say=m=>st.textContent=m;
+ $('#kpOpen').onclick=async()=>{
+  try{const html=await buildKeepsake(false,say);await keepHandOver('our-30-days.html',html);
+   say('Open copy saved ('+(html.length/1048576).toFixed(1)+' MB). Keep it safe — it has everything, unlocked.')}
+  catch(e){say('Stopped: '+(e.message||e))}
+ };
+ $('#kpLock').onclick=async()=>{
+  const pw=($('#kpPw').value||'').trim();
+  if(pw.length<4){say('Pick a word of at least 4 letters first.');return}
+  try{const html=await buildKeepsake(false,say);say('Locking it…');
+   const locked=await keepLock(html,pw);
+   /* prove it opens before handing it over */
+   const back=await keepUnlock(locked,pw);if(back.length!==html.length)throw new Error('the lock did not check out');
+   await keepHandOver('index.html',locked);
+   say('Locked index.html saved ('+(locked.length/1048576).toFixed(1)+' MB). The word is: '+pw.toUpperCase()+'. Do not lose it.')}
+  catch(e){say('Stopped: '+(e.message||e))}
+ };
+}
+
 function openSheet(){renderCal();sheet.classList.add('show')}
+{const b=$('#calDiary');if(b)b.onclick=()=>{closeSheet();diaryOpen()};}
+try{wireKeepPanel()}catch(e){}
 function closeSheet(){sheet.classList.remove('show');$('#pwbox').hidden=true}
 $('#calBtn').onclick=openSheet;$('#calClose').onclick=closeSheet;
 sheet.addEventListener('click',e=>{if(e.target===sheet)closeSheet()});
@@ -3354,7 +3823,7 @@ function renderCal(){
   let cls='day',lab=fmt(dt);
   if(isDone(d))cls+=' done';
   if(d===c&&now()<BDAY)cls+=' today';
-  else if(d>c&&!dev)cls+=' locked';
+  else if(d>c&&!dev&&!window.__KEEP)cls+=' locked';
   else if(d<c&&!isDone(d)&&!S.unlocked[d]&&!dev)cls+=' missed';
   const b=el('button',cls,`${d}<small>${lab}</small>`);
   b.onclick=()=>{
@@ -4312,7 +4781,10 @@ const FEEL=(()=>{
   heart :[16,90,24],           /* thump, gap, thump */
   nudge :[7],                  /* an interruption landing */
   no    :[18,50,18],           /* the button that will not open tomorrow */
-  moment:[30,70,30,70,60,140,120]   /* 8:45 */
+  moment:[30,70,30,70,60,140,120],   /* 8:45 */
+  pop   :[6],                  /* a bubble, a tap that landed */
+  thump :[16],                 /* something hit something */
+  crash :[45,35,70]            /* the scooter, the snake */
  };
  let quiet=false;
  try{
@@ -12349,7 +12821,7 @@ const OLD={
     c.stroke();c.setLineDash([]);
     const py=g.h-46;
     for(const o of obs){o.y+=o.v*dt;
-     if(!o.hit&&Math.abs(o.y-py)<26&&Math.abs(o.x-x)<30){o.hit=1;hits++;g.flash=1;toast(pick(['Ouch 🙈','Careful!','That was a cow.']));
+     if(!o.hit&&Math.abs(o.y-py)<26&&Math.abs(o.x-x)<30){o.hit=1;hits++;g.flash=1;sfx('crash');toast(pick(['Ouch 🙈','Careful!','That was a cow.']));
       if(hits>=3){alive=false;const ov=overlay(g,`<h4>Okay, park it 🛵</h4><p>Three bumps. Your scooter deserves better. Go again?</p><button class="btn" id="rt">Try again</button>`);
        $('#rt',ov).onclick=()=>{ov.remove();obs=[];t=0;hits=0;alive=true;last=gNow();gRAF(loop)};return}}}
     obs=obs.filter(o=>o.y<g.h+40);
@@ -12396,7 +12868,7 @@ const OLD={
     const b=el('button','tile big flip hidden','?');b.dataset.e=e;
     b.onclick=()=>{
      if(lock||b.classList.contains('good')||open.includes(b))return;
-     b.classList.remove('hidden','flip');b.textContent=e;open.push(b);
+     b.classList.remove('hidden','flip');b.textContent=e;open.push(b);sfx('flip');
      if(open.length===2){
       lock=true;
       if(open[0].dataset.e===open[1].dataset.e){open.forEach(x=>x.classList.add('good'));found++;stat.textContent=`${found} / 8`;
@@ -12468,7 +12940,7 @@ const OLD={
      c.onclick=()=>{
       if(sel<0){sel=i;paint();return}
       if(sel===i){sel=-1;paint();return}
-      [order[sel],order[i]]=[order[i],order[sel]];sel=-1;paint();
+      [order[sel],order[i]]=[order[i],order[sel]];sfx('slide');sel=-1;paint();
       const ok=order.every((v,k)=>v===k);stat.textContent=`${order.filter((v,k)=>v===k).length} / 9`;
       if(ok){grid.classList.add('whole');sparkle(innerWidth/2,innerHeight*.4,20);gST(win,1400)}
      };
@@ -12707,7 +13179,7 @@ scratch:{name:'Scratch to reveal',blurb:'Scratch the card with your finger. Some
   fit();
   const pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
   let drawing=false,last=null;
-  const rub=p=>{ctx.globalCompositeOperation='destination-out';ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=46;
+  const rub=p=>{sfx('scratch');ctx.globalCompositeOperation='destination-out';ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=46;
    if(last){ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke()}
    ctx.beginPath();ctx.arc(p.x,p.y,23,0,7);ctx.fill();last=p;};
   const check=()=>{
@@ -12744,7 +13216,7 @@ pour:{name:'Pour to the line',blurb:'Hold to pour the cold coffee. Stop inside t
    c.fillText(pouring?'pouring…':'hold anywhere to pour',gx,h*.95);
   };
   const loop=n=>{if(done)return;const dt=Math.min(50,n-last)/1000;last=n;
-   if(pouring){t+=dt;level=Math.min(1,level+dt*(.20+t*.05))}
+   if(pouring){t+=dt;level=Math.min(1,level+dt*(.20+t*.05));sfx('pour')}
    stat.textContent=tries+' tries left';draw();gRAF(loop)};
   gRAF(loop);
   const stop=()=>{
@@ -12869,9 +13341,9 @@ stack:{name:'Stack the collection',blurb:'Tap to drop each mug. Keep the tower s
    else{
     dropping.y+=520*dt;
     const targetY=(g.h-40+cam)-stack.length*H;
-    if(dropping.y>=targetY){
+    if(dropping.y>=targetY){sfx('thud');
      const prev=stack[stack.length-1],off=dropping.x-prev.x,ov=prev.w-Math.abs(off);
-     if(ov<=14){done=true;stat.textContent='toppled';
+     if(ov<=14){done=true;sfx('topple');stat.textContent='toppled';
       gST(()=>{const ov2=document.createElement('div');ov2.className='won';ov2.style.background='rgba(232,114,154,.12)';
        ov2.innerHTML='<h3 style="color:var(--rose)">It fell. Obviously.</h3><p style="font-size:13.5px;color:var(--ink2);margin-top:6px">Too many mugs, not enough shelf.</p><div class="row" style="justify-content:center"><button class="btn" id="again">Again</button></div>';
        box.appendChild(ov2);$('#again',ov2).onclick=()=>{ov2.remove();stack=[{x:0,w:92}];cur={x:-1,w:92,dir:1};done=false;cam=0;speed=95;last=gNow();gRAF(loop)}},300);
@@ -12888,7 +13360,7 @@ stack:{name:'Stack the collection',blurb:'Tap to drop each mug. Keep the tower s
   };
   gRAF(loop);
   stat.textContent='1 / '+TARGET;
-  g.cv.addEventListener('pointerdown',e=>{e.preventDefault();if(!dropping&&!done)dropping={x:cur.x,w:cur.w,y:(g.h-40+cam)-stack.length*H-120}},{passive:false});
+  g.cv.addEventListener('pointerdown',e=>{e.preventDefault();if(!dropping&&!done)sfx('drop'),dropping={x:cur.x,w:cur.w,y:(g.h-40+cam)-stack.length*H-120}},{passive:false});
   return ()=>{done=true;g.destroy()};
  }},
 
@@ -12968,14 +13440,14 @@ wordle:{name:'Three words',blurb:'Six guesses each. You already know all three.'
     kb.appendChild(r);
    });
    kb.onclick=e=>{
-    const k=e.target.closest('.key');if(!k||done)return;const ch=k.dataset.k;
+    const k=e.target.closest('.key');if(!k||done)return;const ch=k.dataset.k;sfx('click');
     if(ch==='⌫'){cur=cur.slice(0,-1);paint();return}
     if(ch==='⏎'){
      if(cur.length<LEN)return;
      const cells=[...rows[row].children],ans=[...ANSWER],res=Array(LEN).fill('b');
      cells.forEach((c,i)=>{if(cur[i]===ANSWER[i]){res[i]='g';ans[ans.indexOf(cur[i])]=null}});
      cells.forEach((c,i)=>{if(res[i]!=='g'){const j=ans.indexOf(cur[i]);if(j>-1){res[i]='y';ans[j]=null}}});
-     cells.forEach((c,i)=>gST(()=>{c.classList.add(res[i]);
+     cells.forEach((c,i)=>gST(()=>{c.classList.add(res[i]);sfx(res[i]==='g'?'fill':'flip');
       const key=keys[cur[i]];if(key&&!key.classList.contains('g'))key.classList.add(res[i]);},i*120));
      if(cur===ANSWER){
       done=true;
@@ -13027,19 +13499,19 @@ safe:{name:'The safe',blurb:'Four dials. A date only you two would try first.',
    d.addEventListener('pointermove',e=>{
     if(startY===null)return;
     const dy=startY-e.clientY;
-    if(Math.abs(dy)>26){vals[i]=(vals[i]+(dy>0?1:9))%10;$('#d'+i,d).textContent=vals[i];startY=e.clientY}
+    if(Math.abs(dy)>26){vals[i]=(vals[i]+(dy>0?1:9))%10;sfx('click');$('#d'+i,d).textContent=vals[i];startY=e.clientY}
    });
    d.addEventListener('pointerup',e=>{
     if(startY!==null&&Math.abs(startY-e.clientY)<6){ // tap top/bottom half
      const r=d.getBoundingClientRect();
-     vals[i]=(vals[i]+(e.clientY<r.top+r.height/2?1:9))%10;$('#d'+i,d).textContent=vals[i];
+     vals[i]=(vals[i]+(e.clientY<r.top+r.height/2?1:9))%10;sfx('click');$('#d'+i,d).textContent=vals[i];
     }
     startY=null;
    });
    sf.appendChild(d);
   });
   $('#try',wrap).onclick=()=>{
-   if(vals.join('')===CODE){$('#sm',wrap).textContent='Open. 🌸';stat.textContent='open';gST(win,700)}
+   if(vals.join('')===CODE){sfx('unlock');$('#sm',wrap).textContent='Open. 🌸';stat.textContent='open';gST(win,700)}
    else{$('#sm',wrap).textContent='Nope. Think about April.';sf.classList.add('shake');gST(()=>sf.classList.remove('shake'),450)}
   };
   stat.textContent='locked';
@@ -13248,7 +13720,7 @@ bubblewrap:{name:'Bubble wrap',blurb:'No skill, no timer. Just pop every single 
    const b=el('button');
    b.style.cssText='aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff,#f6c8da 60%,#eaa8c4);box-shadow:0 2px 5px rgba(184,120,160,.3);transition:transform .12s,background .2s,box-shadow .2s';
    b.onclick=()=>{
-    if(b.dataset.p)return;b.dataset.p='1';popped++;
+    if(b.dataset.p)return;b.dataset.p='1';popped++;sfx('pop');
     b.style.background='radial-gradient(circle at 50% 50%,#f0dfe8,#e6d2de)';b.style.boxShadow='inset 0 2px 5px rgba(150,110,140,.4)';
     b.style.transform='scale(.86)';
     stat.textContent=popped+' / '+total;
@@ -13302,7 +13774,7 @@ maze:{name:'Find the way through',blurb:'Drag from the scooter to the heart with
    const dx=x-pos.x,dy=y-pos.y;
    if(Math.abs(dx)+Math.abs(dy)!==1)return;
    const d=dx===1?1:dx===-1?3:dy===1?2:0;
-   if(cells[idx(pos.x,pos.y)].w[d]){g.f.classList.add('shake');gST(()=>g.f.classList.remove('shake'),300);dragging=false;return}
+   sfx('step');if(cells[idx(pos.x,pos.y)].w[d]){g.f.classList.add('shake');gST(()=>g.f.classList.remove('shake'),300);dragging=false;return}
    pos={x,y};path.push({...pos});
    if(x===N-1&&y===N-1){done=true;stat.textContent='made it';gST(win,500)}
   };
@@ -13416,7 +13888,7 @@ function fillGame(box,win,stat,svgInner,vb){
  const upd=()=>stat.textContent=filled+' / '+zones.length;
  zones.forEach(z=>{
   z.addEventListener('click',()=>{
-   const was=z.dataset.done;
+   const was=z.dataset.done;sfx('fill');
    if(z.classList.contains('st'))z.setAttribute('stroke',cur());else z.setAttribute('fill',cur());
    if(!was){z.dataset.done='1';filled++;upd()}
    z.style.transform='scale(1)';
@@ -13542,7 +14014,7 @@ paint:{name:'Finger painting',blurb:'A picture in outline and a brush. Paint ove
   const clear=()=>{c.fillStyle='#fffdfe';c.fillRect(0,0,g.w,g.h);redraw()};
   gST(clear,80);
   const pos=e=>g.at(e);
-  const dab=p=>{c.globalAlpha=.85;c.strokeStyle=colour;c.fillStyle=colour;c.lineCap='round';c.lineJoin='round';c.lineWidth=size;
+  const dab=p=>{sfx('brush');c.globalAlpha=.85;c.strokeStyle=colour;c.fillStyle=colour;c.lineCap='round';c.lineJoin='round';c.lineWidth=size;
    if(last){c.beginPath();c.moveTo(last.x,last.y);c.lineTo(p.x,p.y);c.stroke()}
    c.beginPath();c.arc(p.x,p.y,size/2,0,7);c.fill();c.globalAlpha=1;last=p;redraw()};
   g.cv.addEventListener('pointerdown',e=>{e.preventDefault();drawing=true;last=null;strokes++;stat.textContent=strokes+' strokes';dab(pos(e))},{passive:false});
@@ -13616,7 +14088,7 @@ NEW.memory={name:'Match her things',blurb:'Flip two at a time. Find all 8 pairs.
    const b=el('button','tile big flip hidden','?');b.dataset.e=e;
    b.onclick=()=>{
     if(lock||b.classList.contains('good')||open.includes(b))return;
-    b.classList.remove('hidden','flip');b.textContent=e;open.push(b);
+    b.classList.remove('hidden','flip');b.textContent=e;open.push(b);sfx('flip');
     if(open.length===2){lock=true;
      if(open[0].dataset.e===open[1].dataset.e){open.forEach(x=>x.classList.add('good'));found++;stat.textContent=`${found} / 8`;
       sparkle(innerWidth/2,innerHeight*.4,10);open=[];lock=false;if(found===8)gST(win,420)}
@@ -13789,7 +14261,7 @@ NEW.colorbynum={name:'Colour it in',blurb:'Colour by number. It does turn into s
    const b=e.target.closest('.cb');if(!b||b.classList.contains('off')||b.dataset.done)return;
    const c=cells[+b.dataset.i];
    if(c.n!==cur){b.classList.add('shake');gST(()=>b.classList.remove('shake'),450);toast('That square is a '+c.n);return}
-   b.dataset.done='1';b.style.background=COLS[c.n];b.style.color='transparent';b.style.borderColor=COLS[c.n];
+   b.dataset.done='1';sfx('fill');b.style.background=COLS[c.n];b.style.color='transparent';b.style.borderColor=COLS[c.n];
    done++;stat.textContent=`${done} / ${cells.length}`;
    if(done===cells.length){sparkle(innerWidth/2,innerHeight*.4,24);cap.textContent='There she is 🌷';gST(win,900)}
   });
@@ -13830,7 +14302,7 @@ NEW.scratch={name:'Scratch, then look',blurb:'Scratch the whole card off. What i
   fit();
   const pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
   let drawing=false,last=null;
-  const rub=p=>{ctx.globalCompositeOperation='destination-out';ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=50;
+  const rub=p=>{sfx('scratch');ctx.globalCompositeOperation='destination-out';ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=50;
    if(last){ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke()}
    ctx.beginPath();ctx.arc(p.x,p.y,25,0,7);ctx.fill();last=p};
   const check=()=>{
@@ -13846,7 +14318,7 @@ NEW.scratch={name:'Scratch, then look',blurb:'Scratch the whole card off. What i
   addEventListener('pointerup',()=>{if(drawing){drawing=false;last=null;check()}});
   $$('.hh',under).forEach(h=>h.addEventListener('pointerdown',e=>{
    if(phase!==2||h.dataset.f)return;h.dataset.f='1';h.setAttribute('opacity','1');h.setAttribute('fill','#ff6f9c');
-   found++;stat.textContent=found+' / 3 hearts';sparkle(e.clientX,e.clientY,12);
+   found++;sfx('twinkle',{i:found+3});stat.textContent=found+' / 3 hearts';sparkle(e.clientX,e.clientY,12);
    if(found===3){msg.textContent=GT('scratch','end');gST(win,800)}
   }));
   return ()=>{};
@@ -13878,7 +14350,7 @@ NEW.pour={name:'Pour to the line',blurb:'Three pours, and the band gets narrower
    c.fillText(pouring?'pouring…':R[r].t+' — hold anywhere',gx,h*.96);
   };
   const loop=n=>{if(!alive)return;const dt=Math.min(50,n-last)/1000;last=n;
-   if(pouring){t+=dt;level=Math.min(1,level+dt*(.20+t*.05))}
+   if(pouring){t+=dt;level=Math.min(1,level+dt*(.20+t*.05));sfx('pour')}
    stat.textContent=`pour ${r+1} of 3 · ${tries} tries`;draw();gRAF(loop)};
   gRAF(loop);
   const stop=()=>{
@@ -13929,7 +14401,7 @@ NEW.constellation={name:'Trace the sky',blurb:'Three constellations, and each on
    e.preventDefault();if(!alive)return;const p=g.at(e),P=SH[i].p;
    const t=P[next];if(!t)return;
    if(Math.hypot(p.x-t[0]/100*g.w,p.y-t[1]/100*g.h)<30){
-    next++;sparkle(e.clientX,e.clientY,7);
+    next++;sfx('twinkle',{i:next});sparkle(e.clientX,e.clientY,7);
     if(next>=P.length){draw();toast(SH[i].n);
      gST(()=>{i++;if(i>=SH.length){alive=false;sparkle(innerWidth/2,innerHeight*.42,24);win()}else{next=0;showGhost=false;draw()}},1300);return}
    } else toast('The one with the ring around it');
@@ -14140,7 +14612,7 @@ R3.simon={name:'The order of that day',blurb:'Four days of ours, scrambled. Put 
     for(let k=next;k<n;k++){
      gST(()=>{
       const b=btns.find(x=>+x.dataset.i===k);
-      b.classList.add('on');gST(()=>b.classList.remove('on'),500);
+      b.classList.add('on');sfx('tone',{i:[...b.parentNode.children].indexOf(b)});gST(()=>b.classList.remove('on'),500);
      },(k-next)*700);
     }
     gST(()=>{locked=false;showBtn.disabled=false;say.textContent='Now you.'},(n-next)*700+400);
@@ -14253,7 +14725,7 @@ R3.tictactoe={name:'Tic tac toe',blurb:'Her flower against the web. First to thr
     if(cells.every(c=>c>=0)){over=true;say.textContent='Draw. Again?';next.style.display='';paint();return}
     turn=0;paint();
    };
-   for(let i=0;i<9;i++){const b=el('button','tc');b.onclick=()=>{
+   for(let i=0;i<9;i++){const b=el('button','tc');b.onclick=()=>{sfx('place');
     if(over||cells[i]>=0||(solo&&turn===1))return;cells[i]=turn;
     if(winner(turn)){finish(turn);return}
     if(cells.every(c=>c>=0)){over=true;say.textContent='Draw. Again?';next.style.display='';paint();return}
@@ -14320,7 +14792,7 @@ R3.dotsboxes={name:'Dots and boxes',blurb:'Draw a line each. Close a box, claim 
     if(k==='h'){if(r>0)out.push([r-1,q]);if(r<N-1)out.push([r,q])}
     else{if(q>0)out.push([r,q-1]);if(q<N-1)out.push([r,q])}
     return out};
-   const apply=e=>{const[k,r,q]=e;if(k==='h')H[r][q]=turn;else V[r][q]=turn};
+   const apply=e=>{sfx('place');const[k,r,q]=e;if(k==='h')H[r][q]=turn;else V[r][q]=turn};
    const step=()=>{
     if(!claim())turn=1-turn;
     if(own.every(r=>r.every(v=>v>=0)))done=true;
@@ -14375,7 +14847,7 @@ R3.reaction={name:'Reaction duel',blurb:'When it turns pink, hit your side first
     wrap.classList.remove('live');armed=false;mid.textContent='wait for it…';
     timers.push(gST(()=>{
      if(over||dead)return;
-     wrap.classList.add('live');mid.textContent='NOW';armed=true;t0=gNow();
+     wrap.classList.add('live');sfx('beep');mid.textContent='NOW';armed=true;t0=gNow();
      if(solo)timers.push(gST(()=>{if(armed)tap(0,true)},380+Math.random()*400));
     },1200+Math.random()*2600));
     if(solo&&Math.random()<.12)timers.push(gST(()=>{if(!armed&&!over)tap(0,true)},700+Math.random()*900));
@@ -14393,7 +14865,7 @@ R3.reaction={name:'Reaction duel',blurb:'When it turns pink, hit your side first
      wrap.onclick=()=>{sc=[0,0];over=false;wrap.onclick=null;setL();go()};return}
     timers.push(gST(go,1300));
    };
-   halves.forEach((h,i)=>h.addEventListener('pointerdown',e=>{
+   halves.forEach((h,i)=>h.addEventListener('pointerdown',e=>{sfx('tug');
     e.preventDefault();if(solo&&i===0)return;tap(i)},{passive:false}));
    setL();go();
    host.appendChild(el('div','hint',solo?'Your half is the bottom one. The app is quick, but not that quick.':'Top half is the other person — their text is upside down on purpose.'));
@@ -14437,7 +14909,7 @@ R3.tug={name:'Tug of war',blurb:'Tap as fast as you can and drag the flower to y
    };
    const startBot=()=>{if(iv)gCI(iv);
     iv=gSI(()=>{if(!over&&!dead&&Math.random()<.72)tap(0)},230)};
-   halves.forEach((h,i)=>h.addEventListener('pointerdown',e=>{
+   halves.forEach((h,i)=>h.addEventListener('pointerdown',e=>{sfx('tug');
     e.preventDefault();if(solo&&i===0)return;tap(i)},{passive:false}));
    paint();if(solo)startBot();
    host.appendChild(el('div','hint',solo?'Your half is the bottom one. Beat about four taps a second and it is yours.':'Phone flat on the table, one of you on each side. Loser buys the pani puri.'));
@@ -14497,18 +14969,20 @@ R4.slice={name:'Slice it',
    if(over)return;
    items.forEach(it=>{
     if(it.cut||!hit(it,a,b))return;
-    it.cut=true;
+    it.cut=true;sfx('slice');gST(()=>sfx(it.bad?'yuck':'squish'),40);
+    if(!it.bad)for(let k=0;k<3;k++)bits.push({love:true,e:pick(['💗','🌸','✨','💕']),x:it.x,y:it.y,vx:rnd(-80,80),vy:rnd(-260,-140),a:1.2});
     for(let s=-1;s<=1;s+=2)bits.push({e:it.e,x:it.x,y:it.y,vx:it.vx+s*90,vy:it.vy*.3-60,rot:it.rot,vr:s*4,half:s,a:1});
     for(let k=0;k<10;k++)bits.push({dot:true,x:it.x,y:it.y,vx:rnd(-160,160),vy:rnd(-200,60),a:1,col:it.bad?'#7a9a5a':pick(['#f4a0bc','#f0bd7c','#ffd36e'])});
     if(it.bad){lives--;g.flash=1;
-     if(lives<=0){over=true;r4Again(g,'The gavar got you.','Nobody should have to touch that. Again?','Again',()=>{score=0;lives=3;items=[];over=false;upd()})}}
+     if(lives<=0){over=true;sfx('lose');r4Again(g,'The gavar got you.','Nobody should have to touch that. Again?','Again',()=>{score=0;lives=3;items=[];over=false;upd()})}}
     else{score++;if(score>=TARGET&&!done){done=true;sparkle(innerWidth/2,innerHeight*.4,24);gST(win,700)}}
     upd();
    });
   };
   const P=e=>g.at(e);
   g.cv.addEventListener('pointerdown',e=>{down=true;trail=[{...P(e),t:gNow()}]});
-  g.cv.addEventListener('pointermove',e=>{if(!down)return;const p={...P(e),t:gNow()};const a=trail[trail.length-1];trail.push(p);if(a)slice(a,p)});
+  g.cv.addEventListener('pointermove',e=>{if(!down)return;const p={...P(e),t:gNow()};const a=trail[trail.length-1];trail.push(p);
+   if(a&&Math.hypot(p.x-a.x,p.y-a.y)>14)sfx('swish');if(a)slice(a,p)});
   addEventListener('pointerup',()=>{down=false});
   const loop=()=>{
    if(!alive)return;
@@ -14524,6 +14998,7 @@ R4.slice={name:'Slice it',
    if(g.flash>0){c.fillStyle=`rgba(200,60,80,${g.flash*.25})`;c.fillRect(0,0,g.w,g.h);g.flash-=dt*2}
    items.forEach(it=>{c.save();c.translate(it.x,it.y);c.rotate(it.rot);emoji(c,it.e,0,0,46);c.restore()});
    bits.forEach(b=>{
+    if(b.love){c.globalAlpha=Math.max(0,Math.min(1,b.a));emoji(c,b.e,b.x,b.y,20);c.globalAlpha=1;return}
     if(b.dot){c.globalAlpha=Math.max(0,b.a);c.fillStyle=b.col;c.beginPath();c.arc(b.x,b.y,3,0,7);c.fill();c.globalAlpha=1;return}
     c.save();c.globalAlpha=Math.max(0,b.a);c.translate(b.x,b.y);c.rotate(b.rot);
     c.beginPath();c.rect(b.half<0?-30:0,-30,30,60);c.clip();emoji(c,b.e,0,0,46);c.restore();
@@ -14556,7 +15031,7 @@ R4.whack={name:'Whack the gavar',
    if(spawnT<=0&&!done){
     const free=holes.filter(h=>!h.it);
     if(free.length){const h=pick(free);const good=Math.random()<.25;
-     h.it={e:pick(good?GOOD:BAD),good,up:0,life:(1.3/speed)+.35,state:'up'}}
+     h.it={e:pick(good?GOOD:BAD),good,up:0,life:(1.3/speed)+.35,state:'up'};sfx('step')}
     spawnT=rnd(.35,.8)/speed;
    }
    holes.forEach(h=>{const it=h.it;if(!it)return;
@@ -14584,7 +15059,8 @@ R4.whack={name:'Whack the gavar',
     const p=pos(h),R=g.w*.12;
     if(Math.hypot(m.x-p.x,m.y-(p.y-R*.4))>R*1.1)return;
     it.state='hit';
-    if(it.good){score=Math.max(0,score-2);pops.push({x:p.x,y:p.y-R,txt:'not that one!',a:1,col:'#c2607f'});g.cv.classList.add('shake');gST(()=>g.cv.classList.remove('shake'),300)}
+    sfx('bonk');
+    if(it.good){sfx('nope');score=Math.max(0,score-2);pops.push({x:p.x,y:p.y-R,txt:'not that one!',a:1,col:'#c2607f'});g.cv.classList.add('shake');gST(()=>g.cv.classList.remove('shake'),300)}
     else{score++;pops.push({x:p.x,y:p.y-R,txt:pick(['bye','no.','gone','ew']),a:1,col:'#6f8f4f'});
      if(score>=TARGET){done=true;sparkle(innerWidth/2,innerHeight*.4,22);gST(win,700)}}
     upd();
@@ -14604,7 +15080,7 @@ R4.dash={name:'Scooter dash',
   let lane=1,x=0,cars=[],cups=[],t=0,alive=true,raf=0,last=gNow(),spawnT=1,over=false,done=false,best=0,road=0,shield=0;
   const lx=l=>g.w*(.22+l*.28);
   const reset=()=>{lane=1;cars=[];cups=[];t=0;spawnT=1;over=false;shield=0};
-  const move=d=>{if(over||done)return;lane=Math.max(0,Math.min(2,lane+d))};
+  const move=d=>{if(over||done)return;const was=lane;lane=Math.max(0,Math.min(2,lane+d));if(lane!==was)sfx('swish')};
   r4Swipe(g.cv,(k,e)=>{
    if(k==='left')move(-1);else if(k==='right')move(1);
    else if(k==='tap'){const m=g.at(e);move(m.x<g.w/2?-1:1)}
@@ -14628,16 +15104,17 @@ R4.dash={name:'Scooter dash',
     cars.forEach(o=>o.y+=sp*dt);cups.forEach(o=>o.y+=sp*dt);
     cars=cars.filter(o=>o.y<g.h+50);cups=cups.filter(o=>o.y<g.h+50);
     const py=g.h*.82;
-    cups=cups.filter(o=>{if(o.l===lane&&Math.abs(o.y-py)<34){shield=3;return false}return true});
+    cups=cups.filter(o=>{if(o.l===lane&&Math.abs(o.y-py)<34){shield=3;sfx('coin');return false}return true});
     shield=Math.max(0,shield-dt);
     for(const o of cars){
      if(o.l===lane&&Math.abs(o.y-py)<38){
-      if(shield>0){o.y=g.h+99;shield=0;continue}
-      over=true;best=Math.max(best,t);
+      if(shield>0){o.y=g.h+99;shield=0;sfx('bonk');continue}
+      over=true;best=Math.max(best,t);sfx('crash');gST(()=>sfx('honk'),260);
       r4Again(g,'Honk.',`You lasted ${t.toFixed(1)} seconds${best>t?'':''}. Best: ${best.toFixed(1)}. The coffee makes you bump through one car.`,'Again',reset);
       break;
      }
     }
+    if(t>GOAL-5&&!done&&Math.floor(t)!==Math.floor(t-dt))sfx('tick');
     if(t>=GOAL){done=true;sparkle(innerWidth/2,innerHeight*.4,26);gST(win,700)}
     stat.textContent=`${Math.min(GOAL,t).toFixed(1)} / ${GOAL}s`;
    }
@@ -14690,15 +15167,15 @@ R4.merge={name:'Merge to the cake',
      const o=B[rr][cc];
      if(!o){nr=rr;nc=cc;continue}
      if(o.v===t.v&&!merged.has(o.id)&&o.v<GOAL){
-      B[r][c0]=null;t.r=rr;t.c=cc;place(t);o.v++;merged.add(o.id);
+      B[r][c0]=null;t.r=rr;t.c=cc;place(t);o.v++;merged.add(o.id);{const lv=o.v;gST(()=>sfx('merge',{level:lv}),100)}
       const oe=o.el;gST(()=>{oe.className='m4t n'+o.v+' pop';oe.textContent=LAD[o.v];t.el.remove()},110);
       moved=true;if(o.v===GOAL&&!done){done=true;gST(()=>{sparkle(innerWidth/2,innerHeight*.4,30);win()},900)}
       return}
      break}
     if(nr!==r||nc!==c0){B[r][c0]=null;B[nr][nc]=t;t.r=nr;t.c=nc;place(t);moved=true}
    }));
-   if(moved){moves++;gST(()=>{add();upd();
-    if(!canMove()&&!done){const o=el('div','m4over',`<b>No moves left.</b><p>You got to ${LAD[best()]}. Again?</p><button class="btn">Again</button>`);wrap.appendChild(o);
+   if(moved){moves++;sfx('slide');gST(()=>{add();upd();
+    if(!canMove()&&!done){sfx('lose');const o=el('div','m4over',`<b>No moves left.</b><p>You got to ${LAD[best()]}. Again?</p><button class="btn">Again</button>`);wrap.appendChild(o);
      o.querySelector('button').onclick=()=>{o.remove();reset()}}},120)}
   };
   r4Swipe(grid,k=>slide(k));
@@ -14749,7 +15226,7 @@ R4.picross={name:'Picross',
    let hints=0;
    const hintB=el('button','btn','💡 hint');
    const flash=(r,c0)=>gST(()=>{const d=cells[r*N+c0];if(d){d.classList.add('hint');gST(()=>d.classList.remove('hint'),1100)}},0);
-   hintB.onclick=()=>{
+   hintB.onclick=()=>{sfx('hint');
     /* first put right anything she got wrong, then give her one square */
     for(let r=0;r<N;r++)for(let c0=0;c0<N;c0++)if(st[r][c0]===1&&!sol[r][c0]){st[r][c0]=2;hints++;paint();flash(r,c0);hintB.textContent='💡 hint · that one was wrong';return}
     let br=-1,bm=99;
@@ -14771,7 +15248,7 @@ R4.picross={name:'Picross',
     [...tbl.querySelectorAll('.pcc.col')].forEach((e,c0)=>e.classList.toggle('ok',lineOk(st.map(r=>r[c0]),CC[c0])));
     const solved=st.every((r,i)=>lineOk(r,RC[i]))&&CC.every((cl,c0)=>lineOk(st.map(r=>r[c0]),cl));
     if(solved){
-     tbl.classList.add('solved');sparkle(innerWidth/2,innerHeight*.4,20);
+     tbl.classList.add('solved');sfx('unlock');sparkle(innerWidth/2,innerHeight*.4,20);
      const msg=el('p','pcdone',`It's ${P.n}.`);host.appendChild(msg);
      gST(()=>{p++;p<PUZ.length?run():win()},1500);
     }
@@ -14780,7 +15257,7 @@ R4.picross={name:'Picross',
    let dragV=null;
    const act=d=>{if(!d||!d.classList.contains('pcx'))return;const r=+d.dataset.r,c0=+d.dataset.c;
     if(dragV===null)dragV=cross?(st[r][c0]===2?0:2):(st[r][c0]===1?0:1);
-    st[r][c0]=dragV;paint()};
+    if(st[r][c0]!==dragV)sfx(dragV===1?'place':dragV===2?'click':'slide');st[r][c0]=dragV;paint()};
    tbl.addEventListener('pointerdown',e=>{dragV=null;act(e.target);try{tbl.setPointerCapture(e.pointerId)}catch(err){}});
    tbl.addEventListener('pointermove',e=>{if(dragV===null||!e.buttons&&e.pointerType==='mouse')return;act(document.elementFromPoint(e.clientX,e.clientY))});
    addEventListener('pointerup',()=>{dragV=null});
@@ -14801,7 +15278,7 @@ R4.snake={name:'Hairclip snake',
   const reset=()=>{sn=[{x:5,y:9},{x:4,y:9},{x:3,y:9}];dir={x:1,y:0};nd=dir;got=0;over=false;wait=true;put();stat.textContent=`0 / ${TARGET}`};
   reset();
   /* it waits for her first swipe, so it never runs into a wall while she is still reading */
-  const turn=k=>{wait=false;const D={left:{x:-1,y:0},right:{x:1,y:0},up:{x:0,y:-1},down:{x:0,y:1}}[k];if(!D)return;if(D.x===-dir.x&&D.y===-dir.y)return;nd=D};
+  const turn=k=>{wait=false;sfx('step');const D={left:{x:-1,y:0},right:{x:1,y:0},up:{x:0,y:-1},down:{x:0,y:1}}[k];if(!D)return;if(D.x===-dir.x&&D.y===-dir.y)return;nd=D};
   r4Swipe(g.cv,(k,e)=>{
    if(k!=='tap'){turn(k);return}
    /* a tap turns towards where she tapped, relative to the head */
@@ -14814,10 +15291,10 @@ R4.snake={name:'Hairclip snake',
   const step=()=>{
    dir=nd;const h={x:sn[0].x+dir.x,y:sn[0].y+dir.y};
    if(h.x<0||h.y<0||h.x>=CW||h.y>=CH||sn.some(s=>s.x===h.x&&s.y===h.y)){
-    over=true;best=Math.max(best,got);
+    over=true;best=Math.max(best,got);sfx('crash');
     r4Again(g,'Ouch.',`${got} hairclips. Best so far: ${best}. They are fine, by the way. Again?`,'Again',reset);return}
    sn.unshift(h);
-   if(h.x===food.x&&h.y===food.y){got++;stat.textContent=`${got} / ${TARGET}`;
+   if(h.x===food.x&&h.y===food.y){got++;sfx('chomp');stat.textContent=`${got} / ${TARGET}`;
     if(got>=TARGET){done=true;sparkle(innerWidth/2,innerHeight*.4,24);gST(win,700);return}
     put()}
    else sn.pop();
