@@ -51,6 +51,9 @@
   },
   "vegas": {
    "words": "Welcome to fabulous Las Vegas.\nThe Strip, all lit up. Every single light of it is on for you.\nYou pull the lever. Three sevens. Obviously.\nThen the Bellagio fountains, right on the music. We watch every show.\nAnd we walk the Strip at 2am like it is the middle of the day.\nStay as long as you like."
+  },
+  "rounds": {
+   "words": "Six o’clock, and neither of us in any hurry.\nSome days it was ice cream.\nSome days it was Aarey, which is not on the way to anywhere.\nThe road was dark and i always wished there was traffic so that i get to spend more time with you.\nAnd then your gate. Eventually. Always eventually."
   }
  },
  "days": [
@@ -265,7 +268,7 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "oddone",
+   "g": "slice",
    "a": "weeks",
    "af": true,
    "tz": "<p>Game tonight, then the letter — and there is a second film waiting after it.</p><p>Tomorrow: how professional we were at work.</p><p>Extremely professional. 🌸</p>",
