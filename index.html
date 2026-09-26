@@ -2664,7 +2664,7 @@ function applyContent(c){
   if(typeof d.n==='string')D.n=d.n;
   /* a blank from an older content.json must not wipe what the build
      wired up -- only a real value replaces one */
-  if(typeof d.a==='string'&&d.a)D.a=d.a;
+  if(typeof d.a==='string')D.a=d.a;
   /* only ever ON: a false published before a day was wired must not
      be able to put the game back in front of the film */
   if(d.af===true)D.af=true;
