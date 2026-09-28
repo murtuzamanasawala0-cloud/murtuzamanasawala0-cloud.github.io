@@ -61,6 +61,9 @@
   },
   "rounds": {
    "words": "6 p.m. (NEVER 6 PM always late), and neither of us in any hurry.\nSome days it was ice cream.\nSome days it was Aarey, which is not on the way to anywhere.\nThe road was dark and i always wished there was traffic so that i get to spend more time with you.\nAnd then your gate. Eventually. Always eventually."
+  },
+  "pineapple": {
+   "words": "Pineapple.\nA whole one. The spiky, difficult, worth-it kind.\nPeeled, with every single one of those little eyes taken out.\nCut into pieces small enough to eat one after another.\nThe whole plate is yours."
   }
  },
  "days": [
@@ -325,13 +328,13 @@
    "a": "eid",
    "af": true,
    "tz": "<p>The game and the letter are waiting for this evening.</p><p>Tomorrow: the thing you asked me for as a joke.</p><p>I chose not to notice it was a joke. 🌸</p>",
-   "a2": "",
+   "a2": "pineapple",
    "az": "",
    "ab": "",
-   "bt": "Loading tomorrow… 2%\nLoading tomorrow… 61%\nLoading tomorrow… 99%\nLoading tomorrow… 3%\nOkay. It is not loading. It is tomorrow.\nGo to sleep. 🌙",
+   "bt": "I know. I know.\nIt is hard, being you.\nTruly, nobody has ever waited like this.\nSomebody should write about it.\nAnyway. Tomorrow. 🌸",
    "wn": "",
    "pk": "hintno",
-   "vn": "",
+   "vn": "voice/day12.webm?v=mulkjp17",
    "vz": "",
    "pd": false,
    "pz": "",
