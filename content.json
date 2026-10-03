@@ -71,6 +71,9 @@
   },
   "waras": {
    "words": "10th June. My waras.\nYou came into the office that morning with a tin and a note. But you didn't give it to me then.\nI knew it was for me i was waiting for maghrib.\nSo after office we left, and went to Aarey, and waited for the sun.\nIt went down, and you handed them over.\nI read the note right there, in front of you.\nI wanted to hug you so badly. We couldn’t."
+  },
+  "lastday": {
+   "words": "13th June. Your last day.\nFirm policy: no farewell, no cake cutting.\nThere was a cake.\nYou were not walking out of there as though you had not mattered.\nYou cut it. You knew exactly who had arranged it.\nBest rule I have ever broken."
   }
  },
  "days": [
@@ -446,7 +449,7 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "dobble2",
+   "g": "dash",
    "a": "lastday",
    "af": true,
    "tz": "<p>Game tonight, then the letter — and one more thing after it.</p><p>Tomorrow: something you asked for once and never got.</p><p>I have been holding on to this one. 🌸</p>",
@@ -457,7 +460,7 @@
    "wn": "",
    "pk": "",
    "vn": "",
-   "vz": "",
+   "vz": "A short one today",
    "pd": false,
    "pz": "",
    "pb": "",
