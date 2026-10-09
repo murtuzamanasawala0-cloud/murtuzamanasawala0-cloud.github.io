@@ -80,6 +80,9 @@
   },
   "lastride": {
    "words": "After the burgers we took the long way one more time.\nWe sat in Aarey and we talked there for a while.\nI knew it was the last time I would be dropping you home.\nThen you told me abt ur yoga sir, and your diminishing marginal utility.\n“Mara sathe kivare DMU thase?”\nYou laughed the whole rest of the way. I can still hear it."
+  },
+  "july25": {
+   "words": "I made you cry, and i didnt know how to manavo you,\nI got you flowers and made sure you could keep these ones.\nYou kept them. You were very happy later."
   }
  },
  "days": [
@@ -597,13 +600,13 @@
    "a": "examday",
    "af": true,
    "tz": "<p>First one today. You are more ready than you feel.</p><p>The game is short tonight. Play it, then sleep.</p>",
-   "a2": "",
+   "a2": "july25",
    "az": "",
    "ab": "",
    "bt": "I know. I know.\nIt is hard, being you.\nTruly, nobody has ever waited like this.\nSomebody should write about it.\nAnyway. Tomorrow. 🌸",
-   "wn": "studyroom",
+   "wn": "spiderman",
    "pk": "",
-   "vn": "",
+   "vn": "voice/day23.webm?v=mv19tm81",
    "vz": "",
    "pd": false,
    "pz": "",
