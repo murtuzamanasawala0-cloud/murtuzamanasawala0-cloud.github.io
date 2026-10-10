@@ -30,6 +30,9 @@
    "caption": "Draw something or write something for meee\nSend screenshot",
    "outline": "blank",
    "howto": "Draw something or write something for meee\nSend screenshot"
+  },
+  "wordsearch": {
+   "words": "LYCHEE\nSCOOTER\nTULIP\nSPIDERMAN\nFRIES\nCOFFEE\nAVOCADO\nSOUP"
   }
  },
  "anims": {
@@ -620,10 +623,10 @@
   },
   {
    "t": "",
-   "m": "<div class=\"sign\">— M</div>",
+   "m": "<p>helloooo my kuchuuu puchuuu</p><p>yesterday was your first paper dayyyy 😭❤️</p><p>and my babyyy had to wake up so earlyyy after sleeping early and then spent the whole day being sleepy and tired 😭😭</p><p>but i'm glad you still managed to study in between everythinggg and do your thinggg</p><p>i hope your paper went well baby and that you're feeling a little less stressed nowww ❤️</p><p>alsooo i'm really glad you called me in the evening and then again at nighttt 🥹❤️</p><p>especially at night when you were feeling stressed</p><p>i don't know baby but it makes me happy knowing that even when your head is full of a million things and you're feeling stressed, we can still talk and laugh a little togetherrr 😭❤️</p><p>i might not always know exactly what to say to make everything feel better but if i can make you laugh for a little while and give your brain a tiny break from all that stress then i'm veryyy happyyy</p><p>you spend so much time trying to get everything done properly and giving your besttt and i really hope you're giving yourself a little credit for that toooo cutuu ❤️</p><p>and pleaseee take care of yourself between these papers okayyy</p><p>eat properly, rest whenever you can and don't forget that you're a human being and not some machine that has to keep studying every second 😭😭</p><p>i'm proud of you babyyyy and i'm always rooting for youuu ❤️</p><p>now goo revise and get some proper sleep my sleepy little kuchuuu puchuuu 😭🎀</p><p>i loveeeee youuu so so muchhh ❤️</p><div class=\"sign\">— M</div>",
    "n": "",
-   "g": "thisorthat",
-   "a": "",
+   "g": "wordsearch",
+   "a": "breakfast",
    "af": false,
    "tz": "<p>A study day. Use the table below if you want me there — twenty-five minutes on, five minutes off.</p><p>Drink water. Eat something that is not biscuits.</p>",
    "a2": "",
