@@ -33,6 +33,9 @@
   },
   "wordsearch": {
    "words": "LYCHEE\nSCOOTER\nTULIP\nSPIDERMAN\nFRIES\nCOFFEE\nAVOCADO\nSOUP"
+  },
+  "unscramble": {
+   "words": "KUCHU\nPUCHU"
   }
  },
  "anims": {
@@ -674,7 +677,7 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "constellation",
+   "g": "unscramble,dobble3",
    "a": "examday",
    "af": true,
    "tz": "<p>Exam two. Same as last time: breathe, read the whole question, go.</p><p>I am proud of you whatever the paper looks like.</p>",
@@ -697,7 +700,7 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "dobble3",
+   "g": "merge",
    "a": "",
    "af": false,
    "tz": "<p>Halfway through. Look at you.</p><p>Study a bit, rest a bit. Both count.</p>",
@@ -720,7 +723,7 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "mandala",
+   "g": "paint",
    "a": "examday",
    "af": true,
    "tz": "<p>Exam three. One after this, and it is your birthday.</p><p>Go get it.</p>",
@@ -743,7 +746,7 @@
    "t": "",
    "m": "<div class=\"sign\">— M</div>",
    "n": "",
-   "g": "stars",
+   "g": "mood,slice",
    "a": "",
    "af": false,
    "tz": "<p>The last study day. One more paper, and then it is your day.</p><p>Tonight there is a film of everything so far. Watch it, then sleep. 🌸</p>",
