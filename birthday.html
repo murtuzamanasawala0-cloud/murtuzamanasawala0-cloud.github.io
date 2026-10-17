@@ -331,6 +331,12 @@ h1,h2,h3,.pf{font-family:'Playfair Display',Georgia,serif;font-weight:600}
 .close-lines .l0{font-size:clamp(14px,3.8vw,17px);font-style:italic;margin-top:8px;color:#ffe3ee}
 .close-lines .l5{font-family:'Lora',serif;font-size:14.5px;margin-top:22px;max-width:320px;color:#ffe9b8;font-style:italic}
 #s10.egg .l5{animation:fadeUp 2s 14.5s forwards}
+.close-lines .l6{margin-top:34px;pointer-events:none}
+.close-lines .l6 .btn{text-decoration:none}
+#s10.play .l6{animation:fadeUp 2s 15.5s forwards}
+#s10.egg.play .l6{animation:fadeUp 2s 17.5s forwards}
+#s10.end .l6{pointer-events:auto}
+#s10 .center{overflow-y:auto;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
 
 @media (min-width:700px){
   .scroll{padding-top:90px}
@@ -676,6 +682,7 @@ h1,h2,h3,.pf{font-family:'Playfair Display',Georgia,serif;font-weight:600}
       <p class="l3">Happy birthday. 🌸</p>
       <p class="l4">— Murtaza</p>
       <p class="l5" id="egg"></p>
+      <p class="l6" id="pdone"><a class="btn ghost" id="homeBtn" href="index.html">Back to our 30 days</a></p>
     </div>
   </div>
 </section>
@@ -1329,6 +1336,9 @@ $('#coupons').addEventListener('click',e=>{
 
 /* =============== 10. closing =============== */
 $('#bg10').innerHTML=beachNight();
+let endT=0;
+/* the way back: the offline build tells us where home is, the live site just uses index.html */
+if(window.__HOME)$('#homeBtn').href=window.__HOME;
 splitName($('#name10'),.22,.6);
 onEnter[9]=()=>{
   const s=$('#s10');s.classList.remove('play');void s.offsetWidth;s.classList.add('play');
@@ -1338,10 +1348,12 @@ onEnter[9]=()=>{
     setTimeout(()=>{burst(W/2,H*.75,120,.9);chord()},15000);
   }
 
+  s.classList.remove('end');clearTimeout(endT);
+  endT=setTimeout(()=>s.classList.add('end'),s.classList.contains('egg')?19500:17500);
   ambient=true;if(!fxRaf)fxRaf=requestAnimationFrame(fxTick);
   setTimeout(()=>rain(70,true),1500);setTimeout(()=>rain(50,true),9000);
 };
-onLeave[9]=()=>{ambient=false};
+onLeave[9]=()=>{ambient=false;clearTimeout(endT);$('#s10').classList.remove('end')};
 
 /* =============== init =============== */
 g2intro();
