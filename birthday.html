@@ -1366,14 +1366,14 @@ onEnter[9]=()=>{
 onLeave[9]=()=>{ambient=false;clearTimeout(endT);$('#s10').classList.remove('end')};
 
 /* =============== chapters: after the first time, she can jump anywhere =============== */
-const REPLAY=(()=>{try{return localStorage.getItem('zbBdayDone')==='1'}catch(e){return false}})()||/[?&]replay/.test(location.search);
+const REPLAY=(()=>{try{return localStorage.getItem('zb30bdayDone')==='1'}catch(e){return false}})()||/[?&]replay/.test(location.search);
 const CHAPS=[[1,'How we happened','Chapter one'],[2,'Spot your things','Game one'],[3,'The Spiderman web catch','Game two'],[4,'A quiz about you','Treasure hunt'],[5,'How well do I know you?','A little test'],[6,'20 things I love about you','One for every year'],[7,'A letter','Open slowly'],[8,'Your coupon book','All 8 coupons'],[9,'The ending','Twenty years ago']];
 function openChapters(){
   showModal(`<div class="eyebrow">Your birthday, again</div><h2>Where to?</h2><p>Read or play whatever you feel like. Skip the rest.</p>${CHAPS.map(([i,t,sub])=>`<button class="chap${i===cur?' cur':''}" data-chap="${i}"><b>${i}</b><span>${t}<small>${sub}</small></span></button>`).join('')}<button class="btn small" data-close style="margin-top:14px">Close</button>`);
 }
 document.addEventListener('click',e=>{const c=e.target.closest('[data-chap]');if(!c)return;startWaves();hideModal();chime(740);go(+c.dataset.chap)});
 if(REPLAY){['chapBtn','skipBtn','chapEnd'].forEach(id=>{const b=$('#'+id);b.style.display='';b.addEventListener('click',openChapters)})}
-onEnter[9]=(f=>(...a)=>{try{localStorage.setItem('zbBdayDone','1')}catch(e){}return f&&f(...a)})(onEnter[9]);
+onEnter[9]=(f=>(...a)=>{try{localStorage.setItem('zb30bdayDone','1')}catch(e){}return f&&f(...a)})(onEnter[9]);
 
 /* =============== init =============== */
 g2intro();
