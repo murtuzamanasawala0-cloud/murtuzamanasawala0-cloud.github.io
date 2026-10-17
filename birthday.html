@@ -345,6 +345,14 @@ h1,h2,h3,.pf{font-family:'Playfair Display',Georgia,serif;font-weight:600}
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.2s!important}
 }
+
+.chap{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;border-top:1px solid rgba(180,140,170,.25);background:none;padding:12px 4px;font:inherit;color:inherit;cursor:pointer}
+.chap:nth-of-type(1){border-top:0}
+.chap b{font-size:20px;color:#e8729a;min-width:26px;text-align:center}
+.chap span{flex:1;line-height:1.3;font-size:16px}
+.chap small{display:block;opacity:.6;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.chap.cur span{color:#e8729a}
+#skipBtn{margin-top:10px}
 </style>
 </head>
 <body>
@@ -371,6 +379,7 @@ h1,h2,h3,.pf{font-family:'Playfair Display',Georgia,serif;font-weight:600}
   <button class="hbtn" id="backBtn" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
   <div class="prog"><i id="progBar"></i></div>
   <button class="wallet" id="wallet" aria-label="Your coupons"><svg viewBox="0 0 48 48"><path d="M6 14h36v7a3 3 0 0 0 0 6v7H6v-7a3 3 0 0 0 0-6z" fill="#f4a0bc"/><path d="M16 14v20" stroke="#fff" stroke-dasharray="2 2" stroke-width="1.5"/><path d="M28 28l-4-4a2.4 2.4 0 0 1 4-2.5 2.4 2.4 0 0 1 4 2.5z" fill="#fff"/></svg><span id="walletN">0</span>/8</button>
+  <button class="hbtn" id="chapBtn" aria-label="Choose a chapter" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
   <button class="hbtn" id="soundBtn" aria-label="Toggle sound">♪</button>
 </header>
 
@@ -385,6 +394,7 @@ h1,h2,h3,.pf{font-family:'Playfair Display',Georgia,serif;font-weight:600}
   </div>
   <div class="begin">
     <button class="btn glow" id="beginBtn">Begin ✦</button>
+    <button class="btn ghost small" id="skipBtn" style="display:none">Choose a chapter</button>
     <span class="sound-hint">best with sound on 🎧 · take your time, this one's all yours</span>
   </div>
 </section>
@@ -682,7 +692,7 @@ h1,h2,h3,.pf{font-family:'Playfair Display',Georgia,serif;font-weight:600}
       <p class="l3">Happy birthday. 🌸</p>
       <p class="l4">— Murtaza</p>
       <p class="l5" id="egg"></p>
-      <p class="l6" id="pdone"><a class="btn ghost" id="homeBtn" href="index.html">Back to our 30 days</a></p>
+      <p class="l6" id="pdone"><a class="btn ghost" id="homeBtn" href="index.html">Back to our 30 days</a> <button class="btn ghost" id="chapEnd" style="display:none">Choose a chapter</button></p>
     </div>
   </div>
 </section>
@@ -1354,6 +1364,16 @@ onEnter[9]=()=>{
   setTimeout(()=>rain(70,true),1500);setTimeout(()=>rain(50,true),9000);
 };
 onLeave[9]=()=>{ambient=false;clearTimeout(endT);$('#s10').classList.remove('end')};
+
+/* =============== chapters: after the first time, she can jump anywhere =============== */
+const REPLAY=(()=>{try{return localStorage.getItem('zbBdayDone')==='1'}catch(e){return false}})()||/[?&]replay/.test(location.search);
+const CHAPS=[[1,'How we happened','Chapter one'],[2,'Spot your things','Game one'],[3,'The Spiderman web catch','Game two'],[4,'A quiz about you','Treasure hunt'],[5,'How well do I know you?','A little test'],[6,'20 things I love about you','One for every year'],[7,'A letter','Open slowly'],[8,'Your coupon book','All 8 coupons'],[9,'The ending','Twenty years ago']];
+function openChapters(){
+  showModal(`<div class="eyebrow">Your birthday, again</div><h2>Where to?</h2><p>Read or play whatever you feel like. Skip the rest.</p>${CHAPS.map(([i,t,sub])=>`<button class="chap${i===cur?' cur':''}" data-chap="${i}"><b>${i}</b><span>${t}<small>${sub}</small></span></button>`).join('')}<button class="btn small" data-close style="margin-top:14px">Close</button>`);
+}
+document.addEventListener('click',e=>{const c=e.target.closest('[data-chap]');if(!c)return;startWaves();hideModal();chime(740);go(+c.dataset.chap)});
+if(REPLAY){['chapBtn','skipBtn','chapEnd'].forEach(id=>{const b=$('#'+id);b.style.display='';b.addEventListener('click',openChapters)})}
+onEnter[9]=(f=>(...a)=>{try{localStorage.setItem('zbBdayDone','1')}catch(e){}return f&&f(...a)})(onEnter[9]);
 
 /* =============== init =============== */
 g2intro();

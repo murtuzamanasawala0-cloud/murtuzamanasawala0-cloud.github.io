@@ -2087,8 +2087,12 @@ function finalView(){
  const LB=$('#libBody',w),LT=$('#libTabs',w);
  const lh=d=>`<span class="libd">${d}</span><span class="libt">${dTitle(DAYS[d-1])}</span><small>${fmt(dateOf(d))}</small>`;
  const TABS={
-  notes(){LB.innerHTML=DAYS.map((D,i)=>`<div class="librow"><button class="libhead">${lh(i+1)}</button><div class="libopen"><div class="msg">${dMsg(D)}</div></div></div>`).join('');
-   LB.querySelectorAll('.libhead').forEach(b=>b.onclick=()=>b.parentNode.classList.toggle('open'))},
+  notes(){const rows=DAYS.map((D,i)=>`<div class="librow"><button class="libhead">${lh(i+1)}</button><div class="libopen"><div class="msg">${dMsg(D)}</div></div></div>`).join('');
+   LB.innerHTML=`<div style="display:flex;gap:8px;margin:2px 0 8px"><input id="nQ" type="search" placeholder="Search the notes…" style="flex:1;min-width:0;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:14px;background:var(--card);color:var(--ink)"><button class="btn ghost" id="nR" style="flex:none">Random</button></div><div id="nL">${rows}</div>`;
+   const R=()=>[...LB.querySelectorAll('#nL .librow')];
+   R().forEach(r=>r.querySelector('.libhead').onclick=()=>r.classList.toggle('open'));
+   $('#nQ',LB).oninput=e=>{const q=e.target.value.trim().toLowerCase();R().forEach(r=>{const hit=!q||r.textContent.toLowerCase().includes(q);r.style.display=hit?'':'none';if(q&&hit)r.classList.add('open');else if(!q)r.classList.remove('open')})};
+   $('#nR',LB).onclick=()=>{const rs=R();rs.forEach(r=>{r.style.display='';r.classList.remove('open')});$('#nQ',LB).value='';const r=rs[Math.floor(Math.random()*rs.length)];r.classList.add('open');r.scrollIntoView({block:'center',behavior:'smooth'})}},
   voice(){const ds=[];for(let d=1;d<=30;d++)if(DAYS[d-1].vn)ds.push(d);
    if(!ds.length){LB.innerHTML=`<p class="note">${FINAL.noVoice}</p>`;return}
    LB.innerHTML=ds.map(d=>`<div class="librow vrow" data-d="${d}"><div class="libhead2">${lh(d)}</div>${voiceCard(d)}</div>`).join('');
