@@ -957,6 +957,43 @@ audio.vnprev{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
 @keyframes cuWob{0%,70%,100%{transform:none}76%{transform:rotate(-6deg)}82%{transform:rotate(5deg)}88%{transform:rotate(-3deg)}94%{transform:rotate(2deg)}}
 .cuGift .line{font-family:'Playfair Display',serif;font-size:19px;line-height:1.45;margin-bottom:4px}
 .cuGift .note{font-size:13px;color:var(--ink2);font-style:italic;line-height:1.6;margin-bottom:12px}
+
+/* ---- the summary page ---- */
+.fin .ftitle{font-family:'Playfair Display',serif;font-size:clamp(34px,10vw,48px);font-weight:600;color:var(--accent);margin:8px 0 10px}
+.fin .card{margin-top:16px;text-align:left}
+.fin .fcd{text-align:center}
+.fin .fcn{display:flex;justify-content:center;gap:16px;margin:12px 0 8px}
+.fin .fcn .u{display:flex;flex-direction:column;align-items:center;min-width:52px}
+.fin .fcn .n{font-family:'Playfair Display',serif;font-size:34px;font-weight:700;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.fin .fcn .l{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink2);margin-top:7px}
+.fin .ftoday{font-family:'Playfair Display',serif;font-size:26px;color:var(--accent);padding:12px 0}
+.fin .note{font-size:13px;color:var(--ink2);line-height:1.6;margin:6px 0 10px}
+.fin .fcd .note{margin:2px 0 0;font-style:italic}
+.fin .fsnip{font-family:'Caveat',cursive;font-size:21px;line-height:1.4;color:var(--ink);border-left:2px solid var(--accent);padding:2px 0 2px 12px;margin:4px 0 14px;white-space:pre-wrap}
+.fin .fstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px;margin-top:16px}
+.fin .fstats div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 6px;text-align:center}
+.fin .fstats b{display:block;font-family:'Playfair Display',serif;font-size:26px;color:var(--accent)}
+.fin .fstats span{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.fin .fclose{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;line-height:1.6;text-align:center;margin:26px 8px 4px}
+.fin .fsign{font-family:'Caveat',cursive;font-size:30px;text-align:center;color:var(--accent);margin:0 0 20px}
+
+.aspd{position:absolute;right:12px;bottom:12px;z-index:6;border:0;border-radius:999px;padding:7px 13px;font:inherit;font-size:12px;letter-spacing:.05em;color:#fff;background:rgba(40,20,45,.38);backdrop-filter:blur(4px)}
+.animwrap[data-tod="day"] .aspd{background:rgba(120,80,100,.34)}
+.fin .libtabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px;margin:8px 0 10px}
+.fin .libtabs button{flex:1;border:0;background:transparent;color:var(--ink2);font:inherit;font-size:13px;padding:9px 2px;border-radius:10px}
+.fin .libtabs button.on{background:var(--accent);color:#3a223e;font-weight:600}
+.fin .librow{border-top:1px solid var(--line)}
+.fin .libhead,.fin button.libgo{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;border-top:1px solid var(--line);color:var(--ink);font:inherit;text-align:left;padding:13px 2px}
+.fin .librow .libhead{border-top:0}
+.fin .libhead2{display:flex;align-items:center;gap:12px;padding:12px 2px 0}
+.fin .libd{font-family:'Playfair Display',serif;font-size:20px;color:var(--accent);min-width:28px;text-align:center}
+.fin .libt{flex:1;font-size:15px;line-height:1.35}
+.fin .libhead small,.fin .libhead2 small,.fin button.libgo small{color:var(--ink2);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.fin .libopen{display:none;padding:0 4px 16px}
+.fin .librow.open .libopen{display:block}
+.fin .vrow .vncard{margin-top:6px}
+.fin .libmovie{text-align:center;padding:6px 0 14px}
+.fin .libmovie .btn{margin:10px 0 4px}
 </style>
 </head>
 <body>
@@ -990,7 +1027,7 @@ audio.vnprev{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
       <div class="eyebrow">Your 30 days</div>
       <h2 style="font-size:23px;margin-top:6px">Thirty days to you</h2>
       <p class="lead" style="font-size:14px;margin-top:6px">Tap any day you've unlocked to read it again.</p>
-      <div style="margin-top:10px"><button class="btn ghost" id="calDiary">\U0001F4D4 Your diary</button></div>
+      <div style="margin-top:10px"><button class="btn ghost" id="calDiary">Your diary</button> <button class="btn ghost" id="calHome" hidden>Back to the summary</button></div>
     </div>
     <div class="cal" id="cal"></div>
     <div class="legend">
@@ -1204,6 +1241,7 @@ audio.vnprev{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
     <button id="dSet">Set clock</button>
     <button id="dClear">Real time</button>
     <button id="dBday">Jump to 17 Oct 00:00</button>
+    <button id="dFinal">Jump to 17 Oct 8:46 pm (summary)</button>
     <button id="d845">Jump to 17 Oct 20:45</button>
   </div>
   <div class="drow"><button id="dEdit2">Edit this day</button><button id="dHide">Close panel</button><button id="dExit">Exit dev mode</button><span id="dNow"></span></div>
@@ -1460,6 +1498,36 @@ const DAYS=[
 const START=new Date(2026,8,18,0,0,0);              // Day 1 = 18 Sept 2026
 const BDAY=new Date(2026,9,17,0,0,0);               // 17 Oct 2026, midnight
 const MOMENT=new Date(2026,9,17,20,45,0);           // 8:45 pm
+const FINAL_AT=new Date(2026,9,17,20,45,0);         // from 8:45 pm on 17 Oct, right after the moment, the app opens on the summary page
+const WARAS_AT=new Date(2027,2,2,20,45,0);          // her waras: 26th Ramadan (Bohra calendar) begins the night of 2 March 2027, 8:45 pm
+const BORN=2006;                                    // her birthday countdown rolls on every year from this
+/* the summary page: every line of text, in one place */
+const FINAL={
+ eyebrow:'18 September to 17 October',
+ title:'Our 30 days',
+ lead:'Thirty envelopes, every word you wrote back, and everything you made. It is all still here, and none of it expires.',
+ warasSub:'26th Ramadan · the night of 2 March, at 8:45 pm',
+ bdaySub:'{d}',
+ diaryHead:'Your diary',
+ diaryNote:'Write in it any time. It stays on this phone.',
+ diaryEmpty:'Nothing in it yet. Anything you write, under a day or here, ends up in this one place.',
+ calHead:'Read any day again',
+ calNote:'Tap a day to open it. Everything is unlocked now.',
+ closeLine:'Nothing in here is going anywhere. Open it whenever you like.',
+ libHead:'Everything, in one place',
+ libNote:'Open any note, voice note, game or film without living the day again.',
+ tNotes:'Notes',tVoice:'Voice notes',tGames:'Games',tFilms:'Films',
+ noVoice:'No voice notes yet.',noGames:'No games yet.',
+ movieLine:'Every film, one after another.',movieBtn:'Watch the whole year',
+ dayHead:'The 17th',
+ dayNote:'Your gift and the 8:45 moment are both still here.',
+ dayBtn:'Back to the birthday',
+ momentBtn:'The 8:45 moment',
+ keepHead:'Keep it safe',
+ keepOff:'Everything you wrote and made lives on this phone. Save a copy every now and then, so nothing is ever lost.',
+ keepOn:'Your phone has agreed to keep all of this safe. A saved copy is still a good idea.',
+ sign:'Murtaza'
+};
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const dateOf=n=>new Date(START.getFullYear(),START.getMonth(),START.getDate()+n-1);
 const fmt=d=>`${d.getDate()} ${MONTHS[d.getMonth()]}`;
@@ -1490,7 +1558,7 @@ var pvSnap=null;   /* var, not let: save() sits above the preview code */
 function save(){if(pvSnap!=null)return;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let dev=false;
 const isDone=d=>!!S.done[d];
-const canOpen=d=>dev||window.__KEEP||(d<=curDay()&&(d===curDay()||isDone(d)||S.unlocked[d]));
+const canOpen=d=>dev||window.__KEEP||now()>=FINAL_AT||(d<=curDay()&&(d===curDay()||isDone(d)||S.unlocked[d]));
 const weekOf=d=>d>=30?'b':d>=22?4:d>=15?3:d>=8?2:1;
 
 /* ================= confetti ================= */
@@ -1520,6 +1588,13 @@ function tick(){
 /* ================= countdown ================= */
 const clock=$('#clock');
 function renderClock(){
+ if(now()>=FINAL_AT){
+  const e=nextEvents()[0];
+  if(e){const t=e.at-now();
+   if(t>0){clock.classList.remove('done');clock.innerHTML=`<span class="msg" style="font-size:12.5px;margin-right:4px">${e.short}</span>`+cdParts(t).slice(0,3).map(([n,l])=>`<span class="u"><span class="n">${n}</span><span class="l">${l}</span></span>`).join('<span class="sep">·</span>')}
+   else{clock.classList.add('done');clock.innerHTML=`<span class="msg">${e.today}</span>`}
+   return}
+ }
  const t=MOMENT-now();
  if(t<=0){clock.classList.add('done');clock.innerHTML=`<span class="msg">🌸 It's her birthday 🌸</span>`;return}
  const isBday=now()>=BDAY;
@@ -1538,6 +1613,7 @@ function show(html){if(cleanup){try{cleanup()}catch(e){}cleanup=null}view.innerH
 
 function render(){
  const c=curDay();
+ if(now()>=FINAL_AT){finalView();return}
  if(now()>=BDAY){birthdayView();return}
  if(c<1){setWeek(1);show(`<div class="card center stack"><div class="eyebrow">Almost</div><h2>It starts on 18th September</h2><p class="lead">Come back then. 🌸</p></div>`);return}
  openDay(c);
@@ -1694,11 +1770,13 @@ function messageView(d,fresh){
     <button class="btn ghost" id="calOpen">See all 30 days</button>
     ${gamesFor(D)[0]!=='none'?'<button class="btn ghost" id="replay">Play again</button>':''}
     ${animFor(d)?'<button class="btn ghost" id="rewatch">Watch again ✦</button>':''}
+    ${now()>=FINAL_AT?'<button class="btn ghost" id="homeFinal">Back to the summary</button>':''}
     ${isDone(d)?'<button class="btn ghost" id="reliveBtn">Live this day again ✦</button>':''}
   </div>`);
  AUDIO.setMode('read');
  if(firstPass(d))prankLater('note',d,w,3400);
  const r=$('#replay',w);if(r)r.onclick=()=>gameView(d);
+ const hf=$('#homeFinal',w);if(hf)hf.onclick=finalView;
  const rw=$('#rewatch',w);if(rw)rw.onclick=()=>animView(d,()=>messageView(d,false),true);
  wireReply(w,d);
  const mg=$('#movieGo',w);
@@ -1950,6 +2028,102 @@ function birthdayView(){
  const mb=$('#mom',w);if(mb)mb.onclick=momentView;
  if(!S.done[30]){S.done[30]=true;save();updateDot();rain(140);setTimeout(()=>burst(W/2,H*.4,140,1.1),500)}
 }
+/* ================= the summary: what she opens from 18 Oct ================= */
+const ord=n=>n+(['st','nd','rd'][((n+90)%100-10)%10-1]||'th');
+const cdParts=t=>{const s=Math.max(0,Math.floor(t/1000)),p=v=>String(v).padStart(2,'0');return[[Math.floor(s/86400),'days'],[p(Math.floor(s%86400/3600)),'hrs'],[p(Math.floor(s%3600/60)),'min'],[p(s%60),'sec']]};
+function nextEvents(){
+ const t=now(),out=[];
+ if(t.getTime()<WARAS_AT.getTime()+864e5)out.push({at:WARAS_AT,label:'Your waras',short:'until waras',sub:FINAL.warasSub,today:'Happy waras'});
+ let y=t.getFullYear(),b=new Date(y,9,17,0,0,0);if(t>=new Date(y,9,17,20,45,0))b=new Date(y+1,9,17,0,0,0);
+ const age=b.getFullYear()-BORN;
+ out.push({at:b,label:'Your '+ord(age)+' birthday',short:'until '+ord(age),sub:FINAL.bdaySub.replace('{d}','17 October '+b.getFullYear()),today:'Happy birthday'});
+ return out.sort((a,c)=>a.at-c.at);
+}
+/* a game on its own, from the library: no unlocking, no note afterwards */
+let libTab='notes',libReturn=false;
+const libBack=()=>{libReturn=true;finalView()};
+function gameFree(d,idx){
+ mode='game';shown=d;try{gameClockReset()}catch(e){}
+ const D=DAYS[d-1],key=gamesFor(D)[idx||0],G=GAMES[key]||GAMES.none;
+ const w=show(`<div class="gamehead"><h3>${G.name}</h3><div class="gstat" id="gstat"></div></div>
+  <div id="gbox"></div><p class="ghint">${(GT(key,'howto')||G.hint||'').replace(/\n/g,'<br>')}</p>
+  <div class="row" style="margin-top:14px"><button class="btn ghost" id="backBtn">Back to the library</button></div>`);
+ AUDIO.setMode('game');watchGame($('#gbox',w));
+ $('#backBtn',w).onclick=libBack;
+ const won=()=>{if(mode!=='game')return;mode='won';sfx('cheer');try{burst(W/2,H*.42,70,1)}catch(e){}
+  $('.row',w).insertAdjacentHTML('afterbegin','<button class="btn" id="againBtn">Play again</button>');
+  $('#againBtn',w).onclick=()=>gameFree(d,idx)};
+ try{cleanup=G.start($('#gbox',w),won,$('#gstat',w),d)||null}
+ catch(e){cleanup=null;$('#gbox',w).innerHTML='<div class="card center"><p class="lead">This one would not start. Tap Back and try another.</p></div>'}
+}
+function finalView(){
+ mode='final';shown=30;document.body.dataset.week='b';AUDIO.setMode('read');starfield(true);
+ const L=diaryEntries(),nDone=Object.keys(S.done).length,nArt=S.art?Object.keys(S.art).filter(k=>S.art[k]&&S.art[k].u).length:0;
+ const lastTxt=L.find(e=>e.text),snip=lastTxt?esc(lastTxt.text.length>150?lastTxt.text.slice(0,150).trim()+'…':lastTxt.text):'';
+ const evs=nextEvents();
+ const w=show(`<div class="fin">
+  <div class="center"><div class="eyebrow">${FINAL.eyebrow}</div><h1 class="ftitle">${FINAL.title}</h1><p class="lead">${FINAL.lead}</p></div>
+  ${evs.map((e,i)=>`<div class="card fcd" data-i="${i}"><div class="eyebrow">${e.label}</div><div class="fbody"></div><div class="note">${e.sub}</div></div>`).join('')}
+  <div class="card"><div class="eyebrow">${FINAL.diaryHead}</div>
+   <p class="note">${L.length?`${L.length} ${L.length===1?'entry':'entries'} so far. ${FINAL.diaryNote}`:FINAL.diaryEmpty}</p>
+   ${snip?`<div class="fsnip">${snip}</div>`:''}
+   <button class="btn" id="fnDiary">Open your diary</button></div>
+  <div class="card" id="lib"><div class="eyebrow">${FINAL.libHead}</div><p class="note">${FINAL.libNote}</p>
+   <div class="libtabs" id="libTabs"></div><div id="libBody"></div></div>
+  <div class="card"><div class="eyebrow">${FINAL.calHead}</div>
+   <p class="note">${FINAL.calNote}</p><div class="cal" id="finCal"></div></div>
+  <div class="card"><div class="eyebrow">${FINAL.dayHead}</div><p class="note">${FINAL.dayNote}</p>
+   <div class="row"><button class="btn ghost" id="fnBday">${FINAL.dayBtn}</button><button class="btn ghost" id="fnMoment">${FINAL.momentBtn}</button></div></div>
+  ${muralCard()}
+  <div class="fstats">${[[nDone,'of 30 days opened'],[L.length,'diary entries'],[nArt,'drawings kept']].filter((x,i)=>i===0||x[0]>0).map(x=>`<div><b>${x[0]}</b><span>${x[1]}</span></div>`).join('')}</div>
+  <div class="card"><div class="eyebrow">${FINAL.keepHead}</div><p class="note" id="keepNote">${FINAL.keepOff}</p>
+   <div class="row"><button class="btn ghost" id="fnSave">Save a copy of everything</button><button class="btn ghost" id="fnRestore">Restore from a copy</button></div>
+   <p class="note" id="fnStat" style="margin-top:10px"></p><input type="file" id="fnFile" accept=".html,text/html" hidden></div>
+  <p class="fclose">${FINAL.closeLine}</p><p class="fsign">${FINAL.sign}</p></div>`);
+ const paint=()=>w.querySelectorAll('.fcd').forEach(c=>{const e=evs[+c.dataset.i],t=e.at-now();
+  c.querySelector('.fbody').innerHTML=t>0?`<div class="fcn">${cdParts(t).map(([n,l])=>`<div class="u"><span class="n">${n}</span><span class="l">${l}</span></div>`).join('')}</div>`:`<div class="ftoday">${e.today}</div>`});
+ paint();const iv=setInterval(paint,1000);cleanup=()=>{clearInterval(iv);document.dispatchEvent(new CustomEvent('vnplay',{detail:null}));try{AUDIO.duck(false)}catch(e){}};
+ $('#fnDiary',w).onclick=diaryOpen;
+ const LB=$('#libBody',w),LT=$('#libTabs',w);
+ const lh=d=>`<span class="libd">${d}</span><span class="libt">${dTitle(DAYS[d-1])}</span><small>${fmt(dateOf(d))}</small>`;
+ const TABS={
+  notes(){LB.innerHTML=DAYS.map((D,i)=>`<div class="librow"><button class="libhead">${lh(i+1)}</button><div class="libopen"><div class="msg">${dMsg(D)}</div></div></div>`).join('');
+   LB.querySelectorAll('.libhead').forEach(b=>b.onclick=()=>b.parentNode.classList.toggle('open'))},
+  voice(){const ds=[];for(let d=1;d<=30;d++)if(DAYS[d-1].vn)ds.push(d);
+   if(!ds.length){LB.innerHTML=`<p class="note">${FINAL.noVoice}</p>`;return}
+   LB.innerHTML=ds.map(d=>`<div class="librow vrow" data-d="${d}"><div class="libhead2">${lh(d)}</div>${voiceCard(d)}</div>`).join('');
+   LB.querySelectorAll('.vrow').forEach(r=>wireVoice(r,+r.dataset.d))},
+  games(){const rows=[];
+   for(let d=1;d<=30;d++)gamesFor(DAYS[d-1]).forEach((k,i)=>{if(k!=='none'&&GAMES[k])rows.push(`<button class="libgo" data-d="${d}" data-i="${i}"><span class="libt"><b>${GAMES[k].name}</b></span><small>Day ${d} · ${fmt(dateOf(d))}</small></button>`)});
+   LB.innerHTML=rows.length?rows.join(''):`<p class="note">${FINAL.noGames}</p>`;
+   LB.querySelectorAll('.libgo').forEach(b=>b.onclick=()=>gameFree(+b.dataset.d,+b.dataset.i))},
+  films(){const md=movieDays(),mins=Math.max(1,Math.round(md.reduce((a,e)=>a+animDur(e.k),0)/60)),rows=[];
+   for(let d=1;d<=30;d++){const k=animFor(d);if(k)rows.push(`<button class="libgo" data-d="${d}"><span class="libt">${dTitle(DAYS[d-1])}</span><small>Day ${d} · ${Math.round(animDur(k))}s</small></button>`)}
+   LB.innerHTML=(md.length>=2?`<div class="libmovie"><div class="msg">${FINAL.movieLine}</div><button class="btn" id="libMovie">${FINAL.movieBtn}</button><p class="note">${md.length} films, about ${mins} minutes. Tap the speed chip to go faster, or hold the picture.</p></div>`:'')+rows.join('');
+   LB.querySelectorAll('.libgo').forEach(b=>b.onclick=()=>animView(+b.dataset.d,libBack,true));
+   const mv=$('#libMovie',LB);if(mv)mv.onclick=()=>movieView(libBack)}
+ };
+ const setTab=k=>{libTab=k;LT.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));document.dispatchEvent(new CustomEvent('vnplay',{detail:null}));LB.innerHTML='';TABS[k]()};
+ [['notes',FINAL.tNotes],['voice',FINAL.tVoice],['games',FINAL.tGames],['films',FINAL.tFilms]].forEach(([k,n])=>{const b=el('button','',n);b.dataset.k=k;b.onclick=()=>setTab(k);LT.appendChild(b)});
+ setTab(libTab);
+ if(libReturn){libReturn=false;setTimeout(()=>{try{$('#lib',w).scrollIntoView({block:'start'})}catch(e){}},80)}
+ $('#fnBday',w).onclick=birthdayView;$('#fnMoment',w).onclick=momentView;
+ try{navigator.storage&&navigator.storage.persisted&&navigator.storage.persisted().then(v=>{if(v)$('#keepNote',w).textContent=FINAL.keepOn})}catch(e){}
+ $('#fnSave',w).onclick=async ev=>{const b=ev.currentTarget,st=$('#fnStat',w);b.disabled=true;
+  try{const html=await buildKeepsake(true,m=>st.textContent=m);await keepHandOver('our-30-days.html',html);st.textContent='Saved. Keep that file somewhere safe. It opens any time, even with no internet.'}
+  catch(e){st.textContent=(e&&e.message==='cancelled')?'':'That did not work: '+(e.message||e)+'. Try again with internet on.'}
+  b.disabled=false};
+ $('#fnRestore',w).onclick=()=>$('#fnFile',w).click();
+ $('#fnFile',w).onchange=async ev=>{const f=ev.target.files[0],st=$('#fnStat',w);if(!f)return;
+  try{const n=restoreState(await f.text());if(n){st.textContent='Restored. Opening it again…';setTimeout(()=>location.reload(),900)}else st.textContent=''}
+  catch(e){st.textContent=e.message||'That did not work.'}
+  ev.target.value=''};
+ const g=$('#finCal',w);
+ for(let d=1;d<=30;d++){const b=el('button','day'+(isDone(d)?' done':''),`${d}<small>${fmt(dateOf(d))}</small>`);
+  b.onclick=()=>{d===30?birthdayView():(isDone(d)?messageView(d,false):openDay(d))};g.appendChild(b)}
+ const mc=$('#muralCv',w);if(mc)setTimeout(()=>{try{drawMural(mc)}catch(e){}},60);
+}
+
 function wireGift(w){
  const go=$('#giftGo',w),inp=$('#giftIn',w),msg=$('#giftMsg',w);
  if(!go)return;
@@ -1970,7 +2144,7 @@ function momentView(){
   <p class="line" style="animation-delay:7.6s;font-family:'Playfair Display',serif;font-style:italic;font-size:24px;color:#fff;margin-top:22px">Happy birthday, Zahabiya. 🌸</p>
   <p class="line" style="animation-delay:9.6s;font-family:'Caveat',cursive;font-size:30px;color:#ffd6e6;margin-top:6px">— Murtaza</p>
   <div class="row" style="margin-top:28px"><button class="btn ghost line" style="animation-delay:11s" id="bk">Back</button></div></div>`);
- $('#bk').onclick=birthdayView;
+ $('#bk').onclick=()=>now()>=FINAL_AT?finalView():birthdayView();
  let n=0;const iv=setInterval(()=>{sparkle(rnd(40,W-40),rnd(60,H*.6),6);if(++n>26)clearInterval(iv)},420);
  setTimeout(()=>rain(70,true),1200);
  cleanup=()=>clearInterval(iv);
@@ -3690,10 +3864,23 @@ async function keepSource(say){
  app=app.replace(/<title>[^<]*<\/title>/,()=>'<title>30 days · ours<\/title>');
  return app;
 }
+/* ---------------- keeping her things safe ---------------- */
+const KEEP_SKIP=['zb30gh','zb30repo','zb30draft','zb30lock','zb30tip','zb30voice'];   /* his token, drafts and recordings never go in her copy */
+function keepState(){const st={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf('zb30')===0&&KEEP_SKIP.indexOf(k)<0){const v=localStorage.getItem(k);if(v)st[k]=v}}}catch(e){}return st}
+function restoreState(text){
+ const m=/window\.__KEEPSTATE=(\{[\s\S]*?\});\/\*ks\*\//.exec(text);
+ if(!m)throw new Error('That file has no saved memories in it');
+ let st;try{st=JSON.parse(m[1])}catch(e){throw new Error('That file could not be read')}
+ const keys=Object.keys(st).filter(k=>k.indexOf('zb30')===0&&KEEP_SKIP.indexOf(k)<0&&typeof st[k]==='string');
+ if(!keys.length)throw new Error('That copy is empty');
+ if(!confirm('This puts everything from that copy back on this phone, and replaces what is here now. Continue?'))return 0;
+ keys.forEach(k=>localStorage.setItem(k,st[k]));return keys.length;
+}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}   /* ask the phone not to clear this on its own */
 async function buildKeepsake(withState,say){
  let html=await keepSource(say);
  const st={};
- if(withState)['zb30','zb30pd'].forEach(k=>{try{const v=localStorage.getItem(k);if(v)st[k]=v}catch(e){}});
+ if(withState)Object.assign(st,keepState());
  html=html.replace(/window\.__KEEPSTATE=[\s\S]*?;\/\*ks\*\//,()=>'window.__KEEPSTATE='+KJ(st)+';/*ks*/');
  say&&say('Nearly there…');
  return html;
@@ -3820,8 +4007,9 @@ function wireKeepPanel(){
  };
 }
 
-function openSheet(){renderCal();sheet.classList.add('show')}
+function openSheet(){renderCal();const h=$('#calHome');if(h)h.hidden=!(now()>=FINAL_AT);sheet.classList.add('show')}
 {const b=$('#calDiary');if(b)b.onclick=()=>{closeSheet();diaryOpen()};}
+{const h=$('#calHome');if(h)h.onclick=()=>{closeSheet();finalView()};}
 try{wireKeepPanel()}catch(e){}
 function closeSheet(){sheet.classList.remove('show');$('#pwbox').hidden=true}
 $('#calBtn').onclick=openSheet;$('#calClose').onclick=closeSheet;
@@ -3835,7 +4023,7 @@ function renderCal(){
   if(isDone(d))cls+=' done';
   if(d===c&&now()<BDAY)cls+=' today';
   else if(d>c&&!dev&&!window.__KEEP)cls+=' locked';
-  else if(d<c&&!isDone(d)&&!S.unlocked[d]&&!dev)cls+=' missed';
+  else if(d<c&&!isDone(d)&&!S.unlocked[d]&&!dev&&now()<FINAL_AT)cls+=' missed';
   const b=el('button',cls,`${d}<small>${lab}</small>`);
   b.onclick=()=>{
    if(canOpen(d)){closeSheet();d===30&&now()>=BDAY?birthdayView():(isDone(d)?messageView(d,false):openDay(d))}
@@ -4115,6 +4303,17 @@ function defaultMark(c,s){
 }
 
 /* ================= the stage ================= */
+/* playback speed for the films: tap the chip for 1x / 2x / 3x, or hold the picture for 2x */
+let aSpd=1,aHold=false,_rN=0,_vN=0;
+const aSpeed=()=>aHold?Math.max(aSpd,2):aSpd;
+function aClock(n){if(!_rN){_rN=n;_vN=n}const d=n-_rN;_rN=n;_vN+=d*aSpeed();return _vN}
+function aSpeedUI(wrap,cv,holdOk){
+ _rN=0;aHold=false;
+ const b=document.createElement('button');b.className='aspd';b.textContent=aSpd+'x';b.setAttribute('aria-label','playback speed');
+ b.onpointerdown=e=>e.stopPropagation();b.onclick=e=>{e.stopPropagation();aSpd=aSpd%3+1;b.textContent=aSpd+'x'};
+ wrap.appendChild(b);
+ if(holdOk){const on=()=>{aHold=true},off=()=>{aHold=false};cv.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(t=>cv.addEventListener(t,off))}
+}
 let ASTOP=null;
 function stopAnim(){if(ASTOP){try{ASTOP()}catch(e){}ASTOP=null}}
 
@@ -5141,6 +5340,7 @@ function wireVoice(w,d){
  const D=DAYS[d-1], src=D&&D.vn;
  const btn=$('#vnPlay',w), wave=$('#vnWave',w), time=$('#vnTime',w);
  const au=new Audio();
+ document.addEventListener('vnplay',e=>{if(e.detail!==au&&!au.paused)au.pause()});
  au.preload='metadata';
  au.src=src;
  let dead=false;
@@ -5170,6 +5370,7 @@ function wireVoice(w,d){
   if(dead)return;
   if(au.paused){
    /* his voice and the background music must not talk over each other */
+   document.dispatchEvent(new CustomEvent('vnplay',{detail:au}));
    try{AUDIO.duck(true)}catch(e){}
    au.play().catch(()=>{dead=true;try{card.remove()}catch(e){}});
   }else{
@@ -5262,7 +5463,7 @@ function animView(d,onDone,replay,forceKey){
    <div class="animtext" id="atext">${words.map((l,i)=>`<p style="--i:${i}">${l}</p>`).join('')}</div>
    <button class="animskip" id="askip" hidden>skip</button>
   </div>`);
- const wrap=$('#awrap',w),cv=$('#acv',w),tx=$('#atext',w),skip=$('#askip',w);
+ const wrap=$('#awrap',w),cv=$('#acv',w),tx=$('#atext',w),skip=$('#askip',w); if(!replay&&!forceKey)aSpd=1;aSpeedUI(wrap,cv,!sc.tap);
  if(sc.solo)tx.classList.add('solo');   /* the lines share one spot instead of stacking */
  /* A scene that paints its own pale ground cannot use the clock's ink: at
     night that ink is nearly white, and white on cream is not text. Such a
@@ -5312,7 +5513,8 @@ function animView(d,onDone,replay,forceKey){
 
  /* time lost to an interruption, given back rather than charged to her */
  let frozen=0;
- function frame(n){
+ function frame(n0){
+  const n=aClock(n0);
   if(!t0){t0=n;last=n}
   /* motion uses frame time (clamped, so a stall doesn't teleport anything),
      but how far through the scene we are is wall clock — otherwise a slow
@@ -5456,7 +5658,7 @@ function movieView(onDone,fromDay){
    <button class="animskip" id="mvskip">skip</button>
    <button class="animskip mvexit" id="mvexit">leave</button>
   </div>`);
- const wrap=$('#mvwrap',w),cv=$('#mvcv',w),tx=$('#mvtext',w),card=$('#mvcard',w);
+ const wrap=$('#mvwrap',w),cv=$('#mvcv',w),tx=$('#mvtext',w),card=$('#mvcard',w); aSpeedUI(wrap,cv,true);
  const bar=$('#mvbar',w),nameEl=$('#mvname',w),dateEl=$('#mvdate',w);
  wrap.dataset.tod=todKey();
  const pal=apal();
@@ -5499,7 +5701,8 @@ function movieView(onDone,fromDay){
   [...bar.children].forEach((b,x)=>b.className=x<i?'done':x===i?'on':'');
   t=0;last=0;t0=0;
  }
- function frame(n){
+ function frame(n0){
+  const n=aClock(n0);
   if(!t0){t0=n;last=n}
   const dt=Math.min(.05,(n-last)/1000);last=n;t+=dt;
   const P=Math.min(1,(n-t0)/1000/dur);
@@ -12941,6 +13144,7 @@ $('#dReset').onclick=()=>{S={done:{},unlocked:{}};save();updateDot();renderCal()
 $('#dSet').onclick=()=>{const v=$('#dDate').value;if(!v)return;offset=new Date(v)-new Date();afterClock()};
 $('#dClear').onclick=()=>{offset=0;afterClock()};
 $('#dBday').onclick=()=>{offset=BDAY-new Date()+1000;afterClock()};
+$('#dFinal').onclick=()=>{offset=FINAL_AT-new Date()+60000;afterClock()};
 $('#d845').onclick=()=>{offset=MOMENT-new Date()+1000;afterClock()};
 function afterClock(){renderClock();starfield(now()>=BDAY);render();renderCal();growGarden(true);$('#dNow').textContent=now().toLocaleString()}
 
