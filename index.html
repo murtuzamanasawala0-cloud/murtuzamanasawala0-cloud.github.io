@@ -1064,6 +1064,7 @@ audio.vnprev{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
       <button class="edtab" id="edTabBait" data-pane="Bait">ragebait</button>
       <button class="edtab" id="edTabVoice" data-pane="Voice">voice</button>
       <button class="edtab" id="edTabFilms" data-pane="Films">films</button>
+      <button class="edtab" id="edTabWish" data-pane="Wish">wishes</button>
     </div>
     <div class="edpane on" id="edPaneDay">
     <label class="edfield"><span>title</span><input id="edT" autocomplete="off"></label>
@@ -1199,6 +1200,8 @@ audio.vnprev{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
         <span>the line under the player</span>
         <input id="vnLine" autocomplete="off"></label>
     </div>
+
+    <div class="edpane" id="edPaneWish"></div>
 
     <div class="edbtns">
       <button class="edbtn" id="edPrev">◀ day</button>
@@ -2042,7 +2045,8 @@ const ord=n=>n+(['st','nd','rd'][((n+90)%100-10)%10-1]||'th');
 const cdParts=t=>{const s=Math.max(0,Math.floor(t/1000)),p=v=>String(v).padStart(2,'0');return[[Math.floor(s/86400),'days'],[p(Math.floor(s%86400/3600)),'hrs'],[p(Math.floor(s%3600/60)),'min'],[p(s%60),'sec']]};
 function nextEvents(){
  const t=now(),out=[];
- if(t.getTime()<WARAS_AT.getTime()+864e5)out.push({at:WARAS_AT,label:'Your waras',short:'until waras',sub:FINAL.warasSub,today:'Happy waras'});
+ {let k=WISH_H0,o=occOf('waras',k);while(t.getTime()>=o.at.getTime()+864e5&&k<WISH_H0+70){k++;o=occOf('waras',k)}
+  out.push({at:o.at,label:'Your waras',short:'until waras',sub:'26th Ramadan · the night of '+o.at.getDate()+' '+LONGM[o.at.getMonth()]+', at 8:45 pm',today:'Happy waras'})}
  let y=t.getFullYear(),b=new Date(y,9,17,0,0,0);if(t>=new Date(y,9,17,20,45,0))b=new Date(y+1,9,17,0,0,0);
  const age=b.getFullYear()-BORN;
  out.push({at:b,label:'Your '+ord(age)+' birthday',short:'until '+ord(age),sub:FINAL.bdaySub.replace('{d}','17 October '+b.getFullYear()),today:'Happy birthday'});
@@ -2072,6 +2076,7 @@ function finalView(){
  const evs=nextEvents();
  const w=show(`<div class="fin">
   <div class="center"><div class="eyebrow">${FINAL.eyebrow}</div><h1 class="ftitle">${FINAL.title}</h1><p class="lead">${FINAL.lead}</p></div>
+  ${wishCards()}
   ${evs.map((e,i)=>`<div class="card fcd" data-i="${i}"><div class="eyebrow">${e.label}</div><div class="fbody"></div><div class="note">${e.sub}</div></div>`).join('')}
   <div class="card"><div class="eyebrow">${FINAL.diaryHead}</div>
    <p class="note">${L.length?`${L.length} ${L.length===1?'entry':'entries'} so far. ${FINAL.diaryNote}`:FINAL.diaryEmpty}</p>
@@ -2089,6 +2094,7 @@ function finalView(){
    <div class="row"><button class="btn ghost" id="fnSave">Save a copy of everything</button><button class="btn ghost" id="fnRestore">Restore from a copy</button></div>
    <p class="note" id="fnStat" style="margin-top:10px"></p><input type="file" id="fnFile" accept=".html,text/html" hidden></div>
   <p class="fclose">${FINAL.closeLine}</p><p class="fsign">${FINAL.sign}</p></div>`);
+ wireWish(w);
  const paint=()=>w.querySelectorAll('.fcd').forEach(c=>{const e=evs[+c.dataset.i],t=e.at-now();
   c.querySelector('.fbody').innerHTML=t>0?`<div class="fcn">${cdParts(t).map(([n,l])=>`<div class="u"><span class="n">${n}</span><span class="l">${l}</span></div>`).join('')}</div>`:`<div class="ftoday">${e.today}</div>`});
  paint();const iv=setInterval(paint,1000);cleanup=()=>{clearInterval(iv);document.dispatchEvent(new CustomEvent('vnplay',{detail:null}));try{AUDIO.duck(false)}catch(e){}};
@@ -2873,8 +2879,221 @@ function updateBqDot(){}
 
 /* ================= editable content + in-page editor ================= */
 const GAME_KEYS=["bubblewrap", "colorbynum", "colourscene", "constellation", "datematch", "dobble", "dobble2", "dobble3", "jigsaw", "mandala", "maze", "memory", "mood", "none", "oddone", "paint", "pour", "safe", "scooter", "scratch", "simon", "spotdiff", "stack", "stars", "thisorthat", "timeline", "truefalse", "unscramble", "wordle", "wordsearch", "tictactoe", "dotsboxes", "reaction", "tug", "slice", "whack", "dash", "merge", "picross", "snake", "makeover", "dressup"];
+/* ================= wishes: her waras and her birthday, every year, for good =================
+   One quiet page, a letter and a voice note, for each waras (26th Ramadan, Bohra calendar) and
+   each birthday from her 21st on. It opens by itself the first time she opens the app on the
+   day, and is kept afterwards in a "Wishes" card. Nothing shows before the first one is due.
+   The words live in content.json under "wish": one entry per occasion, or one per kind
+   ("waras", "bday") that every other year falls back to. The waras dates after 2027 are worked
+   out from the Bohra tabular calendar, anchored on WARAS_AT; a single date can be overridden
+   in the editor if the calendar ever says otherwise.                                          */
+const WISH={items:{}};
+const WISH_H0=1448;                      /* hijri year of WARAS_AT: 26th Ramadan 1448 */
+const hLeap=y=>[2,5,8,10,13,16,19,21,24,27,29].indexOf(y%30)>=0;
+const LONGM=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const fmtLong=d=>d.getDate()+' '+LONGM[d.getMonth()]+' '+d.getFullYear();
+function warasNight(h){let n=0;for(let y=WISH_H0;y<h;y++)n+=hLeap(y)?355:354;
+ return new Date(WARAS_AT.getFullYear(),WARAS_AT.getMonth(),WARAS_AT.getDate()+n,20,45,0)}
+function occOf(kind,k){
+ if(kind==='waras'){
+  const it=WISH.items['waras-'+k]||{};let at=warasNight(k);
+  const m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(it.d||'');if(m)at=new Date(+m[1],+m[2]-1,+m[3],20,45,0);
+  return{id:'waras-'+k,kind:'waras',k,at,end:new Date(at.getTime()+30*36e5)};
+ }
+ const at=new Date(k,9,17,0,0,0);
+ return{id:'bday-'+k,kind:'bday',k,age:k-BORN,at,end:new Date(at.getTime()+29*36e5)};
+}
+function allOccs(){const a=[];
+ for(let h=WISH_H0;h<WISH_H0+70;h++)a.push(occOf('waras',h));
+ for(let y=BORN+21;y<BORN+21+70;y++)a.push(occOf('bday',y));
+ return a.sort((x,y)=>x.at-y.at)}
+const WISH_DEF={
+ waras:'Happy waras, Zahabiya.\n\nMay this year be gentle with you, and may the things you have been quietly hoping for find their way to you.\n\nWherever this day finds you, I hope it is full of light, good food and people who love you. You deserve a day that is entirely yours.',
+ bday:'Happy birthday, Zahabiya.\n\nYou are {age} today. I hope this year is kind to you, and that the people around you remind you, often, how much you are worth.\n\nWherever this day finds you, I hope it is a good one.'};
+function wishOf(o,opts){
+ const it=WISH.items[o.id]||{},df=WISH.items[o.kind]||{};
+ const fill=t=>String(t).replace(/\{age\}/g,o.age||'').replace(/\{ord\}/g,o.age?ord(o.age):'').replace(/\{year\}/g,o.at.getFullYear());
+ let vn=it.vn||df.vn||'';
+ if(opts&&opts.preview){const m=vnPending(),p=m['w:'+o.id]||m['w:'+o.kind];if(p){const u=vnB64ToUrl(p.b64,p.mime);if(u)vn=u}}
+ return{z:fill(it.z||df.z||WISH_DEF[o.kind]),vn,vz:it.vz||df.vz||'Said out loud, instead.'};
+}
+function wishOut(){const out={};
+ Object.keys(WISH.items).forEach(k=>{const it=WISH.items[k],c={};
+  ['z','vn','vz','d'].forEach(f=>{if(typeof it[f]==='string'&&it[f].trim())c[f]=it[f]});
+  if(Object.keys(c).length)out[k]=c});
+ return{items:out}}
+function applyWish(w){
+ if(!w||typeof w!=='object'||!w.items)return;
+ Object.keys(w.items).forEach(k=>{if(!/^[a-z0-9-]{1,24}$/.test(k))return;
+  const s=w.items[k]||{},c=WISH.items[k]=WISH.items[k]||{};
+  ['z','vn','vz','d'].forEach(f=>{if(typeof s[f]==='string'&&s[f])c[f]=s[f]})})}
+
+const WISH_CSS=`
+#wish{position:fixed;inset:0;z-index:100000;overflow-y:auto;-webkit-overflow-scrolling:touch;opacity:0;transition:opacity 1.8s ease;color:#f5e8ee;font-family:Lora,Georgia,serif;
+background:radial-gradient(90% 50% at 50% -4%,rgba(217,183,122,.2),transparent 70%),linear-gradient(#2a1838,#1a1024 60%,#120a1a)}
+#wish.on{opacity:1}
+#wish *{box-sizing:border-box}
+#wish::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.1;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+#wish .wz{position:relative;max-width:440px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 72px) 24px calc(env(safe-area-inset-bottom,0px) + 56px);text-align:center}
+#wish .wz-x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:10px;width:44px;height:44px;border:0;background:none;color:#f5e8ee;opacity:.55;font-size:28px;line-height:1;cursor:pointer;z-index:2}
+#wish .wz-eye{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:#d9b77a}
+#wish .wz-orn{display:block;width:120px;height:10px;margin:18px auto 0}
+#wish .wz-h{font:italic 500 34px/1.22 'Playfair Display',Georgia,serif;color:#fff1e4;margin:24px 0 12px}
+#wish .wz-sub{font-size:13px;color:#cdb6c6;letter-spacing:.05em;margin:0}
+#wish .wz-paper{position:relative;margin:38px 0 0;padding:36px 28px 30px;text-align:left;background:#fbf4ec;color:#4a2f3f;border-radius:3px;box-shadow:0 34px 70px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.06)}
+#wish .wz-paper::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:multiply;border-radius:3px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+#wish .wz-paper p{margin:0 0 1.2em;font-size:17px;line-height:1.85;color:#4a2f3f}
+#wish .wz-paper .sign{margin-top:26px;font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:19px;color:#7a4a5e;text-align:right}
+#wish .wz-v{display:flex;align-items:center;gap:14px;margin:30px 0 0;padding:14px 18px 14px 14px;border:1px solid rgba(217,183,122,.38);border-radius:999px;background:rgba(255,255,255,.04)}
+#wish .wz-play{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:linear-gradient(#f2cf92,#d9b77a);color:#3a1d2d;display:grid;place-items:center;cursor:pointer;padding:0}
+#wish .wz-play svg{width:18px;height:18px;fill:currentColor}
+#wish .wz-wave{flex:1;display:flex;align-items:center;gap:2px;height:30px}
+#wish .wz-wave i{flex:1;height:var(--h);min-height:4px;border-radius:2px;background:rgba(245,232,238,.28);transition:background .2s}
+#wish .wz-wave i.p{background:#d9b77a}
+#wish .wz-t{flex:none;font-size:12px;color:#cdb6c6;min-width:32px;text-align:right;font-variant-numeric:tabular-nums}
+#wish .wz-cap{font-style:italic;font-size:13.5px;color:#cdb6c6;margin:12px 0 0}
+#wish .wz-close{margin:44px 0 0;padding:13px 30px;border-radius:999px;border:1px solid rgba(217,183,122,.55);background:none;color:#f2dcb0;font:inherit;font-size:14px;letter-spacing:.08em;cursor:pointer}
+@media (prefers-reduced-motion:reduce){#wish{transition:none}}
+`;
+function wishView(o,opts){
+ if(document.getElementById('wish'))return;
+ opts=opts||{};
+ const X=wishOf(o,opts);
+ if(!opts.preview){S.wishSeen=S.wishSeen||{};S.wishSeen[o.id]=Date.now();save()}
+ const title=o.kind==='waras'?'Happy Waras, Zahabiya':'Happy '+ord(o.age)+' Birthday, Zahabiya';
+ const sub=o.kind==='waras'?'The night of '+fmtLong(o.at)+' · 26th Ramadan '+o.k:fmtLong(o.at);
+ const bars=X.vn?vnBars(X.vn,34).map(v=>'<i style="--h:'+Math.round(v*100)+'%"></i>').join(''):'';
+ const PLAY='<svg viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>',PAUSE='<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+ const st=document.createElement('style');st.id='wishCss';st.textContent=WISH_CSS;document.head.appendChild(st);
+ const r=document.createElement('div');r.id='wish';r.setAttribute('role','dialog');r.setAttribute('aria-label','A wish for you');
+ r.innerHTML='<button class="wz-x" aria-label="Close">&times;</button><div class="wz">'
+  +'<div class="wz-eye">A wish for you</div>'
+  +'<svg class="wz-orn" viewBox="0 0 120 10" aria-hidden="true"><path d="M0 5H50M70 5H120" stroke="#d9b77a" stroke-width=".8" fill="none"/><path d="M60 1L64 5L60 9L56 5Z" fill="#d9b77a"/></svg>'
+  +'<h1 class="wz-h">'+title+'</h1><p class="wz-sub">'+sub+'</p>'
+  +'<div class="wz-paper">'+textToHtml(X.z)+'</div>'
+  +(X.vn?'<div class="wz-v" id="wzV"><button class="wz-play" aria-label="Play the voice note">'+PLAY+'</button><div class="wz-wave">'+bars+'</div><span class="wz-t">0:00</span></div><p class="wz-cap">'+esc(X.vz)+'</p>':'')
+  +'<button class="wz-close">'+(opts.preview?'Back to the editor':'Keep this for later')+'</button></div>';
+ document.body.appendChild(r);
+ requestAnimationFrame(()=>requestAnimationFrame(()=>r.classList.add('on')));
+ let au=null;
+ if(X.vn){
+  au=new Audio();au.preload='metadata';au.src=X.vn;
+  const box=r.querySelector('#wzV'),btn=r.querySelector('.wz-play'),tm=r.querySelector('.wz-t'),bs=[...r.querySelectorAll('.wz-wave i')];
+  const cap=r.querySelector('.wz-cap');
+  const gone=()=>{try{box.remove();cap.remove()}catch(e){}};
+  au.addEventListener('error',gone);
+  au.addEventListener('loadedmetadata',()=>{if(isFinite(au.duration)&&au.duration>0)tm.textContent=vnClock(au.duration)});
+  au.addEventListener('timeupdate',()=>{tm.textContent=vnClock(au.currentTime);const p=(au.duration&&isFinite(au.duration))?au.currentTime/au.duration:0;bs.forEach((b,i)=>b.classList.toggle('p',i<p*bs.length))});
+  au.addEventListener('play',()=>{btn.innerHTML=PAUSE});
+  au.addEventListener('pause',()=>{btn.innerHTML=PLAY;try{AUDIO.duck(false)}catch(e){}});
+  au.addEventListener('ended',()=>{au.currentTime=0;bs.forEach(b=>b.classList.remove('p'));tm.textContent=vnClock(au.duration||0)});
+  btn.onclick=()=>{if(au.paused){try{AUDIO.duck(true)}catch(e){}au.play().catch(gone)}else au.pause()};
+ }
+ const shut=()=>{try{au&&au.pause()}catch(e){}try{AUDIO.duck(false)}catch(e){}
+  r.classList.remove('on');setTimeout(()=>{r.remove();st.remove()},400)};
+ r.querySelector('.wz-x').onclick=shut;r.querySelector('.wz-close').onclick=shut;
+ r.scrollTop=0;
+}
+function maybeWish(){
+ if(pvSnap!=null||document.getElementById('wish')||mode!=='final')return;
+ const t=now();if(t<FINAL_AT)return;
+ const o=allOccs().find(x=>x.at<=t&&t<x.end);
+ if(!o||(S.wishSeen&&S.wishSeen[o.id]))return;
+ wishView(o);
+}
+function wishCards(){
+ const t=now(),past=allOccs().filter(o=>o.at<=t).reverse();
+ if(!past.length)return '';
+ const act=past.some(o=>t<o.end);
+ const nm=o=>o.kind==='waras'?'Waras · 26th Ramadan '+o.k:ord(o.age)+' birthday';
+ return '<div class="card center" id="wishCard"><div class="eyebrow">'+(act?'A wish for you':'Your wishes')+'</div>'
+  +'<p class="note">'+(act?'Something I wrote for today.':'Everything I have wished you, kept in one place.')+'</p>'
+  +past.map(o=>'<button class="btn ghost" data-wid="'+o.id+'" style="width:100%;margin-top:8px">'+nm(o)+' · '+fmtLong(o.at)+'</button>').join('')+'</div>';
+}
+function wireWish(w){w.querySelectorAll('#wishCard [data-wid]').forEach(b=>{b.onclick=()=>{const o=allOccs().find(x=>x.id===b.dataset.wid);if(o)wishView(o)}})}
+
+/* ---- the editor's "wishes" pane ---- */
+let wzRec=null,wzTake=null;
+function wzBlock(id,title,isWaras,isDef){
+ const it=WISH.items[id]||{},pend=vnPending()['w:'+id];
+ const state=pend?'Recorded, not published yet.':(it.vn?'A voice note is live.':'No voice note.');
+ return '<div class="wzb" data-id="'+id+'" style="border-top:1px solid rgba(0,0,0,.12);margin-top:20px;padding-top:14px">'
+  +'<div style="font-weight:600;margin-bottom:6px">'+title+'</div>'
+  +'<label class="edfield"><span>'+(isDef?'the letter, for any year that has none of its own':'the letter')+'</span><textarea data-k="z" rows="8">'+esc(it.z||'')+'</textarea></label>'
+  +(isWaras?'<label class="edfield"><span>the night begins on (leave empty unless the calendar says otherwise)</span><input type="date" data-k="d" value="'+esc(it.d||'')+'"></label>':'')
+  +'<div class="vnrec"><button class="vnbtn" data-a="rec">\u25cf Record</button><div class="vnlevel"><i data-r="lv"></i></div><span class="vntime" data-r="len">0:00</span></div>'
+  +'<div class="vnstat" data-r="st">'+state+'</div><audio class="vnprev" controls hidden data-r="prev"></audio>'
+  +'<div class="edbtns" style="margin-top:8px"><button class="edbtn" data-a="keep" hidden>Use this one</button><button class="edbtn" data-a="scrap" hidden>Throw it away</button><button class="edbtn" data-a="del"'+((it.vn||pend)?'':' hidden')+'>Remove voice note</button></div>'
+  +'<label class="edfield"><span>the line under the player</span><input data-k="vz" value="'+esc(it.vz||'')+'" autocomplete="off"></label>'
+  +'<div class="edbtns"><button class="edbtn" data-a="pv">Preview as she sees it</button></div></div>';
+}
+function paintWishPane(){
+ const p=$('#edPaneWish');if(!p)return;
+ const t=now(),up=allOccs().filter(o=>o.end>t).slice(0,4);
+ p.innerHTML='<p class="edlead">Her waras and her birthday, every year. The page opens by itself the first time she opens the app that night or day, and stays in a Wishes card after. Nothing shows until the first one is due. Write one for each of the next few, and one for every other year. In a letter, {age} becomes her age, {ord} becomes 21st, and {year} the year.</p>'
+  +up.map(o=>wzBlock(o.id,o.kind==='waras'?'Waras \u00b7 the night of '+fmtLong(o.at):ord(o.age)+' birthday \u00b7 '+fmtLong(o.at),o.kind==='waras',false)).join('')
+  +wzBlock('waras','Every other waras',false,true)+wzBlock('bday','Every other birthday',false,true);
+ if(!p.dataset.wired){p.dataset.wired='1';wzWire(p)}
+}
+function wzWire(p){
+ p.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.k,b=e.target.closest('.wzb');if(!k||!b)return;
+  const id=b.dataset.id,it=WISH.items[id]=WISH.items[id]||{},v=e.target.value;
+  if(v.trim())it[k]=(k==='z'?v:v.trim());else delete it[k]});
+ p.addEventListener('click',e=>{
+  const a=e.target.closest('[data-a]');if(!a)return;e.preventDefault();
+  const b=a.closest('.wzb'),id=b.dataset.id,q=s=>b.querySelector(s),st=(t,w)=>{const s=q('[data-r=st]');s.textContent=t;s.style.color=w?'#b3261e':''};
+  const kind=a.dataset.a;
+  if(kind==='rec'){
+   if(wzRec){wzRec.stop();wzRec=null;a.textContent='\u25cf Record';a.classList.remove('rec');return}
+   if(vnRec){st('Stop the other recording first.',true);return}
+   a.textContent='\u25a0 Stop';a.classList.add('rec');st('Listening\u2026 up to '+VOICE_MAX+' seconds. Tap again to stop.');
+   wzRec=vnRecorder((sec,lvl)=>{q('[data-r=len]').textContent=vnClock(sec);q('[data-r=lv]').style.width=Math.min(100,Math.round(lvl*160))+'%'},
+    (blob,mime,sec)=>{wzRec=null;a.textContent='\u25cf Record';a.classList.remove('rec');q('[data-r=lv]').style.width='0%';
+     if(!blob||!blob.size){st('That came out empty. Try again.',true);return}
+     vnBlobToB64(blob).then(b64=>{wzTake={id,b64,mime,sec,ext:vnExt(mime)};const pv=q('[data-r=prev]');pv.src=URL.createObjectURL(blob);pv.hidden=false;
+      q('[data-a=keep]').hidden=false;q('[data-a=scrap]').hidden=false;st('Listen to it first. '+vnClock(sec)+'.')}).catch(()=>st('Could not read that recording back.',true))},
+    msg=>{wzRec=null;a.textContent='\u25cf Record';a.classList.remove('rec');st(msg,true)});
+  }else if(kind==='keep'){
+   if(!wzTake||wzTake.id!==id)return;
+   const m=vnPending();m['w:'+id]={b64:wzTake.b64,mime:wzTake.mime,sec:wzTake.sec,ext:wzTake.ext};
+   if(!vnSavePending(m)){st('This phone has no room left to hold it. Publish what you have first, then record again.',true);return}
+   wzTake=null;q('[data-a=keep]').hidden=true;q('[data-a=scrap]').hidden=true;q('[data-a=del]').hidden=false;
+   st('Kept on this phone. Publish to make it hers.');
+  }else if(kind==='scrap'){
+   wzTake=null;q('[data-a=keep]').hidden=true;q('[data-a=scrap]').hidden=true;q('[data-r=prev]').hidden=true;st('Gone. Nothing changed.');
+  }else if(kind==='del'){
+   vnDrop('w:'+id);if(WISH.items[id])delete WISH.items[id].vn;q('[data-a=del]').hidden=true;q('[data-r=prev]').hidden=true;
+   st('Removed here. Publish to take it off her copy too.');
+  }else if(kind==='pv'){
+   const o=(id==='waras'||id==='bday')?allOccs().find(x=>x.kind===id&&x.end>now()):allOccs().find(x=>x.id===id);
+   if(o)wishView(o,{preview:true});
+  }
+ });
+}
+async function wishUpload(repo,tok,st){
+ const pend=vnPending(),keys=Object.keys(pend).filter(k=>k.indexOf('w:')===0);
+ if(!keys.length)return;
+ const H={Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'};
+ for(let i=0;i<keys.length;i++){
+  const key=keys[i],id=key.slice(2),v=pend[key],path='voice/wish-'+id+'.'+(v.ext||'webm');
+  st.textContent='Sending a wish voice note'+(keys.length>1?' ('+(i+1)+' of '+keys.length+')':'')+'\u2026';
+  const url='https://api.github.com/repos/'+repo.owner+'/'+repo.repo+'/contents/'+path;
+  let sha=null;
+  const r0=await fetch(url+'?t='+Date.now(),{headers:H,cache:'no-store'});
+  if(r0.ok){try{sha=(await r0.json()).sha}catch(e){}}
+  else if(r0.status===401||r0.status===403)throw new Error('key rejected \u2014 make a new one');
+  const r=await fetch(url,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},H),
+   body:JSON.stringify({message:'wish voice note, '+id,content:v.b64,sha:sha||undefined})});
+  if(!r.ok){let m=r.status;try{m=(await r.json()).message||m}catch(e){}throw new Error(m)}
+  (WISH.items[id]=WISH.items[id]||{}).vn=path+'?v='+Date.now().toString(36);
+  vnDrop(key);
+ }
+}
+/* ================= end of wishes ================= */
+
 function applyContent(c){
  if(!c||!Array.isArray(c.days))return;
+ try{if(c.wish)applyWish(c.wish)}catch(e){}
  c.days.forEach((d,i)=>{const D=DAYS[i];if(!D)return;
   if(typeof d.t==='string'&&d.t)D.t=d.t;
   if(typeof d.m==='string'&&d.m)D.m=d.m;
@@ -2947,7 +3166,7 @@ async function loadRemote(){
  }catch(e){}
  return false;
 }
-function buildContent(){return{v:1,cfg:{giftPw:CFG.giftPw},games:GTXT,anims:ATXT,
+function buildContent(){return{v:1,cfg:{giftPw:CFG.giftPw},games:GTXT,anims:ATXT,wish:wishOut(),
  days:DAYS.map(d=>({t:d.t,m:d.m,n:d.n,g:d.g,a:d.a||'',af:!!d.af,tz:d.tz||'',a2:d.a2||'',az:d.az||'',ab:d.ab||'',bt:d.bt||'',wn:d.wn||'',pk:d.pk||'',vn:d.vn||'',vz:d.vz||'',pd:!!d.pd,pz:d.pz||'',pb:d.pb||'',mv:!!d.mv,mz:d.mz||'',mb:d.mb||''})),
  flowers:Object.fromEntries(Object.keys(FLOWERS).map(k=>[k,{k:FLOWERS[k].k,line:FLOWERS[k].line}]))}}
 const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -3282,7 +3501,8 @@ function renderFilms(){
 function edPane(name){
  edPaneCur=name;
  if(name==='Films')try{renderFilms()}catch(e){}
- ['Day','Gift','Bait','Voice','Films'].forEach(n=>{
+ if(name==='Wish')try{paintWishPane()}catch(e){}
+ ['Day','Gift','Bait','Voice','Films','Wish'].forEach(n=>{
   const p=$('#edPane'+n),b=$('#edTab'+n);
   if(p)p.classList.toggle('on',n===name);
   if(b)b.classList.toggle('on',n===name);
@@ -3439,7 +3659,7 @@ function paintExtras(D){
   const done=()=>{fc.textContent='copied ✓';setTimeout(()=>fc.textContent='copy my notes',1600)};
   try{navigator.clipboard.writeText(txt).then(done,()=>prompt('Copy these:',txt))}catch(e){prompt('Copy these:',txt)}
  };
- ['#edTabDay','#edTabGift','#edTabBait','#edTabVoice','#edTabFilms'].forEach(id=>{const e=$(id);
+ ['#edTabDay','#edTabGift','#edTabBait','#edTabVoice','#edTabFilms','#edTabWish'].forEach(id=>{const e=$(id);
   if(e)e.onclick=ev=>{ev.preventDefault();edPane(e.dataset.pane)}});
  edPane(edPaneCur);   /* stay where he was working */
  syncExtras();
@@ -3642,7 +3862,7 @@ function saveDraft(){
    be gone for good. */
 async function vnUpload(repo,tok,st){
  const pend=vnPending();
- const days=Object.keys(pend).map(Number).sort((a,b)=>a-b);
+ const days=Object.keys(pend).filter(k=>/^\d+$/.test(k)).map(Number).sort((a,b)=>a-b);
  if(!days.length)return;
  const H={Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'};
  for(let i=0;i<days.length;i++){
@@ -3673,7 +3893,7 @@ async function publishSite(){
  /* the voice notes go first: if one of them fails, content.json must
     not already be live pointing at a file that is not there */
  if(repo&&tok){
-  try{ await vnUpload(repo,tok,st) }
+  try{ await vnUpload(repo,tok,st); await wishUpload(repo,tok,st) }
   catch(e){ st.textContent='Could not send the voice note: '
             +(e&&e.message?e.message:'failed')+'. Nothing was published.';
             $('#edPub').disabled=false; return }
@@ -3896,6 +4116,8 @@ async function keepSource(say){
    try{content.days[i].vn=await keepData(v)}catch(e){content.days[i].vn=''}
   }
  }
+ try{const wi=(content.wish&&content.wish.items)||{};
+  for(const k of Object.keys(wi)){const v=wi[k].vn;if(v&&!/^data:/.test(v)){say&&say('A wish voice note…');try{wi[k].vn=await keepData(v)}catch(e){wi[k].vn=''}}}}catch(e){}
  const media={};
  for(const f of ['music.mp3','game.mp3']){say&&say('The music…');try{media[f]=await keepData(f)}catch(e){}}
  const pages={};
@@ -4032,8 +4254,10 @@ function goPage(name){
   'b.style.cssText="position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:9999;background:#57394f;color:#fff;'+
   'padding:10px 16px;border-radius:999px;font:500 14px/1 Georgia,serif;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.25)";'+
   'document.body.appendChild(b)});<\/script>';
- const doc=h.replace('<head>',()=>'<head>'+inj);
- try{location.href=URL.createObjectURL(new Blob([doc],{type:'text/html'}))}
+ const doc=h.replace('<head>',()=>'<head><meta charset="utf-8">'+inj);
+ /* inside the Android app, write the page straight in (no blob page, so no text-encoding surprises) */
+ try{const C=window.Capacitor;if(C&&C.isNativePlatform&&C.isNativePlatform()){document.open();document.write(doc);document.close();return}}catch(e){}
+ try{location.href=URL.createObjectURL(new Blob([doc],{type:'text/html;charset=utf-8'}))}
  catch(e){document.open();document.write(doc);document.close()}
 }
 
@@ -13310,7 +13534,7 @@ function afterClock(){renderClock();starfield(now()>=BDAY);render();renderCal();
 let lastDay=curDay(),lastPhase=phase();
 function phase(){const n=now();return n>=MOMENT?3:n>=BDAY?2:1}
 setInterval(()=>{
- renderClock();
+ renderClock();try{maybeWish()}catch(e){}
  if(dev)$('#dNow').textContent=now().toLocaleString();
  const p=phase(),d=curDay();
  if(p!==lastPhase){lastPhase=p;if(p===2)birthdayView();if(p===3&&mode!=='moment')momentView();return}
