@@ -4169,15 +4169,32 @@ async function buildKeepsake(withState,say){
  say&&say('Nearly there…');
  return html;
 }
+/* a saved copy is tens of MB: send it to the phone's storage in small pieces so the app never runs out of memory */
+async function nativeWrite(fs,name,html){
+ try{await fs.deleteFile({path:name,directory:'CACHE'})}catch(e){}
+ const CH=900000;let i=0,uri='',first=true;
+ while(i<html.length){
+  let j=Math.min(i+CH,html.length);
+  if(j<html.length){const c=html.charCodeAt(j-1);if(c>=0xD800&&c<=0xDBFF)j--}
+  const part=html.slice(i,j);
+  if(first){const w=await fs.writeFile({path:name,data:part,directory:'CACHE',encoding:'utf8'});uri=w.uri;first=false}
+  else await fs.appendFile({path:name,data:part,directory:'CACHE',encoding:'utf8'});
+  i=j;
+ }
+ return uri;
+}
 async function keepHandOver(name,html){
  /* inside the Android app (a WebView) there is no browser download or share, so use the phone's own share sheet */
  try{const C=window.Capacitor;
   if(C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.Filesystem&&C.Plugins.Share){
-   const w=await C.Plugins.Filesystem.writeFile({path:name,data:html,directory:'CACHE',encoding:'utf8'});
-   await C.Plugins.Share.share({title:name,dialogTitle:'Save a copy',url:w.uri});
+   const uri=await nativeWrite(C.Plugins.Filesystem,name,html);
+   await C.Plugins.Share.share({title:name,dialogTitle:'Save a copy',url:uri});
    try{if(name==='our-30-days.html')localStorage.setItem('zb30lastbackup',String(Date.now()))}catch(e){}
    return}
- }catch(e){if(/cancel|dismiss/i.test((e&&e.message)||''))throw new Error('cancelled')}
+ }catch(e){
+  const m=(e&&e.message)||String(e);
+  if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform())throw new Error(/cancel|dismiss/i.test(m)?'cancelled':'The phone could not save it: '+m);
+  if(/cancel|dismiss/i.test(m))throw new Error('cancelled')}
  const blob=new Blob([html],{type:'text/html'});
  try{
   const f=new File([blob],name,{type:'text/html'});
@@ -6030,6 +6047,37 @@ function herShow(st,at){
   else if((done>=3||mine>0)&&t-num(LK)>7*DAY&&t>num(SN)){up=true;offerBackup()}
  }
  setTimeout(()=>{check();setInterval(check,8000)},5000);
+})();
+
+/* ---- Android back button: one screen back; at the very start, ask before closing ---- */
+(function(){
+ const C=window.Capacitor;
+ const vis=e=>!!e&&e.getClientRects().length>0&&getComputedStyle(e).visibility!=='hidden'&&!e.closest('[hidden]');
+ const click=sel=>{const e=document.querySelector(sel);if(vis(e)){e.click();return true}return false};
+ function stepBack(){
+  const ask=document.getElementById('exitAsk');if(ask){ask.remove();return true}
+  if(click('#wish .wz-close')||click('#cu-x')||click('.dyov .dyx')||click('.cpill [data-b]'))return true;
+  const ed=document.getElementById('edsheet');if(ed&&ed.classList.contains('show')&&click('#edClose'))return true;
+  const sh=document.getElementById('sheet');if(sh&&sh.classList.contains('show')){closeSheet();return true}
+  for(const id of ['pvEnd','backBtn','bk','revBack','homeFinal','stX'])if(click('#'+id))return true;
+  return false;
+ }
+ function quit(){try{C.Plugins.App.exitApp()}catch(e){}}
+ function askExit(){
+  if(document.getElementById('exitAsk'))return;
+  const o=document.createElement('div');o.id='exitAsk';
+  o.style.cssText='position:fixed;inset:0;z-index:2147483000;background:rgba(30,15,36,.62);display:grid;place-items:center;padding:24px';
+  o.innerHTML='<div style="max-width:340px;width:100%;background:var(--card,#fffdfe);color:var(--ink,#57394f);border:1px solid var(--line,rgba(232,114,154,.22));border-radius:20px;padding:22px 20px;text-align:center;box-shadow:0 20px 50px rgba(20,8,26,.4)"><h2 style="font-size:20px;margin:0 0 8px">Leave for now?</h2><p id="exitMsg" style="margin:0 0 16px;font-size:14px;line-height:1.55">Everything you wrote is already saved on this phone. You can also save a copy first, to your Drive or Files.</p><div style="display:grid;gap:8px"><button class="btn" id="exitSave">Save a copy first</button><button class="btn ghost" id="exitClose">Close the app</button><button class="btn ghost" id="exitStay">Stay</button></div></div>';
+  document.body.appendChild(o);
+  const msg=o.querySelector('#exitMsg'),sv=o.querySelector('#exitSave');
+  o.querySelector('#exitStay').onclick=()=>o.remove();
+  o.querySelector('#exitClose').onclick=quit;
+  sv.onclick=async()=>{sv.disabled=true;sv.textContent='Saving…';msg.textContent='Making your copy. This can take a little while.';
+   try{const html=await buildKeepsake(true,()=>{});await keepHandOver('our-30-days.html',html);msg.textContent='Saved. Keep that file somewhere safe, like Google Drive.';sv.hidden=true}
+   catch(e){sv.disabled=false;sv.textContent='Save a copy first';msg.textContent=(e&&e.message==='cancelled')?'Not saved. You can try again.':'That did not work. '+((e&&e.message)||'')}};
+ }
+ window.__androidBack=()=>{if(!stepBack())askExit()};
+ try{if(C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.App&&C.Plugins.App.addListener)C.Plugins.App.addListener('backButton',()=>window.__androidBack())}catch(e){}
 })();
 
 try{window.__zb={
