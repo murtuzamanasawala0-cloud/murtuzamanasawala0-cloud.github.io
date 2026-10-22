@@ -1013,6 +1013,63 @@ audio.vnprev{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
 .cpill{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:60;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 14px 12px;box-shadow:0 10px 30px rgba(60,30,60,.28);text-align:left;max-width:520px;margin:0 auto}
 .cpill p{margin:0 0 10px;font-size:13.5px;line-height:1.5;color:var(--ink)}
 .cpill .cprow{display:flex;gap:8px}.cpill .cprow .btn{flex:1;padding:10px 8px;font-size:14px}
+#bar{gap:8px}
+#bar #clock{flex:1 1 0;min-width:0}
+#bar .iconbtn{width:40px;height:40px}
+#bar{gap:8px}
+#bar #clock{flex:1 1 0;min-width:0}
+#bar .iconbtn{width:40px;height:40px}
+#menuWrap{position:fixed;inset:0;z-index:4000;pointer-events:none}
+#menuWrap.on{pointer-events:auto}
+#menuWrap .mdim{position:absolute;inset:0;background:rgba(20,8,26,.5);opacity:0;transition:opacity .2s}
+#menuWrap.on .mdim{opacity:1}
+#menuWrap .mpan{position:absolute;top:0;right:0;bottom:0;width:min(88vw,350px);padding:calc(env(safe-area-inset-top,0px) + 18px) 20px calc(env(safe-area-inset-bottom,0px) + 18px);background:var(--card);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-left:1px solid var(--line);color:var(--ink);overflow-y:auto;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column}
+#menuWrap.on .mpan{transform:none}
+.mhead,.zhead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.mhead h2,.zhead h2{font:600 22px 'Playfair Display',serif;margin:2px 0 0}
+.mx{width:40px;height:40px;border:0;background:none;color:var(--ink);font-size:28px;line-height:1;opacity:.6;cursor:pointer}
+#menuWrap .msec{margin:18px 2px 4px;font:500 10.5px Lora,serif;letter-spacing:.26em;text-transform:uppercase;color:var(--ink2);opacity:.85}
+#menuWrap .mrow{display:flex;align-items:center;gap:14px;text-align:left;width:100%;padding:12px 2px;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit;cursor:pointer}
+#menuWrap .msec+.mrow{border-top:0}
+#menuWrap .mrow i{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(232,114,154,.14);color:var(--accent)}
+#menuWrap .mrow i svg{width:20px;height:20px}
+#menuWrap .mt{display:flex;flex-direction:column;gap:2px;min-width:0}
+#menuWrap .mrow b{font:600 15.5px Lora,serif}
+#menuWrap .mrow .mt>span{font-size:12.3px;line-height:1.45;color:var(--ink2)}
+#menuWrap .mnew{font-style:normal;margin-left:8px;padding:1px 8px;border-radius:999px;background:#e8729a;color:#fff;font-size:10.5px;letter-spacing:.04em}
+#menuWrap .mnote{font-size:13px;line-height:1.5;color:var(--ink2);margin:8px 2px 0;min-height:1px}
+#menuWrap .mfold{padding:2px 2px 12px;display:grid;gap:10px}
+#menuWrap .mfold[hidden]{display:none}
+#menuWrap .mfold p{font-size:13px;line-height:1.55;color:var(--ink2)}
+#menuWrap .mgap{flex:1;min-height:18px}
+#menuWrap .mlock i{background:rgba(124,91,114,.16);color:var(--ink2)}
+.zov{position:fixed;inset:0;z-index:3900;overflow-y:auto;padding:calc(env(safe-area-inset-top,0px) + 16px) 20px calc(env(safe-area-inset-bottom,0px) + 28px);background:linear-gradient(180deg,var(--bg1),var(--bg3));color:var(--ink);max-width:560px;margin:0 auto}
+#nrWrap .mnote,#cvWrap .mnote{font-size:13px;line-height:1.55;color:var(--ink2);margin:8px 0}
+.nrm{margin:20px 0 2px;font:500 10.5px Lora,serif;letter-spacing:.26em;text-transform:uppercase;color:var(--ink2)}
+.nrd{padding:14px 2px;border-top:1px solid var(--line)}
+.nrd small{font:500 11px Lora,serif;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.nrd p{font:600 24px/1.22 Caveat,cursive;color:var(--ink);margin:5px 0 0}
+.nrv{display:inline-flex;align-items:center;gap:10px;margin-top:10px;border:1px solid var(--line);border-radius:999px;padding:5px 14px 5px 5px;background:none;color:inherit;font:500 13px Lora,serif;cursor:pointer}
+.nrv i{width:28px;height:28px;border-radius:50%;background:#e8729a;display:grid;place-items:center}
+.nrv i svg{width:10px;height:10px}
+.nrv.on{border-color:#e8729a}
+.cvbox{margin:8px 0 12px}
+#cv{display:block;margin:0 auto;border-radius:6px;background:#fdf6f8;box-shadow:0 10px 30px rgba(20,8,26,.25)}
+.cvtools{display:grid;gap:10px;margin-bottom:12px}
+.cvcol{display:flex;gap:10px;justify-content:center}
+.cvc{width:30px;height:30px;border-radius:50%;border:2px solid transparent;box-shadow:0 0 0 1px rgba(87,57,79,.25);cursor:pointer;padding:0}
+.cvc.on{border-color:var(--cream,#fdf8fa);box-shadow:0 0 0 2px var(--ink)}
+.cve{background:#fdf6f8;position:relative}
+.cvrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cvsz,.cvrow2{display:flex;gap:6px}
+.cvtools button:not(.cvc){border:1px solid var(--line);background:none;color:var(--ink);border-radius:999px;padding:7px 13px;font:500 12.5px Lora,serif;cursor:pointer}
+.cvsz button.on{background:#e8729a;border-color:#e8729a;color:#fff}
+.cvact{display:flex;gap:10px}.cvact .btn{flex:1}
+.cvold{margin-top:14px;font-size:13px;color:var(--ink2)}
+.cvold summary{cursor:pointer;padding:6px 0}
+.cvgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.cvgrid img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:6px;background:#fdf6f8;cursor:pointer;box-shadow:0 4px 12px rgba(20,8,26,.2)}
+@media (prefers-reduced-motion:reduce){#menuWrap .mpan,#menuWrap .mdim{transition:none}}
 .fin .gsc{font-size:12px;color:var(--ink2);letter-spacing:.02em}
 </style>
 </head>
@@ -1047,7 +1104,7 @@ audio.vnprev{width:100%;margin-top:10px;filter:invert(.92) hue-rotate(180deg)}
       <div class="eyebrow">Your 30 days</div>
       <h2 style="font-size:23px;margin-top:6px">Thirty days to you</h2>
       <p class="lead" style="font-size:14px;margin-top:6px">Tap any day you've unlocked to read it again.</p>
-      <div style="margin-top:10px"><button class="btn ghost" id="calDiary">Your diary</button> <button class="btn ghost" id="calHome" hidden>Back to the summary</button></div>
+      <div style="margin-top:10px"><button class="btn ghost" id="calDiary">Zahabiya’s diary</button> <button class="btn ghost" id="calHome" hidden>Back to the summary</button></div>
     </div>
     <div class="cal" id="cal"></div>
     <div class="legend">
@@ -1534,7 +1591,7 @@ const FINAL={
  lead:'Thirty envelopes, every word you wrote back, and everything you made. It is all still here, and none of it expires.',
  warasSub:'26th Ramadan · the night of 2 March, at 8:45 pm',
  bdaySub:'{d}',
- diaryHead:'Your diary',
+ diaryHead:'Zahabiya’s diary',
  diaryNote:'Write in it any time. It stays on this phone.',
  diaryEmpty:'Nothing in it yet. Anything you write, under a day or here, ends up in this one place.',
  calHead:'Read any day again',
@@ -2105,8 +2162,8 @@ function finalView(){
    <div class="row"><button class="btn ghost" id="fnBday">${FINAL.dayBtn}</button><button class="btn ghost" id="fnMoment">${FINAL.momentBtn}</button></div></div>
   ${muralCard()}
   <div class="fstats">${[[nDone,'of 30 days opened'],[L.length,'diary entries'],[nArt,'drawings kept']].filter((x,i)=>i===0||x[0]>0).map(x=>`<div><b>${x[0]}</b><span>${x[1]}</span></div>`).join('')}</div>
-  <div class="card"><div class="eyebrow">${FINAL.keepHead}</div><p class="note" id="keepNote">${FINAL.keepOff}</p>
-   <div class="row"><button class="btn ghost" id="fnSave">Save a copy of everything</button><button class="btn ghost" id="fnRestore">Restore from a copy</button></div>
+  <div class="card" id="keepCard" hidden><div class="eyebrow">${FINAL.keepHead}</div><p class="note" id="keepNote">${FINAL.keepOff}</p>
+   <div class="row"><button class="btn ghost" id="fnSave">Save a copy of everything</button><button class="btn ghost" id="fnRestore" hidden>Restore from a copy</button></div>
    <p class="note" id="fnStat" style="margin-top:10px"></p><input type="file" id="fnFile" accept=".html,text/html" hidden></div>
   <p class="fclose">${FINAL.closeLine}</p><p class="fsign">${FINAL.sign}</p></div>`);
  wireWish(w);
@@ -2176,7 +2233,7 @@ function finalView(){
   b.disabled=false};
  $('#fnRestore',w).onclick=()=>$('#fnFile',w).click();
  $('#fnFile',w).onchange=async ev=>{const f=ev.target.files[0],st=$('#fnStat',w);if(!f)return;
-  try{const n=restoreState(await f.text());if(n){st.textContent='Restored. Opening it again…';setTimeout(()=>location.reload(),900)}else st.textContent=''}
+  try{const n=await restoreWithFiles(await f.text());if(n){st.textContent='Restored. Opening it again…';setTimeout(()=>location.reload(),900)}else st.textContent=''}
   catch(e){st.textContent=e.message||'That did not work.'}
   ev.target.value=''};
  const g=$('#finCal',w);
@@ -4033,7 +4090,7 @@ function diaryOpen(){
  const ov=el('div','dyov');
  const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
  ov.innerHTML=`<div class="dybox">
-  <div class="dyhead"><div><div class="eyebrow">yours</div><h2>Your diary</h2></div>
+  <div class="dyhead"><div><div class="eyebrow">yours</div><h2>Zahabiya’s diary</h2></div>
    <button class="dyx" aria-label="close">×</button></div>
   <div class="dynew">
    <div class="dydate">${today}</div>
@@ -4042,8 +4099,8 @@ function diaryOpen(){
   </div>
   <div id="dyList"></div>
   <div class="dykeep">
-   <p>Everything in here lives on this phone. Nobody can read it, not even him, unless you choose to share it below.
-     To keep it forever, or to carry it to a new phone, save a copy: one file with all 30 days and all of this inside it. On the new phone, tap Restore and pick that file.</p>
+   <p>Everything in here lives on this phone. Nobody can read it unless you save a copy and send it to him, and you decide when.
+     To keep it forever, or to carry it to a new phone, save a copy: one file with all 30 days and all of this inside it. On the new phone, tap Restore and pick that file. If you want Murtaza to read it, send him that same file.</p>
    <button class="btn ghost" id="dyCopy">Save a copy of everything</button>
    <div class="dyok" id="dyStat"></div>
   </div>
@@ -4053,7 +4110,7 @@ function diaryOpen(){
    <div class="dyok" id="dyShareStat"></div>
   </div></div>`;
  document.body.appendChild(ov);
- try{wireShare(ov)}catch(e){}
+ try{if(ghToken()&&ghRepo())wireShare(ov);else{const bx=ov.querySelector('#dyShareBox');if(bx)bx.remove()}}catch(e){}
  const close=()=>{ov.classList.add('out');setTimeout(()=>ov.remove(),300)};
  ov.querySelector('.dyx').onclick=close;
  ov.addEventListener('click',e=>{if(e.target===ov)close()});
@@ -4151,12 +4208,13 @@ async function keepSource(say){
 /* ---------------- keeping her things safe ---------------- */
 const KEEP_SKIP=['zb30gh','zb30repo','zb30draft','zb30lock','zb30tip','zb30voice'];   /* his token, drafts and recordings never go in her copy */
 function keepState(){const st={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf('zb30')===0&&KEEP_SKIP.indexOf(k)<0){const v=localStorage.getItem(k);if(v)st[k]=v}}}catch(e){}return st}
+async function restoreWithFiles(text){const n=restoreState(text);if(n&&window.__restoreFiles)await window.__restoreFiles(text);return n}
 function restoreState(text){
  const m=/window\.__KEEPSTATE=(\{[\s\S]*?\});\/\*ks\*\//.exec(text);
- if(!m)throw new Error('That file has no saved memories in it');
+ if(!m)throw new Error('That file was not made by this app. Use a file made with Save a copy of everything.');
  let st;try{st=JSON.parse(m[1])}catch(e){throw new Error('That file could not be read')}
  const keys=Object.keys(st).filter(k=>k.indexOf('zb30')===0&&KEEP_SKIP.indexOf(k)<0&&typeof st[k]==='string');
- if(!keys.length)throw new Error('That copy is empty');
+ if(!keys.length)throw new Error('That file has none of her progress in it. It was made without it, like the open copy from the Dev panel. Use a file made with Save a copy of everything.');
  if(!confirm('This puts everything from that copy back on this phone, and replaces what is here now. Continue?'))return 0;
  keys.forEach(k=>localStorage.setItem(k,st[k]));return keys.length;
 }
@@ -4166,6 +4224,12 @@ async function buildKeepsake(withState,say){
  const st={};
  if(withState)Object.assign(st,keepState());
  html=html.replace(/window\.__KEEPSTATE=[\s\S]*?;\/\*ks\*\//,()=>'window.__KEEPSTATE='+KJ(st)+';/*ks*/');
+ /* her voice notes from Murtaza and the canvases she kept travel in the copy too */
+ try{
+  html=html.replace(/window\.__KEEPFILES=[\s\S]*?;\/\*kf\*\//,()=>'');
+  if(withState&&window.__collectFiles){say&&say('Adding her voice notes and canvases…');const files=await window.__collectFiles();
+   if(Object.keys(files.voice).length||Object.keys(files.canvas).length)html=html.replace('/*ks*/',()=>'/*ks*/window.__KEEPFILES='+KJ(files)+';/*kf*/')}
+ }catch(e){}
  say&&say('Nearly there…');
  return html;
 }
@@ -6038,7 +6102,7 @@ function herShow(st,at){
   p.querySelector('[data-b]').onclick=()=>{put(RH,Date.now()+3*DAY);p.remove();up=false};
   p.querySelector('[data-a]').onclick=()=>f.click();
   f.onchange=async()=>{const x=f.files[0];if(!x)return;
-   try{const n=restoreState(await x.text());if(n){say(p,'Welcome back. Opening everything again…');setTimeout(()=>location.reload(),900)}}
+   try{const n=await restoreWithFiles(await x.text());if(n){say(p,'Welcome back. Opening everything again…');setTimeout(()=>location.reload(),900)}}
    catch(e){say(p,(e&&e.message)||'That did not work.',4000)}f.value=''}}
  function check(){
   if(up||!quiet())return;
@@ -6049,6 +6113,200 @@ function herShow(st,at){
  setTimeout(()=>{check();setInterval(check,8000)},5000);
 })();
 
+/* ---- Murtaza's notes, the weekly canvas, and the menu ---- */
+(function(){
+ const bar=document.getElementById('bar');if(!bar)return;
+ const NK='zb30notes',SEEN='zb30notesseen';
+ const pad=n=>String(n).padStart(2,'0');
+ const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+ const today=()=>ymd(now());
+ const load=()=>{try{const o=JSON.parse(localStorage.getItem(NK)||'null');if(o&&o.days)return o}catch(e){}return{days:{},packs:{}}};
+ const keep=o=>{try{localStorage.setItem(NK,JSON.stringify(o));return true}catch(e){return false}};
+ /* sounds and pictures are too big for localStorage, so they live in IndexedDB */
+ const db=()=>new Promise((res,rej)=>{const r=indexedDB.open('zb30files',1);r.onupgradeneeded=()=>{const d=r.result;['voice','canvas'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s)})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+ const idb=(st,mode,fn)=>db().then(d=>new Promise((res,rej)=>{const t=d.transaction(st,mode),q=fn(t.objectStore(st));t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error)}));
+ const put=(st,k,v)=>idb(st,'readwrite',s=>s.put(v,k));
+ const get=(st,k)=>idb(st,'readonly',s=>s.get(k));
+ const keysOf=st=>idb(st,'readonly',s=>s.getAllKeys());
+ const ic=p=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
+ const ICON={
+  notes:ic('<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/>'),
+  canvas:ic('<path d="M4 20l1-4L16 5a2.1 2.1 0 013 3L8 19z"/><path d="M14 7l3 3"/>'),
+  diary:ic('<path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M5 17a3 3 0 013-3h11"/>'),
+  update:ic('<path d="M12 4v11"/><path d="M7.5 11L12 15.5 16.5 11"/><path d="M4 19h16"/>'),
+  save:ic('<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>'),
+  phone:ic('<rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 18h2"/>'),
+  widget:ic('<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><path d="M16.5 13v7M13 16.5h7"/>'),
+  lock:ic('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>')
+ };
+ const long=d=>new Date(d+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+ let cur=null;
+ const stopAudio=()=>{if(cur){try{cur.a.pause()}catch(e){}cur.b.classList.remove('on');URL.revokeObjectURL(cur.u);cur=null}};
+
+ /* ---------- the monthly update: Murtaza sends a small file, she taps Update ---------- */
+ async function importPack(text){
+  let p;try{p=JSON.parse(text)}catch(e){throw new Error('That file does not look like an update from Murtaza.')}
+  if(!p||p.z!=='zahabiya-update'||!Array.isArray(p.items))throw new Error('That file does not look like an update from Murtaza.');
+  const n=load();let notes=0,voices=0;
+  for(let i=0;i<p.items.length;i++){const it=p.items[i];if(!it)continue;
+   let d=it.d;if(!d&&p.start){const b=new Date(p.start+'T12:00:00');b.setDate(b.getDate()+i);d=ymd(b)}
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(d||''))continue;
+   const t=String(it.t||'').trim(),hasA=typeof it.a==='string'&&it.a.indexOf('data:audio')===0;
+   if(!t&&!hasA)continue;
+   let vid=null;
+   if(hasA){vid=(p.id||'u')+':'+d;const blob=await(await fetch(it.a)).blob();await put('voice',vid,blob);voices++}
+   n.days[d]={t:t,v:vid};notes++;
+  }
+  n.packs[p.id||'u']={label:p.label||'',at:Date.now(),n:notes};
+  if(!keep(n))throw new Error('There is no room left on this phone for that update.');
+  return{notes:notes,voices:voices};
+ }
+ window.__zbNotes={importPack:importPack,load:load};
+ const asData=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+ window.__collectFiles=async()=>{const out={voice:{},canvas:{}};
+  for(const st of ['voice','canvas']){const ks=(await keysOf(st).catch(()=>[]))||[];for(const k of ks){const b=await get(st,k).catch(()=>null);if(b)out[st][k]=await asData(b)}}return out};
+ const takeIn=async(f,overwrite)=>{for(const st of ['voice','canvas']){const m=(f&&f[st])||{};const have=new Set((await keysOf(st).catch(()=>[]))||[]);
+   for(const k of Object.keys(m)){if(!overwrite&&have.has(k))continue;try{await put(st,k,await(await fetch(m[k])).blob())}catch(e){}}}};
+ window.__restoreFiles=async text=>{const m=/window\.__KEEPFILES=(\{[\s\S]*?\});\/\*kf\*\//.exec(text);if(!m)return;try{await takeIn(JSON.parse(m[1]),true)}catch(e){}};
+ (async()=>{try{const f=window.__KEEPFILES;if(f){await takeIn(f,false);try{delete window.__KEEPFILES}catch(e){window.__KEEPFILES=null}}}catch(e){}})();
+
+ /* ---------- reading them ---------- */
+ function readNotes(){
+  const n=load(),t=today(),ds=Object.keys(n.days).filter(d=>d<=t).sort().reverse();
+  try{localStorage.setItem(SEEN,t)}catch(e){}
+  const w=document.createElement('div');w.id='nrWrap';
+  w.innerHTML='<div class="zov"><div class="zhead"><div><div class="eyebrow">from Murtaza</div><h2>Notes for you</h2></div><button class="mx" id="nrx" aria-label="Close">&times;</button></div><div id="nrList"></div></div>';
+  document.body.appendChild(w);
+  const list=w.querySelector('#nrList');
+  if(!ds.length){list.innerHTML='<p class="mnote">Nothing here yet. When Murtaza sends you an update, tap Update in the menu and his notes will appear here, one for each day.</p>'}
+  let lastM='';
+  ds.forEach(d=>{
+   const m=new Date(d+'T12:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+   if(m!==lastM){lastM=m;const h=document.createElement('div');h.className='nrm';h.textContent=m;list.appendChild(h)}
+   const it=n.days[d],c=document.createElement('div');c.className='nrd';
+   const dt=document.createElement('small');dt.textContent=(d===t?'Today':long(d));c.appendChild(dt);
+   if(it.t){const p=document.createElement('p');p.textContent=it.t;c.appendChild(p)}
+   if(it.v){const b=document.createElement('button');b.className='nrv';b.innerHTML='<i><svg viewBox="0 0 10 10" fill="#fff"><path d="M2 1l7 4-7 4z"/></svg></i><span>Voice note</span>';
+    b.onclick=async()=>{
+     if(cur&&cur.b===b){stopAudio();return}stopAudio();
+     const blob=await get('voice',it.v).catch(()=>null);
+     if(!blob){b.querySelector('span').textContent='Not on this phone. Open the update file again.';return}
+     const u=URL.createObjectURL(blob),a=new Audio(u);cur={a:a,b:b,u:u};b.classList.add('on');
+     a.onended=()=>stopAudio();a.play().catch(()=>stopAudio())};
+    c.appendChild(b)}
+   list.appendChild(c)});
+  const close=()=>{stopAudio();w.remove()};
+  w.querySelector('#nrx').onclick=close;
+ }
+
+ /* ---------- the weekly canvas ---------- */
+ function openCanvas(){
+  const d0=now(),mon=new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()-((d0.getDay()+6)%7)),wk0=ymd(mon);
+  let wk=wk0;
+  const w=document.createElement('div');w.id='cvWrap';
+  const COLS=['#57394f','#e8729a','#f4a0bc','#f0bd7c','#6faa86','#6f8fd1'];
+  w.innerHTML='<div class="zov"><div class="zhead"><div><div class="eyebrow" id="cvWk"></div><h2>This week’s canvas</h2></div><button class="mx" id="cvx" aria-label="Close">&times;</button></div>'
+   +'<div class="cvbox"><canvas id="cv"></canvas></div>'
+   +'<div class="cvtools"><div class="cvcol">'+COLS.map((c,i)=>'<button class="cvc'+(i?'':' on')+'" data-c="'+c+'" style="background:'+c+'" aria-label="Colour"></button>').join('')+'<button class="cvc cve" data-c="#fdf6f8" aria-label="Rubber"></button></div>'
+   +'<div class="cvrow"><div class="cvsz"><button data-s="3">Fine</button><button data-s="7" class="on">Soft</button><button data-s="14">Wide</button></div><div class="cvrow2"><button id="cvUndo">Undo</button><button id="cvClr">Clear</button></div></div></div>'
+   +'<div class="cvact"><button class="btn" id="cvKeep">Keep it</button><button class="btn ghost" id="cvSend">Send or save</button></div><p class="mnote" id="cvSt"></p>'
+   +'<details class="cvold"><summary>Earlier weeks</summary><div id="cvGrid" class="cvgrid"></div></details></div>';
+  document.body.appendChild(w);
+  const $$=s=>w.querySelector(s),cv=$$('#cv'),box=$$('.cvbox');
+  const label=()=>{$$('#cvWk').textContent='week of '+new Date(wk+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long'})};label();
+  const W=Math.min(box.clientWidth||340,480),H=Math.round(W*1.25),R=Math.min(window.devicePixelRatio||1,2);
+  cv.style.width=W+'px';cv.style.height=H+'px';cv.width=Math.round(W*R);cv.height=Math.round(H*R);
+  const g=cv.getContext('2d');g.scale(R,R);
+  const paper=()=>{g.fillStyle='#fdf6f8';g.fillRect(0,0,W,H)};paper();
+  let col=COLS[0],size=7,drawing=false,last=null,undo=[];
+  const snap=()=>{try{undo.push(g.getImageData(0,0,cv.width,cv.height));if(undo.length>15)undo.shift()}catch(e){}};
+  const pt=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}};
+  cv.style.touchAction='none';
+  cv.onpointerdown=e=>{e.preventDefault();try{cv.setPointerCapture(e.pointerId)}catch(x){}snap();drawing=true;last=pt(e);g.fillStyle=col;g.beginPath();g.arc(last.x,last.y,size/2,0,7);g.fill()};
+  cv.onpointermove=e=>{if(!drawing)return;const p=pt(e);g.strokeStyle=col;g.lineWidth=size;g.lineCap='round';g.lineJoin='round';
+   g.beginPath();g.moveTo(last.x,last.y);g.quadraticCurveTo(last.x,last.y,(last.x+p.x)/2,(last.y+p.y)/2);g.stroke();last=p};
+  cv.onpointerup=cv.onpointercancel=()=>{drawing=false};
+  w.querySelectorAll('.cvc').forEach(b=>b.onclick=()=>{col=b.dataset.c;w.querySelectorAll('.cvc').forEach(x=>x.classList.toggle('on',x===b))});
+  w.querySelectorAll('.cvsz button').forEach(b=>b.onclick=()=>{size=+b.dataset.s;w.querySelectorAll('.cvsz button').forEach(x=>x.classList.toggle('on',x===b))});
+  $$('#cvUndo').onclick=()=>{const s=undo.pop();if(s){g.save();g.setTransform(1,0,0,1,0,0);g.putImageData(s,0,0);g.restore()}};
+  $$('#cvClr').onclick=()=>{snap();paper()};
+  const toBlob=()=>new Promise(r=>cv.toBlob(r,'image/png'));
+  const drawBlob=async b=>{const u=URL.createObjectURL(b),im=new Image();await new Promise(r=>{im.onload=r;im.src=u});paper();g.drawImage(im,0,0,W,H);URL.revokeObjectURL(u)};
+  const st=$$('#cvSt');
+  async function grid(){const ks=(await keysOf('canvas').catch(()=>[]))||[],gr=$$('#cvGrid');gr.innerHTML='';
+   ks.sort().reverse().forEach(async k=>{const b=await get('canvas',k).catch(()=>null);if(!b)return;const u=URL.createObjectURL(b),im=document.createElement('img');im.src=u;im.alt=k;
+    im.onclick=async()=>{wk=k;label();await drawBlob(b);undo=[];st.textContent='Opened. Draw more, then keep it again.'};gr.appendChild(im)});
+   if(!ks.length)gr.innerHTML='<p class="mnote">Nothing kept yet.</p>'}
+  get('canvas',wk).then(async b=>{if(b)await drawBlob(b)}).catch(()=>{});grid();
+  $$('#cvKeep').onclick=async()=>{try{await put('canvas',wk,await toBlob());st.textContent='Kept for this week.';grid()}catch(e){st.textContent='It could not be kept on this phone.'}};
+  $$('#cvSend').onclick=async()=>{
+   try{const blob=await toBlob(),name='my-canvas-'+wk+'.png',C=window.Capacitor;
+    if(C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.Filesystem&&C.Plugins.Share){
+     const b64=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(String(f.result).split(',')[1]);f.readAsDataURL(blob)});
+     const wr=await C.Plugins.Filesystem.writeFile({path:name,data:b64,directory:'CACHE'});
+     await C.Plugins.Share.share({title:name,dialogTitle:'Send or save',url:wr.uri})}
+    else{const f=new File([blob],name,{type:'image/png'});
+     if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});
+     else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);st.textContent='Saved to your downloads.'}}
+   }catch(e){if(!/cancel|abort|dismiss/i.test((e&&e.message)||(e&&e.name)||''))st.textContent='That did not work. Try again.'}};
+  $$('#cvx').onclick=()=>w.remove();
+ }
+
+ /* ---------- the menu ---------- */
+ const mb=document.createElement('button');mb.className='iconbtn';mb.id='menuBtn';mb.setAttribute('aria-label','Menu');
+ mb.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';bar.appendChild(mb);
+ let wrap=null;
+ const close=()=>{if(!wrap)return false;const x=wrap;wrap=null;x.classList.remove('on');setTimeout(()=>x.remove(),220);return true};
+ window.__menuClose=close;
+ const row=(a,ico,t,s,cls)=>'<button class="mrow'+(cls?' '+cls:'')+'" data-a="'+a+'"><i>'+ICO(ico)+'</i><span class="mt"><b>'+t+'</b><span>'+s+'</span></span></button>';
+ const ICO=k=>ICON[k];
+ function newCount(){const n=load(),t=today();let seen='';try{seen=localStorage.getItem(SEEN)||''}catch(e){}return Object.keys(n.days).filter(d=>d<=t&&d>seen).length}
+ function open(){
+  if(wrap)return;
+  const nc=newCount();
+  wrap=document.createElement('div');wrap.id='menuWrap';
+  wrap.innerHTML='<div class="mdim"></div><aside class="mpan" role="dialog" aria-label="Menu">'
+   +'<div class="mhead"><div><div class="eyebrow">menu</div><h2>Zahabiya’s app</h2></div><button class="mx" aria-label="Close">&times;</button></div>'
+   +'<div class="msec">Yours</div>'
+   +row('notes','notes','Notes for you','The little notes and voice notes from Murtaza'+(nc?'<em class="mnew">'+nc+' new</em>':''))
+   +row('canvas','canvas','This week’s canvas','Draw something, keep it or send it')
+   +row('diary','diary','Zahabiya’s diary','Everything you wrote and made')
+   +(window.__HAS_WIDGET?row('widget','widget','Add the widget','Put the countdown and notes on your home screen'):'')
+   +'<div class="msec">Keeping it safe</div>'
+   +row('update','update','Update','Got something new from Murtaza? Tap here')
+   +row('save','save','Save a copy','One file with everything, for Drive or Files')
+   +row('phone','phone','New phone?','Bring everything back from a saved copy')
+   +'<div class="mfold" id="mPhone" hidden><p>Only use this on a new phone. It replaces what is on this phone with what is in your saved copy.</p><button class="btn" id="mRestore">Choose my saved copy</button></div>'
+   +'<p class="mnote" id="mSt"></p><div class="mgap"></div>'
+   +row('dev','lock','For Murtaza','Locked. Only he has the word.','mlock')+'</aside>';
+  document.body.appendChild(wrap);requestAnimationFrame(()=>{if(wrap)wrap.classList.add('on')});
+  const q=s=>wrap.querySelector(s),stt=q('#mSt');
+  q('.mdim').onclick=close;q('.mx').onclick=close;
+  const pick=(accept,fn)=>{const f=document.createElement('input');f.type='file';f.accept=accept;f.onchange=async()=>{const x=f.files[0];if(!x)return;await fn(x);f.value=''};f.click()};
+  wrap.querySelectorAll('.mrow').forEach(b=>b.onclick=async()=>{
+   const a=b.dataset.a;
+   if(a==='notes'){close();readNotes()}
+   else if(a==='canvas'){close();openCanvas()}
+   else if(a==='diary'){close();diaryOpen()}
+   else if(a==='widget'){try{window.Capacitor.Plugins.ZWidget.pin()}catch(e){stt.textContent='Press and hold an empty spot on your home screen, tap Widgets, and choose Zahabiya.'}}
+   else if(a==='update'){pick('*/*',async x=>{stt.textContent='Reading it…';
+     try{const r=await importPack(await x.text());stt.textContent='Done. '+r.notes+' new note'+(r.notes===1?'':'s')+(r.voices?' and '+r.voices+' voice note'+(r.voices===1?'':'s'):'')+'. Everything else stayed just as it was.'}
+     catch(e){stt.textContent=(e&&e.message)||'That did not work.'}})}
+   else if(a==='phone'){const f=q('#mPhone');f.hidden=!f.hidden}
+   else if(a==='save'){b.disabled=true;stt.textContent='Making your copy…';
+    try{const html=await buildKeepsake(true,m=>stt.textContent=m);await keepHandOver('our-30-days.html',html);stt.textContent='Saved. Keep that file somewhere safe, like Google Drive.'}
+    catch(e){stt.textContent=(e&&e.message==='cancelled')?'':'That did not work. '+((e&&e.message)||'')}
+    b.disabled=false}
+   else if(a==='dev'){const v=prompt('The word for this part:');if(v===null)return;
+    if(v.trim()===DEV_PW){close();toggleDev()}else stt.textContent='That is not it.'}
+  });
+  q('#mRestore').onclick=()=>pick('.html,text/html',async x=>{
+   try{const nn=await restoreWithFiles(await x.text());if(nn){stt.textContent='Welcome back. Opening everything again…';setTimeout(()=>location.reload(),900)}}
+   catch(e){stt.textContent=(e&&e.message)||'That did not work.'}});
+ }
+ mb.onclick=open;
+})();
+
 /* ---- Android back button: one screen back; at the very start, ask before closing ---- */
 (function(){
  const C=window.Capacitor;
@@ -6056,6 +6314,8 @@ function herShow(st,at){
  const click=sel=>{const e=document.querySelector(sel);if(vis(e)){e.click();return true}return false};
  function stepBack(){
   const ask=document.getElementById('exitAsk');if(ask){ask.remove();return true}
+  if(window.__menuClose&&window.__menuClose())return true;
+  if(click('#nrx')||click('#cvx'))return true;
   if(click('#wish .wz-close')||click('#cu-x')||click('.dyov .dyx')||click('.cpill [data-b]'))return true;
   const ed=document.getElementById('edsheet');if(ed&&ed.classList.contains('show')&&click('#edClose'))return true;
   const sh=document.getElementById('sheet');if(sh&&sh.classList.contains('show')){closeSheet();return true}
