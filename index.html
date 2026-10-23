@@ -6144,23 +6144,46 @@ function herShow(st,at){
  const stopAudio=()=>{if(cur){try{cur.a.pause()}catch(e){}cur.b.classList.remove('on');URL.revokeObjectURL(cur.u);cur=null}};
 
  /* ---------- the monthly update: Murtaza sends a small file, she taps Update ---------- */
+ /* notes and voice notes are kept locked, and only a day that has come is ever opened */
+ const NS='zahabiya-notes-v1';let _nk=null;
+ const nkey=async()=>{if(_nk)return _nk;const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(NS),'PBKDF2',false,['deriveKey']);
+  _nk=await crypto.subtle.deriveKey({name:'PBKDF2',salt:new TextEncoder().encode('zahabiya-salt'),iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);return _nk};
+ const b64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
+ const ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+ const encBytes=async u8=>{const iv=crypto.getRandomValues(new Uint8Array(12));return{i:b64(iv),c:new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},await nkey(),u8))}};
+ const decBytes=async(i,u8)=>new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(i)},await nkey(),u8));
+ const decText=async o=>typeof o==='string'?o:new TextDecoder().decode(await decBytes(o.i,ub64(o.c)));
  async function importPack(text){
   let p;try{p=JSON.parse(text)}catch(e){throw new Error('That file does not look like an update from Murtaza.')}
   if(!p||p.z!=='zahabiya-update'||!Array.isArray(p.items))throw new Error('That file does not look like an update from Murtaza.');
+  if(!window.crypto||!crypto.subtle)throw new Error('Open the app from its own icon to use Update.');
   const n=load();let notes=0,voices=0;
   for(let i=0;i<p.items.length;i++){const it=p.items[i];if(!it)continue;
    let d=it.d;if(!d&&p.start){const b=new Date(p.start+'T12:00:00');b.setDate(b.getDate()+i);d=ymd(b)}
    if(!/^\d{4}-\d{2}-\d{2}$/.test(d||''))continue;
-   const t=String(it.t||'').trim(),hasA=typeof it.a==='string'&&it.a.indexOf('data:audio')===0;
-   if(!t&&!hasA)continue;
-   let vid=null;
-   if(hasA){vid=(p.id||'u')+':'+d;const blob=await(await fetch(it.a)).blob();await put('voice',vid,blob);voices++}
-   n.days[d]={t:t,v:vid};notes++;
+   let t=null;
+   if(it.t&&typeof it.t==='object'&&it.t.c)t=it.t;
+   else if(typeof it.t==='string'&&it.t.trim()){const e=await encBytes(new TextEncoder().encode(it.t.trim()));t={i:e.i,c:b64(e.c)}}
+   let vid=null,vi=null,vm=null;
+   if(it.a&&typeof it.a==='object'&&it.a.c){vid=(p.id||'u')+':'+d;vi=it.a.i;vm=it.a.m||'audio/webm';await put('voice',vid,new Blob([ub64(it.a.c)],{type:'application/octet-stream'}));voices++}
+   else if(typeof it.a==='string'&&it.a.indexOf('data:audio')===0){vid=(p.id||'u')+':'+d;const bl=await(await fetch(it.a)).blob(),e=await encBytes(new Uint8Array(await bl.arrayBuffer()));vi=e.i;vm=bl.type||'audio/webm';await put('voice',vid,new Blob([e.c],{type:'application/octet-stream'}));voices++}
+   if(!t&&!vid)continue;
+   n.days[d]={t:t,v:vid,vi:vi,vm:vm};notes++;
   }
   n.packs[p.id||'u']={label:p.label||'',at:Date.now(),n:notes};
   if(!keep(n))throw new Error('There is no room left on this phone for that update.');
+  try{if(window.__zbSyncWidget)window.__zbSyncWidget()}catch(e){}
   return{notes:notes,voices:voices};
  }
+ /* the home screen widget shows today's note, so the notes are handed to it (kept private inside the app) */
+ async function syncWidget(){
+  try{const C=window.Capacitor;if(!(C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.Preferences))return;
+   const n=load(),out={},vo={};
+   for(const d of Object.keys(n.days)){const it=n.days[d];if(!it)continue;if(it.v)vo[d]=1;if(it.t){try{out[d]=await decText(it.t)}catch(e){}}}
+   await C.Plugins.Preferences.set({key:'zwidget',value:JSON.stringify({days:out,v:vo})});
+  }catch(e){}
+ }
+ window.__zbSyncWidget=syncWidget;setTimeout(syncWidget,3000);
  window.__zbNotes={importPack:importPack,load:load};
  const asData=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
  window.__collectFiles=async()=>{const out={voice:{},canvas:{}};
@@ -6185,13 +6208,15 @@ function herShow(st,at){
    if(m!==lastM){lastM=m;const h=document.createElement('div');h.className='nrm';h.textContent=m;list.appendChild(h)}
    const it=n.days[d],c=document.createElement('div');c.className='nrd';
    const dt=document.createElement('small');dt.textContent=(d===t?'Today':long(d));c.appendChild(dt);
-   if(it.t){const p=document.createElement('p');p.textContent=it.t;c.appendChild(p)}
+   if(it.t){const p=document.createElement('p');c.appendChild(p);decText(it.t).then(x=>{p.textContent=x}).catch(()=>{p.remove()})}
    if(it.v){const b=document.createElement('button');b.className='nrv';b.innerHTML='<i><svg viewBox="0 0 10 10" fill="#fff"><path d="M2 1l7 4-7 4z"/></svg></i><span>Voice note</span>';
     b.onclick=async()=>{
      if(cur&&cur.b===b){stopAudio();return}stopAudio();
      const blob=await get('voice',it.v).catch(()=>null);
      if(!blob){b.querySelector('span').textContent='Not on this phone. Open the update file again.';return}
-     const u=URL.createObjectURL(blob),a=new Audio(u);cur={a:a,b:b,u:u};b.classList.add('on');
+     let pb=blob;
+     if(it.vi){try{pb=new Blob([await decBytes(it.vi,new Uint8Array(await blob.arrayBuffer()))],{type:it.vm||'audio/webm'})}catch(e){b.querySelector('span').textContent='That voice note could not be opened.';return}}
+     const u=URL.createObjectURL(pb),a=new Audio(u);cur={a:a,b:b,u:u};b.classList.add('on');
      a.onended=()=>stopAudio();a.play().catch(()=>stopAudio())};
     c.appendChild(b)}
    list.appendChild(c)});
@@ -6305,6 +6330,12 @@ function herShow(st,at){
    catch(e){stt.textContent=(e&&e.message)||'That did not work.'}});
  }
  mb.onclick=open;
+ /* the widget's buttons open these pages */
+ try{const C=window.Capacitor;if(C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.App){
+  const route=u=>{u=String(u||'');if(/open\/canvas/.test(u))openCanvas();else if(/open\/notes/.test(u))readNotes()};
+  C.Plugins.App.addListener('appUrlOpen',e=>route(e&&e.url));
+  C.Plugins.App.getLaunchUrl().then(r=>{if(r&&r.url)setTimeout(()=>route(r.url),1200)}).catch(()=>{});
+ }}catch(e){}
 })();
 
 /* ---- Android back button: one screen back; at the very start, ask before closing ---- */
